@@ -17,7 +17,7 @@ export default function Header() {
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-1">
+        <nav className="hidden lg:flex items-center gap-1">
           {CATEGORIES.map((cat) => (
             <Link
               key={cat.slug}
@@ -38,7 +38,7 @@ export default function Header() {
 
         {/* Mobile hamburger */}
         <button
-          className="md:hidden p-2 rounded-lg hover:bg-cream"
+          className="lg:hidden p-2 rounded-lg hover:bg-cream"
           onClick={() => setMenuOpen(!menuOpen)}
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -53,7 +53,7 @@ export default function Header() {
 
       {/* Mobile menu */}
       {menuOpen && (
-        <nav className="md:hidden bg-white border-t border-gray-100 py-2 px-4">
+        <nav className="lg:hidden bg-white border-t border-gray-100 py-2 px-4">
           {CATEGORIES.map((cat) => (
             <Link
               key={cat.slug}
