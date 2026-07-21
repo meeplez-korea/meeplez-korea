@@ -1,5 +1,5 @@
 export const SITE_NAME = "미플즈";
-export const SITE_DESCRIPTION = "보드게임 동아리 미플즈 커뮤니티";
+export const SITE_DESCRIPTION = "미플즈 커뮤니티";
 export const ADMIN_PASSWORD = "meeplez2024";
 export const POSTS_PER_PAGE = 10;
 export const CARDS_PER_PAGE = 9;

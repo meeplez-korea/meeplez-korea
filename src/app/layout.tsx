@@ -4,8 +4,8 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
 export const metadata: Metadata = {
-  title: "미플즈 - 보드게임 동아리",
-  description: "보드게임 동아리 미플즈 커뮤니티 홈페이지",
+  title: "미플즈",
+  description: "미플즈 커뮤니티 홈페이지",
 };
 
 export default function RootLayout({
