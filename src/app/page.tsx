@@ -5,8 +5,10 @@ import Link from "next/link";
 import { getPosts, getPromotions } from "@/lib/storage";
 import { Post, Promotion } from "@/lib/types";
 import { formatDate, truncate } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Home() {
+  const { user, profile, isPending, loading } = useAuth();
   const [notices, setNotices] = useState<Post[]>([]);
   const [reviews, setReviews] = useState<Post[]>([]);
   const [promotions, setPromotions] = useState<Promotion[]>([]);
@@ -19,6 +21,16 @@ export default function Home() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-10">
+      {/* 승인 대기 안내 */}
+      {!loading && user && isPending && (
+        <div className="p-4 bg-secondary/10 border border-secondary/20 rounded-xl">
+          <p className="text-sm font-semibold text-secondary">승인 대기 중입니다</p>
+          <p className="text-xs text-gray-500 mt-1">
+            오픈채팅방에서 관리자에게 승인을 요청해주세요. 승인 후 게시판 이용이 가능합니다.
+          </p>
+        </div>
+      )}
+
       {/* Promotions */}
       {promotions.length > 0 && (
         <section className="space-y-3">
