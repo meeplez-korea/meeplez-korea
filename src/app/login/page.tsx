@@ -13,6 +13,7 @@ export default function LoginPage() {
   const [nickname, setNickname] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [signUpDone, setSignUpDone] = useState(false);
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,8 +30,7 @@ export default function LoginPage() {
         if (error) {
           setError(typeof error === "object" ? (error.message || error.code || JSON.stringify(error)) : String(error));
         } else if (data?.user) {
-          router.push("/");
-          router.refresh();
+          setSignUpDone(true);
         }
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -55,6 +55,23 @@ export default function LoginPage() {
           <h1 className="text-xl font-bold">미플즈 로그인</h1>
         </div>
 
+        {/* 회원가입 완료 안내 */}
+        {signUpDone && (
+          <div className="mb-6 p-4 bg-primary/10 border border-primary/20 rounded-xl text-center">
+            <p className="text-sm font-semibold text-primary mb-2">회원가입이 완료되었습니다!</p>
+            <p className="text-xs text-gray-500 leading-relaxed">
+              관리자 승인 후 게시판 이용이 가능합니다.<br />
+              오픈채팅방에서 관리자에게 승인을 요청해주세요.
+            </p>
+            <button
+              onClick={() => { router.push("/"); router.refresh(); }}
+              className="mt-3 px-4 py-2 bg-primary text-white text-sm rounded-lg hover:bg-primary/90 transition-colors"
+            >
+              홈으로 이동
+            </button>
+          </div>
+        )}
+
         {/* Kakao */}
         <button
           onClick={() => signInWithKakao()}
@@ -76,13 +93,18 @@ export default function LoginPage() {
         {/* Email login */}
         <form onSubmit={handleEmailAuth} className="space-y-3">
           {isSignUp && (
-            <input
-              type="text"
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
-              className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm"
-              placeholder="닉네임"
-            />
+            <>
+              <input
+                type="text"
+                value={nickname}
+                onChange={(e) => setNickname(e.target.value)}
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm"
+                placeholder="닉네임"
+              />
+              <p className="text-xs text-gray-400 -mt-1">
+                오픈채팅 닉네임과 동일하게 입력해주세요.
+              </p>
+            </>
           )}
           <input
             type="email"
