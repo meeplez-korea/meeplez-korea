@@ -26,7 +26,7 @@ export default function LoginPage() {
         options: { data: { name: nickname || email.split("@")[0] } },
       });
       if (error) {
-        setError(error.message);
+        setError(error.message || JSON.stringify(error));
       } else {
         router.push("/");
         router.refresh();
@@ -34,7 +34,7 @@ export default function LoginPage() {
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
-        setError(error.message);
+        setError(error.message || JSON.stringify(error));
       } else {
         router.push("/");
         router.refresh();
