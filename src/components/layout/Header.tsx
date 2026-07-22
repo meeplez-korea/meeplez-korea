@@ -4,9 +4,17 @@ import { useState } from "react";
 import Link from "next/link";
 import { CATEGORIES } from "@/lib/categories";
 import { SITE_NAME } from "@/lib/constants";
+import { useAuth } from "@/contexts/AuthContext";
+import { signOut } from "@/lib/storage";
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { user, profile, isAdmin, loading } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    window.location.href = "/";
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-primary/20 shadow-sm">
@@ -28,12 +36,38 @@ export default function Header() {
               {cat.label}
             </Link>
           ))}
-          <Link
-            href="/admin"
-            className="ml-2 px-3 py-2 text-xs text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            관리
-          </Link>
+          {isAdmin && (
+            <Link
+              href="/admin"
+              className="ml-2 px-3 py-2 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              관리
+            </Link>
+          )}
+
+          {/* Auth buttons */}
+          {!loading && (
+            <div className="ml-3 pl-3 border-l border-gray-200 flex items-center gap-2">
+              {user ? (
+                <>
+                  <span className="text-xs text-gray-500">{profile?.nickname}</span>
+                  <button
+                    onClick={handleSignOut}
+                    className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    로그아웃
+                  </button>
+                </>
+              ) : (
+                <Link
+                  href="/login"
+                  className="px-3 py-1.5 text-sm bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+                >
+                  로그인
+                </Link>
+              )}
+            </div>
+          )}
         </nav>
 
         {/* Mobile hamburger */}
@@ -65,13 +99,36 @@ export default function Header() {
               {cat.label}
             </Link>
           ))}
-          <Link
-            href="/admin"
-            className="block px-3 py-3 text-xs text-gray-400 hover:text-gray-600"
-            onClick={() => setMenuOpen(false)}
-          >
-            관리자
-          </Link>
+          {isAdmin && (
+            <Link
+              href="/admin"
+              className="block px-3 py-3 text-xs text-gray-400 hover:text-gray-600"
+              onClick={() => setMenuOpen(false)}
+            >
+              관리자
+            </Link>
+          )}
+          <div className="border-t border-gray-100 mt-2 pt-2">
+            {user ? (
+              <div className="px-3 py-3 flex items-center justify-between">
+                <span className="text-sm text-gray-500">{profile?.nickname}</span>
+                <button
+                  onClick={() => { handleSignOut(); setMenuOpen(false); }}
+                  className="text-sm text-gray-400 hover:text-gray-600"
+                >
+                  로그아웃
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="block px-3 py-3 text-sm text-primary font-medium"
+                onClick={() => setMenuOpen(false)}
+              >
+                로그인
+              </Link>
+            )}
+          </div>
         </nav>
       )}
     </header>

@@ -2,22 +2,35 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { getPosts, seedData } from "@/lib/storage";
-import { Post } from "@/lib/types";
+import { getPosts, getPromotions } from "@/lib/storage";
+import { Post, Promotion } from "@/lib/types";
 import { formatDate, truncate } from "@/lib/utils";
 
 export default function Home() {
   const [notices, setNotices] = useState<Post[]>([]);
   const [reviews, setReviews] = useState<Post[]>([]);
+  const [promotions, setPromotions] = useState<Promotion[]>([]);
 
   useEffect(() => {
-    seedData();
-    setNotices(getPosts("notices").slice(0, 3));
-    setReviews(getPosts("reviews").slice(0, 6));
+    getPosts("notices").then((data) => setNotices(data.slice(0, 3)));
+    getPosts("reviews").then((data) => setReviews(data.slice(0, 6)));
+    getPromotions().then(setPromotions);
   }, []);
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-10">
+      {/* Promotions */}
+      {promotions.length > 0 && (
+        <section className="space-y-3">
+          {promotions.map((promo) => (
+            <div key={promo.id} className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
+              <h3 className="font-semibold text-sm">{promo.title}</h3>
+              <p className="text-xs text-gray-500 mt-1">{promo.content}</p>
+            </div>
+          ))}
+        </section>
+      )}
+
       {/* Notices */}
       <section>
         <div className="flex items-center justify-between mb-4">
@@ -49,7 +62,7 @@ export default function Home() {
                     </p>
                   </div>
                   <span className="text-xs text-gray-300 whitespace-nowrap shrink-0">
-                    {formatDate(post.createdAt)}
+                    {formatDate(post.created_at)}
                   </span>
                 </div>
               </Link>
@@ -79,9 +92,9 @@ export default function Home() {
                 href={`/board/reviews/${post.id}`}
                 className="bg-white rounded-xl overflow-hidden border border-gray-100 hover:shadow-md hover:-translate-y-0.5 transition-all group"
               >
-                {post.thumbnailUrl ? (
+                {post.thumbnail_url ? (
                   <div className="aspect-[16/10] bg-gray-100">
-                    <img src={post.thumbnailUrl} alt="" className="w-full h-full object-cover" />
+                    <img src={post.thumbnail_url} alt="" className="w-full h-full object-cover" />
                   </div>
                 ) : (
                   <div className="aspect-[16/10] bg-gradient-to-br from-primary/5 via-cream to-accent/10 flex items-center justify-center">
@@ -109,8 +122,8 @@ export default function Home() {
                     {truncate(post.content.replace(/\n/g, " "), 60)}
                   </p>
                   <div className="flex justify-between items-center mt-3 text-[11px] text-gray-300">
-                    <span>{post.author}</span>
-                    <span>{formatDate(post.createdAt)}</span>
+                    <span>{post.author_name}</span>
+                    <span>{formatDate(post.created_at)}</span>
                   </div>
                 </div>
               </Link>

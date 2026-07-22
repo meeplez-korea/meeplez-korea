@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { getCategoryBySlug } from "@/lib/categories";
-import { getPost, incrementViewCount, deletePost, addComment, deleteComment, isAdmin } from "@/lib/storage";
-import { Post } from "@/lib/types";
+import { getPost, incrementViewCount, deletePost, getComments, addComment, deleteComment } from "@/lib/storage";
+import { Post, Comment } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
-import { AUTHOR_KEY } from "@/lib/constants";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function PostDetailPage() {
   const params = useParams();
@@ -15,45 +15,40 @@ export default function PostDetailPage() {
   const categorySlug = params.category as string;
   const postId = params.postId as string;
   const category = getCategoryBySlug(categorySlug);
+  const { user, profile, isAdmin, isMember } = useAuth();
 
   const [post, setPost] = useState<Post | null>(null);
-  const [commentAuthor, setCommentAuthor] = useState("");
+  const [comments, setComments] = useState<Comment[]>([]);
   const [commentContent, setCommentContent] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deletePassword, setDeletePassword] = useState("");
 
   useEffect(() => {
-    const p = getPost(postId);
-    if (p) {
-      incrementViewCount(postId);
-      setPost({ ...p, viewCount: p.viewCount + 1 });
-    }
-    const savedAuthor = localStorage.getItem(AUTHOR_KEY);
-    if (savedAuthor) setCommentAuthor(savedAuthor);
+    getPost(postId).then((p) => {
+      if (p) {
+        incrementViewCount(postId);
+        setPost({ ...p, view_count: p.view_count + 1 });
+      }
+    });
+    getComments(postId).then(setComments);
   }, [postId]);
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!post) return;
-    if (deletePassword === post.password || isAdmin()) {
-      deletePost(post.id);
-      router.push(`/board/${categorySlug}`);
-    } else {
-      alert("비밀번호가 일치하지 않습니다.");
-    }
+    await deletePost(post.id);
+    router.push(`/board/${categorySlug}`);
   };
 
-  const handleAddComment = (e: React.FormEvent) => {
+  const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!commentAuthor.trim() || !commentContent.trim()) return;
-    localStorage.setItem(AUTHOR_KEY, commentAuthor);
-    addComment(postId, commentAuthor, commentContent);
+    if (!commentContent.trim() || !user || !profile) return;
+    await addComment(postId, user.id, profile.nickname, commentContent);
     setCommentContent("");
-    setPost(getPost(postId));
+    getComments(postId).then(setComments);
   };
 
-  const handleDeleteComment = (commentId: string) => {
-    deleteComment(postId, commentId);
-    setPost(getPost(postId));
+  const handleDeleteComment = async (commentId: string) => {
+    await deleteComment(commentId);
+    getComments(postId).then(setComments);
   };
 
   if (!post || !category) {
@@ -63,6 +58,9 @@ export default function PostDetailPage() {
       </div>
     );
   }
+
+  const isAuthor = user?.id === post.author_id;
+  const canEdit = isAuthor || isAdmin;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
@@ -77,80 +75,64 @@ export default function PostDetailPage() {
 
       {/* Post */}
       <article className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        {/* Post header */}
         <div className="p-6 border-b border-gray-100">
-          <div className="flex items-center gap-2 mb-2">
-            {post.tag && (
-              <span
-                className={`text-xs px-2 py-0.5 rounded-full ${
-                  post.tag === "보드게임"
-                    ? "bg-tag-board/20 text-tag-board"
-                    : post.tag === "외부활동"
-                    ? "bg-tag-outdoor/20 text-tag-outdoor"
-                    : "bg-tag-all/20 text-tag-all"
-                }`}
-              >
-                {post.tag}
-              </span>
-            )}
-          </div>
-          <h1 className="text-xl font-bold mb-3">{post.title}</h1>
+          {post.tag && (
+            <span
+              className={`text-xs px-2 py-0.5 rounded-full ${
+                post.tag === "보드게임"
+                  ? "bg-tag-board/20 text-tag-board"
+                  : post.tag === "외부활동"
+                  ? "bg-tag-outdoor/20 text-tag-outdoor"
+                  : "bg-tag-all/20 text-tag-all"
+              }`}
+            >
+              {post.tag}
+            </span>
+          )}
+          <h1 className="text-xl font-bold mt-2 mb-3">{post.title}</h1>
           <div className="flex items-center gap-4 text-sm text-gray-400">
-            <span className="font-medium text-gray-600">{post.author}</span>
-            <span>{formatDate(post.createdAt)}</span>
-            <span>조회 {post.viewCount}</span>
+            <span className="font-medium text-gray-600">{post.author_name}</span>
+            <span>{formatDate(post.created_at)}</span>
+            <span>조회 {post.view_count}</span>
           </div>
         </div>
 
-        {/* Post content */}
         <div className="p-6">
           <div className="whitespace-pre-wrap text-sm leading-relaxed">{post.content}</div>
 
-          {/* Images */}
           {post.images && post.images.length > 0 && (
             <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
               {post.images.map((img, i) => (
-                <img
-                  key={i}
-                  src={img}
-                  alt={`첨부 이미지 ${i + 1}`}
-                  className="rounded-lg w-full object-cover"
-                />
+                <img key={i} src={img} alt={`첨부 이미지 ${i + 1}`} className="rounded-lg w-full object-cover" />
               ))}
             </div>
           )}
         </div>
 
-        {/* Actions */}
-        <div className="px-6 pb-6 flex gap-2">
-          <Link
-            href={`/board/write?category=${categorySlug}&edit=${post.id}`}
-            className="px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            수정
-          </Link>
-          <button
-            onClick={() => setShowDeleteConfirm(true)}
-            className="px-4 py-2 text-sm border border-danger/30 text-danger rounded-lg hover:bg-danger/5 transition-colors"
-          >
-            삭제
-          </button>
-        </div>
+        {canEdit && (
+          <div className="px-6 pb-6 flex gap-2">
+            <Link
+              href={`/board/write?category=${categorySlug}&edit=${post.id}`}
+              className="px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              수정
+            </Link>
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="px-4 py-2 text-sm border border-danger/30 text-danger rounded-lg hover:bg-danger/5 transition-colors"
+            >
+              삭제
+            </button>
+          </div>
+        )}
       </article>
 
-      {/* Delete confirm modal */}
+      {/* Delete confirm */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl p-6 w-full max-w-sm">
             <h3 className="font-bold mb-3">게시글 삭제</h3>
-            <p className="text-sm text-gray-500 mb-4">비밀번호를 입력하세요.</p>
-            <input
-              type="password"
-              value={deletePassword}
-              onChange={(e) => setDeletePassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm mb-4"
-              placeholder="비밀번호"
-            />
+            <p className="text-sm text-gray-500 mb-4">정말 삭제하시겠습니까?</p>
             <div className="flex gap-2 justify-end">
               <button
                 onClick={() => setShowDeleteConfirm(false)}
@@ -171,20 +153,20 @@ export default function PostDetailPage() {
 
       {/* Comments */}
       <section className="mt-6 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h3 className="font-bold mb-4">댓글 {post.comments.length}개</h3>
+        <h3 className="font-bold mb-4">댓글 {comments.length}개</h3>
 
-        {post.comments.length > 0 && (
+        {comments.length > 0 && (
           <div className="space-y-3 mb-6">
-            {post.comments.map((comment) => (
+            {comments.map((comment) => (
               <div key={comment.id} className="flex justify-between items-start p-3 bg-cream/30 rounded-lg">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm font-medium">{comment.author}</span>
-                    <span className="text-xs text-gray-400">{formatDate(comment.createdAt)}</span>
+                    <span className="text-sm font-medium">{comment.author_name}</span>
+                    <span className="text-xs text-gray-400">{formatDate(comment.created_at)}</span>
                   </div>
                   <p className="text-sm text-gray-600">{comment.content}</p>
                 </div>
-                {isAdmin() && (
+                {(user?.id === comment.author_id || isAdmin) && (
                   <button
                     onClick={() => handleDeleteComment(comment.id)}
                     className="text-xs text-gray-400 hover:text-danger"
@@ -197,16 +179,8 @@ export default function PostDetailPage() {
           </div>
         )}
 
-        {/* Add comment form */}
-        <form onSubmit={handleAddComment} className="flex flex-col gap-3">
-          <input
-            type="text"
-            placeholder="닉네임"
-            value={commentAuthor}
-            onChange={(e) => setCommentAuthor(e.target.value)}
-            className="px-3 py-2 border border-gray-200 rounded-lg text-sm w-40"
-          />
-          <div className="flex gap-2">
+        {isMember ? (
+          <form onSubmit={handleAddComment} className="flex gap-2">
             <textarea
               placeholder="댓글을 작성하세요..."
               value={commentContent}
@@ -219,11 +193,14 @@ export default function PostDetailPage() {
             >
               등록
             </button>
-          </div>
-        </form>
+          </form>
+        ) : (
+          <p className="text-sm text-gray-400">
+            {user ? "관리자 승인 후 댓글 작성이 가능합니다." : "로그인 후 댓글을 작성할 수 있습니다."}
+          </p>
+        )}
       </section>
 
-      {/* Back button */}
       <div className="mt-6">
         <Link
           href={`/board/${categorySlug}`}

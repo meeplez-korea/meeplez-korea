@@ -6,7 +6,8 @@ import { CATEGORIES, getCategoryBySlug } from "@/lib/categories";
 import { createPost, getPost, updatePost } from "@/lib/storage";
 import { CategorySlug, ReviewTag } from "@/lib/types";
 import { compressImage } from "@/lib/utils";
-import { AUTHOR_KEY, MAX_IMAGES } from "@/lib/constants";
+import { MAX_IMAGES } from "@/lib/constants";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function WritePage() {
   return (
@@ -21,11 +22,10 @@ function WriteForm() {
   const searchParams = useSearchParams();
   const editId = searchParams.get("edit");
   const initialCategory = searchParams.get("category") || "chat";
+  const { user, profile, isMember } = useAuth();
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [author, setAuthor] = useState("");
-  const [password, setPassword] = useState("");
   const [category, setCategory] = useState<CategorySlug>(initialCategory as CategorySlug);
   const [tag, setTag] = useState<ReviewTag>("보드게임");
   const [images, setImages] = useState<string[]>([]);
@@ -34,29 +34,32 @@ function WriteForm() {
   const categoryInfo = getCategoryBySlug(category);
 
   useEffect(() => {
-    const savedAuthor = localStorage.getItem(AUTHOR_KEY);
-    if (savedAuthor) setAuthor(savedAuthor);
-
     if (editId) {
-      const post = getPost(editId);
-      if (post) {
-        setTitle(post.title);
-        setContent(post.content);
-        setAuthor(post.author);
-        setCategory(post.category);
-        if (post.tag) setTag(post.tag);
-        if (post.images) setImages(post.images);
-      }
+      getPost(editId).then((post) => {
+        if (post) {
+          setTitle(post.title);
+          setContent(post.content);
+          setCategory(post.category);
+          if (post.tag) setTag(post.tag as ReviewTag);
+          if (post.images) setImages(post.images);
+        }
+      });
     }
   }, [editId]);
+
+  if (!isMember) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-12 text-center text-gray-400">
+        {user ? "관리자 승인 후 글쓰기가 가능합니다." : "로그인이 필요합니다."}
+      </div>
+    );
+  }
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
-
     const remaining = MAX_IMAGES - images.length;
     const filesToProcess = Array.from(files).slice(0, remaining);
-
     setLoading(true);
     const compressed = await Promise.all(filesToProcess.map(compressImage));
     setImages((prev) => [...prev, ...compressed]);
@@ -67,31 +70,29 @@ function WriteForm() {
     setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !content.trim() || !author.trim() || !password.trim()) {
+    if (!title.trim() || !content.trim() || !user || !profile) {
       alert("모든 필수 항목을 입력해주세요.");
       return;
     }
 
-    localStorage.setItem(AUTHOR_KEY, author);
-
     const postData = {
       title,
       content,
-      author,
-      password,
       category,
+      author_id: user.id,
+      author_name: profile.nickname,
       tag: categoryInfo?.hasTags ? tag : undefined,
-      thumbnailUrl: images.length > 0 ? images[0] : undefined,
+      thumbnail_url: images.length > 0 ? images[0] : undefined,
       images: categoryInfo?.hasPhotos ? images : undefined,
-      isPrivate: categoryInfo?.isPrivate || false,
+      is_private: categoryInfo?.isPrivate || false,
     };
 
     if (editId) {
-      updatePost(editId, postData);
+      await updatePost(editId, postData);
     } else {
-      createPost(postData);
+      await createPost(postData);
     }
 
     router.push(`/board/${category}`);
@@ -102,30 +103,6 @@ function WriteForm() {
       <h1 className="text-2xl font-bold mb-6">{editId ? "글 수정" : "글쓰기"}</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Author & Password */}
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-sm font-medium mb-1">닉네임 *</label>
-            <input
-              type="text"
-              value={author}
-              onChange={(e) => setAuthor(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
-              placeholder="닉네임"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">비밀번호 *</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
-              placeholder="수정/삭제 시 필요"
-            />
-          </div>
-        </div>
-
         {/* Category */}
         <div>
           <label className="block text-sm font-medium mb-1">게시판 *</label>
@@ -165,7 +142,6 @@ function WriteForm() {
           </div>
         )}
 
-        {/* Privacy notice for suggestions */}
         {categoryInfo?.isPrivate && (
           <div className="p-3 bg-gray-100 rounded-lg text-sm text-gray-500">
             이 게시판의 글은 운영진만 확인할 수 있습니다.
@@ -195,12 +171,10 @@ function WriteForm() {
           />
         </div>
 
-        {/* Image upload (reviews only) */}
+        {/* Image upload */}
         {categoryInfo?.hasPhotos && (
           <div>
-            <label className="block text-sm font-medium mb-1">
-              사진 첨부 (최대 {MAX_IMAGES}장)
-            </label>
+            <label className="block text-sm font-medium mb-1">사진 첨부 (최대 {MAX_IMAGES}장)</label>
             <input
               type="file"
               accept="image/*"

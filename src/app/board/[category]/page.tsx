@@ -3,31 +3,27 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { getCategoryBySlug, CATEGORIES } from "@/lib/categories";
-import { getPosts, isAdmin } from "@/lib/storage";
+import { getCategoryBySlug } from "@/lib/categories";
+import { getPosts } from "@/lib/storage";
 import { Post, ReviewTag } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
 import { POSTS_PER_PAGE, CARDS_PER_PAGE } from "@/lib/constants";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function BoardPage() {
   const params = useParams();
   const categorySlug = params.category as string;
   const category = getCategoryBySlug(categorySlug);
+  const { user, isMember, isAdmin } = useAuth();
+
   const [posts, setPosts] = useState<Post[]>([]);
   const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
   const [activeTag, setActiveTag] = useState<ReviewTag | "전체">("전체");
   const [page, setPage] = useState(1);
-  const [admin, setAdminState] = useState(false);
 
   useEffect(() => {
-    setAdminState(isAdmin());
     if (category) {
-      const allPosts = getPosts(category.slug);
-      if (category.isPrivate && !isAdmin()) {
-        setPosts([]);
-      } else {
-        setPosts(allPosts);
-      }
+      getPosts(category.slug).then(setPosts);
     }
   }, [categorySlug]);
 
@@ -44,6 +40,20 @@ export default function BoardPage() {
     return (
       <div className="max-w-6xl mx-auto px-4 py-12 text-center">
         <p className="text-gray-400">존재하지 않는 게시판입니다.</p>
+      </div>
+    );
+  }
+
+  // 비회원은 공지사항만
+  if (!isMember && category.slug !== "notices") {
+    return (
+      <div className="max-w-6xl mx-auto px-4 py-12 text-center">
+        <p className="text-gray-400">회원만 열람할 수 있는 게시판입니다.</p>
+        {!user && (
+          <Link href="/login" className="inline-block mt-4 px-4 py-2 bg-primary text-white text-sm rounded-lg">
+            로그인하기
+          </Link>
+        )}
       </div>
     );
   }
@@ -65,22 +75,15 @@ export default function BoardPage() {
           </h1>
           <p className="text-sm text-gray-400 mt-1">{category.description}</p>
         </div>
-        <Link
-          href={`/board/write?category=${category.slug}`}
-          className="px-4 py-2 bg-primary text-white text-sm rounded-lg hover:bg-primary/90 transition-colors"
-        >
-          글쓰기
-        </Link>
+        {isMember && (
+          <Link
+            href={`/board/write?category=${category.slug}`}
+            className="px-4 py-2 bg-primary text-white text-sm rounded-lg hover:bg-primary/90 transition-colors"
+          >
+            글쓰기
+          </Link>
+        )}
       </div>
-
-      {/* Privacy notice for suggestions */}
-      {category.isPrivate && (
-        <div className="mb-4 p-3 bg-gray-100 rounded-lg text-sm text-gray-500">
-          {admin
-            ? "운영진 모드: 모든 건의사항을 확인할 수 있습니다."
-            : "건의방은 운영진만 확인할 수 있는 비공개 게시판입니다. 관리자 로그인 후 확인 가능합니다."}
-        </div>
-      )}
 
       {/* Tag filter for reviews */}
       {category.hasTags && (
@@ -107,7 +110,6 @@ export default function BoardPage() {
           게시글이 없습니다.
         </div>
       ) : category.hasPhotos ? (
-        /* Card Grid for reviews */
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {currentPosts.map((post) => (
             <Link
@@ -115,13 +117,9 @@ export default function BoardPage() {
               href={`/board/${category.slug}/${post.id}`}
               className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5 border border-gray-100"
             >
-              {post.thumbnailUrl ? (
+              {post.thumbnail_url ? (
                 <div className="aspect-video bg-gray-100">
-                  <img
-                    src={post.thumbnailUrl}
-                    alt=""
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={post.thumbnail_url} alt="" className="w-full h-full object-cover" />
                 </div>
               ) : (
                 <div className="aspect-video bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
@@ -144,15 +142,14 @@ export default function BoardPage() {
                 )}
                 <h3 className="font-semibold text-sm mt-2 line-clamp-2">{post.title}</h3>
                 <div className="flex justify-between items-center mt-2 text-xs text-gray-400">
-                  <span>{post.author}</span>
-                  <span>{formatDate(post.createdAt)}</span>
+                  <span>{post.author_name}</span>
+                  <span>{formatDate(post.created_at)}</span>
                 </div>
               </div>
             </Link>
           ))}
         </div>
       ) : (
-        /* Table for other categories */
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <table className="w-full">
             <thead className="bg-cream/50">
@@ -176,16 +173,11 @@ export default function BoardPage() {
                       className="text-sm hover:text-primary transition-colors"
                     >
                       {post.title}
-                      {post.comments.length > 0 && (
-                        <span className="ml-1 text-xs text-primary">
-                          [{post.comments.length}]
-                        </span>
-                      )}
                     </Link>
                   </td>
-                  <td className="py-3 px-4 text-xs text-gray-500">{post.author}</td>
-                  <td className="py-3 px-4 text-xs text-gray-400">{formatDate(post.createdAt)}</td>
-                  <td className="py-3 px-4 text-xs text-gray-400 text-center">{post.viewCount}</td>
+                  <td className="py-3 px-4 text-xs text-gray-500">{post.author_name}</td>
+                  <td className="py-3 px-4 text-xs text-gray-400">{formatDate(post.created_at)}</td>
+                  <td className="py-3 px-4 text-xs text-gray-400 text-center">{post.view_count}</td>
                 </tr>
               ))}
             </tbody>
