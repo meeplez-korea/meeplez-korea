@@ -19,26 +19,30 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
 
-    if (isSignUp) {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { data: { name: nickname || email.split("@")[0] } },
-      });
-      if (error) {
-        setError(error.message || JSON.stringify(error));
+    try {
+      if (isSignUp) {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { name: nickname || email.split("@")[0] } },
+        });
+        if (error) {
+          setError(typeof error === "object" ? (error.message || error.code || JSON.stringify(error)) : String(error));
+        } else if (data?.user) {
+          router.push("/");
+          router.refresh();
+        }
       } else {
-        router.push("/");
-        router.refresh();
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) {
+          setError(typeof error === "object" ? (error.message || error.code || JSON.stringify(error)) : String(error));
+        } else if (data?.user) {
+          router.push("/");
+          router.refresh();
+        }
       }
-    } else {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
-        setError(error.message || JSON.stringify(error));
-      } else {
-        router.push("/");
-        router.refresh();
-      }
+    } catch (err: any) {
+      setError(err?.message || String(err));
     }
     setLoading(false);
   };
