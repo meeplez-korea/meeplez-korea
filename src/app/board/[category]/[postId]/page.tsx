@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { getCategoryBySlug } from "@/lib/categories";
-import { getPost, incrementViewCount, deletePost, getComments, addComment, deleteComment } from "@/lib/storage";
+import { getPost, incrementViewCount, deletePost, updatePost, getComments, addComment, deleteComment } from "@/lib/storage";
 import { Post, Comment } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -110,7 +110,7 @@ export default function PostDetailPage() {
         </div>
 
         {canEdit && (
-          <div className="px-6 pb-6 flex gap-2">
+          <div className="px-6 pb-6 flex gap-2 flex-wrap">
             <Link
               href={`/board/write?category=${categorySlug}&edit=${post.id}`}
               className="px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
@@ -123,6 +123,21 @@ export default function PostDetailPage() {
             >
               삭제
             </button>
+            {isAdmin && (
+              <button
+                onClick={async () => {
+                  await updatePost(post.id, { is_pinned: !post.is_pinned });
+                  setPost({ ...post, is_pinned: !post.is_pinned });
+                }}
+                className={`px-4 py-2 text-sm border rounded-lg transition-colors ${
+                  post.is_pinned
+                    ? "border-danger/30 text-danger hover:bg-danger/5"
+                    : "border-primary/30 text-primary hover:bg-primary/5"
+                }`}
+              >
+                {post.is_pinned ? "고정 해제" : "상단 고정"}
+              </button>
+            )}
           </div>
         )}
       </article>

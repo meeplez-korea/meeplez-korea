@@ -28,11 +28,10 @@ export default function BoardPage() {
   }, [categorySlug]);
 
   useEffect(() => {
-    if (activeTag === "전체") {
-      setFilteredPosts(posts);
-    } else {
-      setFilteredPosts(posts.filter((p) => p.tag === activeTag));
-    }
+    let filtered = activeTag === "전체" ? posts : posts.filter((p) => p.tag === activeTag);
+    const pinned = filtered.filter((p) => p.is_pinned);
+    const unpinned = filtered.filter((p) => !p.is_pinned);
+    setFilteredPosts([...pinned, ...unpinned]);
     setPage(1);
   }, [posts, activeTag]);
 
@@ -172,6 +171,7 @@ export default function BoardPage() {
                       href={`/board/${category.slug}/${post.id}`}
                       className="text-sm hover:text-primary transition-colors"
                     >
+                      {post.is_pinned && <span className="text-xs text-danger font-bold mr-1">[고정]</span>}
                       {post.title}
                     </Link>
                   </td>

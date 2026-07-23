@@ -14,7 +14,11 @@ export default function Home() {
   const [promotions, setPromotions] = useState<Promotion[]>([]);
 
   useEffect(() => {
-    getPosts("notices").then((data) => setNotices(data.slice(0, 3)));
+    getPosts("notices").then((data) => {
+      const pinned = data.filter((p) => p.is_pinned);
+      const unpinned = data.filter((p) => !p.is_pinned);
+      setNotices([...pinned, ...unpinned].slice(0, 3));
+    });
     getPosts("reviews").then((data) => setReviews(data.slice(0, 6)));
     getPromotions().then(setPromotions);
   }, []);
@@ -66,7 +70,8 @@ export default function Home() {
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-sm group-hover:text-primary transition-colors">
+                    <h3 className="font-semibold text-sm group-hover:text-primary transition-colors flex items-center gap-1.5">
+                      {post.is_pinned && <span className="text-xs text-danger font-bold">[고정]</span>}
                       {post.title}
                     </h3>
                     <p className="text-xs text-gray-400 mt-1 line-clamp-1">

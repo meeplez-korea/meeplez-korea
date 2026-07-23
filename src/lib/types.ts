@@ -29,6 +29,7 @@ export interface Post {
   thumbnail_url?: string;
   images?: string[];
   is_private: boolean;
+  is_pinned: boolean;
   view_count: number;
   created_at: string;
   updated_at: string;
