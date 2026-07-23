@@ -59,6 +59,20 @@ export async function updateUserRole(userId: string, role: string) {
     .eq("id", userId);
 }
 
+export async function adminUpdateNickname(userId: string, nickname: string) {
+  return supabase
+    .from("profiles")
+    .update({ nickname })
+    .eq("id", userId);
+}
+
+export async function adminDeleteUser(userId: string) {
+  // 프로필 삭제 (posts/comments는 CASCADE로 자동 삭제)
+  await supabase.from("profiles").delete().eq("id", userId);
+  // auth 유저는 admin API로만 삭제 가능하므로 프로필만 삭제
+  // 유저는 다시 로그인 시 프로필이 없어서 접근 불가
+}
+
 // ── Posts ──
 
 export async function getPosts(category?: CategorySlug): Promise<Post[]> {

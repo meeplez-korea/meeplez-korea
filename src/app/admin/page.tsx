@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { getPosts, getAllProfiles, updateUserRole, getPromotions, createPromotion, updatePromotion, deletePromotion } from "@/lib/storage";
+import { getPosts, getAllProfiles, updateUserRole, adminUpdateNickname, adminDeleteUser, getPromotions, createPromotion, updatePromotion, deletePromotion } from "@/lib/storage";
 import { Post, Profile, Promotion } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
 
@@ -18,6 +18,11 @@ export default function AdminPage() {
   const [promoTitle, setPromoTitle] = useState("");
   const [promoContent, setPromoContent] = useState("");
   const [editingPromo, setEditingPromo] = useState<string | null>(null);
+
+  // Member edit
+  const [editingMember, setEditingMember] = useState<string | null>(null);
+  const [editNickname, setEditNickname] = useState("");
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
   useEffect(() => {
     if (isAdmin) {
@@ -38,6 +43,27 @@ export default function AdminPage() {
 
   const handleRoleChange = async (userId: string, role: string) => {
     await updateUserRole(userId, role);
+    const updated = await getAllProfiles();
+    setMembers(updated);
+  };
+
+  const handleNicknameEdit = (member: Profile) => {
+    setEditingMember(member.id);
+    setEditNickname(member.nickname);
+  };
+
+  const handleNicknameSave = async (userId: string) => {
+    if (!editNickname.trim()) return;
+    await adminUpdateNickname(userId, editNickname.trim());
+    setEditingMember(null);
+    setEditNickname("");
+    const updated = await getAllProfiles();
+    setMembers(updated);
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    await adminDeleteUser(userId);
+    setDeleteConfirm(null);
     const updated = await getAllProfiles();
     setMembers(updated);
   };
@@ -135,56 +161,105 @@ export default function AdminPage() {
 
       {/* Members Tab */}
       {tab === "members" && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-cream/50">
-              <tr className="text-xs text-gray-500">
-                <th className="py-3 px-4 text-left font-medium">닉네임</th>
-                <th className="py-3 px-4 text-left font-medium">가입일</th>
-                <th className="py-3 px-4 text-left font-medium">상태</th>
-                <th className="py-3 px-4 text-center font-medium">관리</th>
-              </tr>
-            </thead>
-            <tbody>
-              {members.map((member) => (
-                <tr key={member.id} className="border-t border-gray-50">
-                  <td className="py-3 px-4 text-sm">{member.nickname}</td>
-                  <td className="py-3 px-4 text-xs text-gray-400">{formatDate(member.created_at)}</td>
-                  <td className="py-3 px-4">
-                    <span
-                      className={`text-xs px-2 py-0.5 rounded-full ${
-                        member.role === "admin"
-                          ? "bg-danger/10 text-danger"
-                          : member.role === "member"
-                          ? "bg-primary/10 text-primary"
-                          : "bg-gray-100 text-gray-500"
-                      }`}
+        <div className="space-y-3">
+          {members.map((member) => (
+            <div key={member.id} className="bg-white rounded-xl p-4 border border-gray-100">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  {editingMember === member.id ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={editNickname}
+                        onChange={(e) => setEditNickname(e.target.value)}
+                        className="px-2 py-1 border border-gray-200 rounded text-sm w-32"
+                      />
+                      <button
+                        onClick={() => handleNicknameSave(member.id)}
+                        className="text-xs text-primary hover:text-primary/80"
+                      >
+                        저장
+                      </button>
+                      <button
+                        onClick={() => setEditingMember(null)}
+                        className="text-xs text-gray-400 hover:text-gray-600"
+                      >
+                        취소
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <span className="font-semibold text-sm">{member.nickname}</span>
+                      <button
+                        onClick={() => handleNicknameEdit(member)}
+                        className="text-[11px] text-gray-400 hover:text-primary"
+                      >
+                        이름변경
+                      </button>
+                    </>
+                  )}
+                </div>
+                <span
+                  className={`text-xs px-2 py-0.5 rounded-full ${
+                    member.role === "admin"
+                      ? "bg-danger/10 text-danger"
+                      : member.role === "member"
+                      ? "bg-primary/10 text-primary"
+                      : "bg-gray-100 text-gray-500"
+                  }`}
+                >
+                  {member.role === "admin" ? "관리자" : member.role === "member" ? "회원" : "대기"}
+                </span>
+              </div>
+
+              <div className="text-xs text-gray-400 mb-3">
+                가입일: {formatDate(member.created_at)}
+              </div>
+
+              <div className="flex items-center justify-between">
+                <select
+                  value={member.role}
+                  onChange={(e) => handleRoleChange(member.id, e.target.value)}
+                  className="text-xs border border-gray-200 rounded px-2 py-1"
+                >
+                  <option value="pending">대기</option>
+                  <option value="member">회원</option>
+                  <option value="admin">관리자</option>
+                </select>
+
+                {deleteConfirm === member.id ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-danger">정말 삭제?</span>
+                    <button
+                      onClick={() => handleDeleteUser(member.id)}
+                      className="text-xs px-2 py-1 bg-danger text-white rounded hover:bg-danger/90"
                     >
-                      {member.role === "admin" ? "관리자" : member.role === "member" ? "회원" : "대기"}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4 text-center">
-                    <select
-                      value={member.role}
-                      onChange={(e) => handleRoleChange(member.id, e.target.value)}
-                      className="text-xs border border-gray-200 rounded px-2 py-1"
+                      확인
+                    </button>
+                    <button
+                      onClick={() => setDeleteConfirm(null)}
+                      className="text-xs px-2 py-1 border border-gray-200 rounded hover:bg-gray-50"
                     >
-                      <option value="pending">대기</option>
-                      <option value="member">회원</option>
-                      <option value="admin">관리자</option>
-                    </select>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                      취소
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setDeleteConfirm(member.id)}
+                    className="text-xs text-gray-400 hover:text-danger"
+                  >
+                    계정 삭제
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
       {/* Promotions Tab */}
       {tab === "promotions" && (
         <div className="space-y-4">
-          {/* Add/Edit form */}
           <form onSubmit={handlePromoSubmit} className="bg-white rounded-xl p-4 border border-gray-100 space-y-3">
             <input
               type="text"
@@ -215,7 +290,6 @@ export default function AdminPage() {
             </div>
           </form>
 
-          {/* List */}
           {promotions.map((promo) => (
             <div key={promo.id} className="bg-white rounded-xl p-4 border border-gray-100 flex justify-between items-start">
               <div>
