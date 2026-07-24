@@ -76,8 +76,6 @@ export default function PostDetailPage() {
       {/* 비회원/대기: 공지사항 외 상세 열람 제한 */}
       {!isMember && categorySlug !== "notices" && (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
-          <h2 className="font-bold text-lg mb-2">{post.title}</h2>
-          <p className="text-sm text-gray-400 mb-4">{post.author_name} | {formatDate(post.created_at)}</p>
           <div className="p-6 bg-cream/50 rounded-xl">
             <p className="text-sm text-gray-500 mb-3">회원만 전체 내용을 볼 수 있습니다.</p>
             {!user ? (
