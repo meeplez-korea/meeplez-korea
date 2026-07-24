@@ -13,6 +13,18 @@ body {
   color: var(--foreground);
   background: var(--background);
   font-family: "Pretendard", sans-serif;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* 게시글 내용, 에디터, 입력창은 선택 가능 */
+.post-content,
+.rich-editor,
+input,
+textarea,
+.ql-editor {
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 @layer utilities {
