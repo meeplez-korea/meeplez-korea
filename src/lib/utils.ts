@@ -13,16 +13,13 @@ export function formatDate(dateStr: string): string {
 }
 
 export function stripHtml(html: string): string {
-  return html
-    .replace(/<[^>]*>/g, "")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#\d+;/g, "")
-    .replace(/&[a-zA-Z]+;/g, " ")
-    .trim();
+  const text = html.replace(/<[^>]*>/g, "");
+  const el = typeof document !== "undefined" ? document.createElement("textarea") : null;
+  if (el) {
+    el.innerHTML = text;
+    return el.value.trim();
+  }
+  return text.replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n))).trim();
 }
 
 export function truncate(str: string, length: number): string {
