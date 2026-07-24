@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   title: "미플즈",
   description: "미플즈 커뮤니티 홈페이지",
   icons: {
-    icon: "/meeplez.jpg",
+    icon: "/favicon.png",
   },
 };
 
