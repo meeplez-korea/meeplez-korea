@@ -167,6 +167,15 @@ export default function Home() {
               <span className="font-medium text-gray-600">{link.label}</span>
             </Link>
           ))}
+          <a
+            href="https://open.kakao.com/o/gBomGhqi"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 px-4 py-3 rounded-lg hover:bg-cream transition-colors text-sm"
+          >
+            <span className="text-lg">💬</span>
+            <span className="font-medium text-gray-600">오픈채팅</span>
+          </a>
         </div>
       </section>
     </div>
