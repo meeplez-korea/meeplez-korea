@@ -294,7 +294,7 @@ export default function AdminPage() {
             <div key={promo.id} className="bg-white rounded-xl p-4 border border-gray-100 flex justify-between items-start">
               <div>
                 <h3 className="font-semibold text-sm">{promo.title}</h3>
-                <p className="text-xs text-gray-500 mt-1">{promo.content}</p>
+                <div className="post-content text-xs text-gray-500 mt-1" dangerouslySetInnerHTML={{ __html: promo.content }} />
               </div>
               <div className="flex gap-2 shrink-0 ml-4">
                 <button

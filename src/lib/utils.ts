@@ -12,6 +12,10 @@ export function formatDate(dateStr: string): string {
   return `${year}.${month}.${day} ${hours}:${minutes}`;
 }
 
+export function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim();
+}
+
 export function truncate(str: string, length: number): string {
   if (str.length <= length) return str;
   return str.slice(0, length) + "...";

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getPosts, getPromotions } from "@/lib/storage";
 import { Post, Promotion } from "@/lib/types";
-import { formatDate, truncate } from "@/lib/utils";
+import { formatDate, truncate, stripHtml } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function Home() {
@@ -75,7 +75,7 @@ export default function Home() {
                       {post.title}
                     </h3>
                     <p className="text-xs text-gray-400 mt-1 line-clamp-1">
-                      {truncate(post.content.replace(/\n/g, " "), 80)}
+                      {truncate(stripHtml(post.content), 80)}
                     </p>
                   </div>
                   <span className="text-xs text-gray-300 whitespace-nowrap shrink-0">
@@ -136,7 +136,7 @@ export default function Home() {
                     {post.title}
                   </h3>
                   <p className="text-xs text-gray-400 mt-1 line-clamp-2">
-                    {truncate(post.content.replace(/\n/g, " "), 60)}
+                    {truncate(stripHtml(post.content), 60)}
                   </p>
                   <div className="flex justify-between items-center mt-3 text-[11px] text-gray-300">
                     <span>{post.author_name}</span>
