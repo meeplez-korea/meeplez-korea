@@ -56,7 +56,7 @@ export default function BoardPage() {
   const totalPages = Math.ceil(filteredPosts.length / perPage);
   const currentPosts = filteredPosts.slice((page - 1) * perPage, page * perPage);
 
-  const tags: (ReviewTag | "전체")[] = ["전체", "보드게임", "외부활동", "ALL"];
+  const tags: (ReviewTag | "전체")[] = ["전체", "보드게임", "외부활동"];
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">

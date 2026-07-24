@@ -109,7 +109,7 @@ function WriteForm() {
           <div>
             <label className="block text-sm font-medium mb-1">말머리 *</label>
             <div className="flex gap-2">
-              {(["보드게임", "외부활동", "ALL"] as ReviewTag[]).map((t) => (
+              {(["보드게임", "외부활동"] as ReviewTag[]).map((t) => (
                 <button
                   key={t}
                   type="button"

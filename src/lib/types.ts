@@ -7,7 +7,7 @@ export type CategorySlug =
   | "chat"
   | "suggestions";
 
-export type ReviewTag = "보드게임" | "외부활동" | "ALL";
+export type ReviewTag = "보드게임" | "외부활동";
 
 export type UserRole = "pending" | "member" | "admin";
 
