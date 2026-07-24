@@ -6,7 +6,10 @@ import { Post, Comment, CategorySlug, Profile, Promotion } from "./types";
 export async function signInWithKakao() {
   return supabase.auth.signInWithOAuth({
     provider: "kakao",
-    options: { redirectTo: window.location.origin + "/auth/callback" },
+    options: {
+      redirectTo: window.location.origin + "/auth/callback",
+      scopes: "profile_nickname profile_image",
+    },
   });
 }
 
