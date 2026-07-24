@@ -47,7 +47,7 @@ export default function Home() {
         </section>
       )}
 
-      {/* Notices */}
+      {/* Notices + Open Chat */}
       <section>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold flex items-center gap-2">
@@ -58,34 +58,63 @@ export default function Home() {
             전체보기 &rarr;
           </Link>
         </div>
-        <div className="space-y-2">
-          {notices.length === 0 ? (
-            <p className="text-sm text-gray-400 py-4">등록된 공지사항이 없습니다.</p>
-          ) : (
-            notices.map((post) => (
-              <Link
-                key={post.id}
-                href={`/board/notices/${post.id}`}
-                className="block bg-white rounded-xl px-5 py-4 border border-gray-100 hover:border-primary/30 hover:shadow-sm transition-all group"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-sm group-hover:text-primary transition-colors flex items-center gap-1.5">
-                      {post.is_pinned && <span className="text-xs text-danger font-bold">[고정]</span>}
-                      {post.title}
-                    </h3>
-                    <p className="text-xs text-gray-400 mt-1 line-clamp-1">
-                      {truncate(stripHtml(post.content), 80)}
-                    </p>
+        <div className="flex gap-4">
+          {/* 공지사항 목록 (8) */}
+          <div className="flex-[8] space-y-2">
+            {notices.length === 0 ? (
+              <p className="text-sm text-gray-400 py-4">등록된 공지사항이 없습니다.</p>
+            ) : (
+              notices.map((post) => (
+                <Link
+                  key={post.id}
+                  href={`/board/notices/${post.id}`}
+                  className="block bg-white rounded-xl px-5 py-4 border border-gray-100 hover:border-primary/30 hover:shadow-sm transition-all group"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-sm group-hover:text-primary transition-colors flex items-center gap-1.5">
+                        {post.is_pinned && <span className="text-xs text-danger font-bold">[고정]</span>}
+                        {post.title}
+                      </h3>
+                      <p className="text-xs text-gray-400 mt-1 line-clamp-1">
+                        {truncate(stripHtml(post.content), 80)}
+                      </p>
+                    </div>
+                    <span className="text-xs text-gray-300 whitespace-nowrap shrink-0">
+                      {formatDate(post.created_at)}
+                    </span>
                   </div>
-                  <span className="text-xs text-gray-300 whitespace-nowrap shrink-0">
-                    {formatDate(post.created_at)}
-                  </span>
-                </div>
-              </Link>
+                </Link>
             ))
           )}
+          </div>
+
+          {/* 오픈채팅 버튼 (2) */}
+          <a
+            href="https://open.kakao.com/o/gBomGhqi"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden md:flex flex-[2] bg-[#FEE500] rounded-xl border border-[#FEE500]/30 flex-col items-center justify-center gap-2 hover:brightness-95 transition-all"
+          >
+            <svg width="28" height="28" viewBox="0 0 18 18" fill="none">
+              <path d="M9 1C4.58 1 1 3.79 1 7.21c0 2.17 1.44 4.08 3.62 5.17-.16.56-.57 2.03-.66 2.35-.1.39.14.39.3.28.13-.08 2.01-1.36 2.82-1.91.6.09 1.23.13 1.87.13 4.42 0 8-2.79 8-6.23C17 3.79 13.42 1 9 1z" fill="#191919"/>
+            </svg>
+            <span className="text-sm font-bold text-[#191919]">오픈채팅</span>
+          </a>
         </div>
+
+        {/* 모바일용 오픈채팅 버튼 */}
+        <a
+          href="https://open.kakao.com/o/gBomGhqi"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="md:hidden flex items-center justify-center gap-2 mt-3 py-3 bg-[#FEE500] rounded-xl text-sm font-bold text-[#191919] hover:brightness-95 transition-all"
+        >
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M9 1C4.58 1 1 3.79 1 7.21c0 2.17 1.44 4.08 3.62 5.17-.16.56-.57 2.03-.66 2.35-.1.39.14.39.3.28.13-.08 2.01-1.36 2.82-1.91.6.09 1.23.13 1.87.13 4.42 0 8-2.79 8-6.23C17 3.79 13.42 1 9 1z" fill="#191919"/>
+          </svg>
+          오픈채팅 참여하기
+        </a>
       </section>
 
       {/* Reviews */}
@@ -167,15 +196,6 @@ export default function Home() {
               <span className="font-medium text-gray-600">{link.label}</span>
             </Link>
           ))}
-          <a
-            href="https://open.kakao.com/o/gBomGhqi"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 px-4 py-3 rounded-lg hover:bg-cream transition-colors text-sm"
-          >
-            <span className="text-lg">💬</span>
-            <span className="font-medium text-gray-600">오픈채팅</span>
-          </a>
         </div>
       </section>
     </div>
