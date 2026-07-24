@@ -115,15 +115,10 @@ export default function PostDetailPage() {
         </div>
 
         <div className="p-6">
-          <div className="whitespace-pre-wrap text-sm leading-relaxed">{post.content}</div>
-
-          {post.images && post.images.length > 0 && (
-            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {post.images.map((img, i) => (
-                <img key={i} src={img} alt={`첨부 이미지 ${i + 1}`} className="rounded-lg w-full object-cover" />
-              ))}
-            </div>
-          )}
+          <div
+            className="post-content text-sm leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: post.content }}
+          />
         </div>
 
         {canEdit && (

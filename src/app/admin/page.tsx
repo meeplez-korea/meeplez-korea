@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { getPosts, getAllProfiles, updateUserRole, adminUpdateNickname, adminDeleteUser, getPromotions, createPromotion, updatePromotion, deletePromotion } from "@/lib/storage";
 import { Post, Profile, Promotion } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
+import RichEditor from "@/components/ui/RichEditor";
 
 export default function AdminPage() {
   const { isAdmin, loading } = useAuth();
@@ -268,11 +269,10 @@ export default function AdminPage() {
               className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
               placeholder="홍보 제목"
             />
-            <textarea
+            <RichEditor
               value={promoContent}
-              onChange={(e) => setPromoContent(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm resize-none h-20"
-              placeholder="홍보 내용"
+              onChange={setPromoContent}
+              placeholder="홍보 내용을 입력하세요"
             />
             <div className="flex gap-2">
               <button type="submit" className="px-4 py-2 bg-primary text-white text-sm rounded-lg hover:bg-primary/90">

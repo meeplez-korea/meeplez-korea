@@ -41,7 +41,7 @@ export default function Home() {
           {promotions.map((promo) => (
             <div key={promo.id} className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
               <h3 className="font-semibold text-sm">{promo.title}</h3>
-              <p className="text-xs text-gray-500 mt-1">{promo.content}</p>
+              <div className="post-content text-xs text-gray-500 mt-1" dangerouslySetInnerHTML={{ __html: promo.content }} />
             </div>
           ))}
         </section>

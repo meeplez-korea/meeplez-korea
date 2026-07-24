@@ -5,9 +5,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { CATEGORIES, getCategoryBySlug } from "@/lib/categories";
 import { createPost, getPost, updatePost } from "@/lib/storage";
 import { CategorySlug, ReviewTag } from "@/lib/types";
-import { compressImage } from "@/lib/utils";
 import { MAX_IMAGES } from "@/lib/constants";
 import { useAuth } from "@/contexts/AuthContext";
+import RichEditor from "@/components/ui/RichEditor";
 
 export default function WritePage() {
   return (
@@ -28,8 +28,6 @@ function WriteForm() {
   const [content, setContent] = useState("");
   const [category, setCategory] = useState<CategorySlug>(initialCategory as CategorySlug);
   const [tag, setTag] = useState<ReviewTag>("보드게임");
-  const [images, setImages] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
 
   const categoryInfo = getCategoryBySlug(category);
 
@@ -41,7 +39,6 @@ function WriteForm() {
           setContent(post.content);
           setCategory(post.category);
           if (post.tag) setTag(post.tag as ReviewTag);
-          if (post.images) setImages(post.images);
         }
       });
     }
@@ -55,27 +52,16 @@ function WriteForm() {
     );
   }
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
-    const remaining = MAX_IMAGES - images.length;
-    const filesToProcess = Array.from(files).slice(0, remaining);
-    setLoading(true);
-    const compressed = await Promise.all(filesToProcess.map(compressImage));
-    setImages((prev) => [...prev, ...compressed]);
-    setLoading(false);
-  };
-
-  const removeImage = (index: number) => {
-    setImages((prev) => prev.filter((_, i) => i !== index));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !content.trim() || !user || !profile) {
       alert("모든 필수 항목을 입력해주세요.");
       return;
     }
+
+    // content에서 첫 번째 이미지를 썸네일로 추출
+    const imgMatch = content.match(/<img[^>]+src="([^"]+)"/);
+    const thumbnailUrl = imgMatch ? imgMatch[1] : undefined;
 
     const postData = {
       title,
@@ -84,8 +70,7 @@ function WriteForm() {
       author_id: user.id,
       author_name: profile.nickname,
       tag: categoryInfo?.hasTags ? tag : undefined,
-      thumbnail_url: images.length > 0 ? images[0] : undefined,
-      images: categoryInfo?.hasPhotos ? images : undefined,
+      thumbnail_url: thumbnailUrl,
       is_private: categoryInfo?.isPrivate || false,
     };
 
@@ -160,47 +145,19 @@ function WriteForm() {
           />
         </div>
 
-        {/* Content */}
+        {/* Content - Rich Editor */}
         <div>
           <label className="block text-sm font-medium mb-1">내용 *</label>
-          <textarea
+          <RichEditor
             value={content}
-            onChange={(e) => setContent(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm resize-none h-64"
-            placeholder="내용을 입력하세요"
+            onChange={setContent}
+            placeholder="내용을 입력하세요. 툴바에서 이미지 삽입, 글꼴 꾸미기가 가능합니다."
           />
         </div>
 
-        {/* Image upload */}
-        {categoryInfo?.hasPhotos && (
-          <div>
-            <label className="block text-sm font-medium mb-1">사진 첨부 (최대 {MAX_IMAGES}장)</label>
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={handleImageUpload}
-              disabled={images.length >= MAX_IMAGES || loading}
-              className="text-sm"
-            />
-            {images.length > 0 && (
-              <div className="flex gap-2 mt-3 flex-wrap">
-                {images.map((img, i) => (
-                  <div key={i} className="relative w-24 h-24">
-                    <img src={img} alt="" className="w-full h-full object-cover rounded-lg" />
-                    <button
-                      type="button"
-                      onClick={() => removeImage(i)}
-                      className="absolute -top-1 -right-1 w-5 h-5 bg-danger text-white rounded-full text-xs flex items-center justify-center"
-                    >
-                      x
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-            {loading && <p className="text-xs text-gray-400 mt-1">이미지 처리 중...</p>}
-          </div>
+        {/* 이미지는 에디터 툴바에서 삽입 */}
+        {false && (
+          <div></div>
         )}
 
         {/* Submit */}
