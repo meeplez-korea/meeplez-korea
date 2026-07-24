@@ -73,7 +73,26 @@ export default function PostDetailPage() {
         <span className="text-gray-600 truncate">{post.title}</span>
       </div>
 
-      {/* Post */}
+      {/* 비회원/대기: 공지사항 외 상세 열람 제한 */}
+      {!isMember && categorySlug !== "notices" && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
+          <h2 className="font-bold text-lg mb-2">{post.title}</h2>
+          <p className="text-sm text-gray-400 mb-4">{post.author_name} | {formatDate(post.created_at)}</p>
+          <div className="p-6 bg-cream/50 rounded-xl">
+            <p className="text-sm text-gray-500 mb-3">회원만 전체 내용을 볼 수 있습니다.</p>
+            {!user ? (
+              <Link href="/login" className="inline-block px-4 py-2 bg-primary text-white text-sm rounded-lg">
+                로그인하기
+              </Link>
+            ) : (
+              <p className="text-xs text-gray-400">관리자 승인 후 열람이 가능합니다.</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Post (회원/관리자 or 공지사항) */}
+      {(isMember || categorySlug === "notices") && (
       <article className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="p-6 border-b border-gray-100">
           {post.tag && (
@@ -141,6 +160,7 @@ export default function PostDetailPage() {
           </div>
         )}
       </article>
+      )}
 
       {/* Delete confirm */}
       {showDeleteConfirm && (
@@ -166,7 +186,8 @@ export default function PostDetailPage() {
         </div>
       )}
 
-      {/* Comments */}
+      {/* Comments - 회원/공지사항만 */}
+      {(isMember || categorySlug === "notices") && (
       <section className="mt-6 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
         <h3 className="font-bold mb-4">댓글 {comments.length}개</h3>
 
@@ -215,6 +236,7 @@ export default function PostDetailPage() {
           </p>
         )}
       </section>
+      )}
 
       <div className="mt-6">
         <Link

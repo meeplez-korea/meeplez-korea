@@ -43,16 +43,11 @@ export default function BoardPage() {
     );
   }
 
-  // 비회원은 공지사항만
-  if (!isMember && category.slug !== "notices") {
+  // 건의방은 관리자만
+  if (category.isPrivate && !isAdmin) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-12 text-center">
-        <p className="text-gray-400">회원만 열람할 수 있는 게시판입니다.</p>
-        {!user && (
-          <Link href="/login" className="inline-block mt-4 px-4 py-2 bg-primary text-white text-sm rounded-lg">
-            로그인하기
-          </Link>
-        )}
+        <p className="text-gray-400">관리자만 열람할 수 있는 게시판입니다.</p>
       </div>
     );
   }
