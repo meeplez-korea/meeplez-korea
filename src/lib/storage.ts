@@ -39,10 +39,18 @@ export async function getProfile(userId: string): Promise<Profile | null> {
 }
 
 export async function updateNickname(userId: string, nickname: string) {
-  return supabase
-    .from("profiles")
-    .update({ nickname })
-    .eq("id", userId);
+  // 프로필이 없으면 생성, 있으면 업데이트
+  const existing = await getProfile(userId);
+  if (existing) {
+    return supabase
+      .from("profiles")
+      .update({ nickname })
+      .eq("id", userId);
+  } else {
+    return supabase
+      .from("profiles")
+      .insert({ id: userId, nickname, role: "pending" });
+  }
 }
 
 // ── Profiles (Admin) ──
