@@ -22,7 +22,7 @@ function WriteForm() {
   const searchParams = useSearchParams();
   const editId = searchParams.get("edit");
   const initialCategory = searchParams.get("category") || "chat";
-  const { user, profile, isMember } = useAuth();
+  const { user, profile, isMember, isAdmin } = useAuth();
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -96,7 +96,7 @@ function WriteForm() {
             onChange={(e) => setCategory(e.target.value as CategorySlug)}
             className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
           >
-            {CATEGORIES.map((cat) => (
+            {CATEGORIES.filter((cat) => cat.slug !== "notices" || isAdmin).map((cat) => (
               <option key={cat.slug} value={cat.slug}>
                 {cat.icon} {cat.label}
               </option>

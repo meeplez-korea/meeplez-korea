@@ -69,7 +69,7 @@ export default function BoardPage() {
           </h1>
           <p className="text-sm text-gray-400 mt-1">{category.description}</p>
         </div>
-        {isMember && (
+        {isMember && (category.slug !== "notices" || isAdmin) && (
           <Link
             href={`/board/write?category=${category.slug}`}
             className="px-4 py-2 bg-primary text-white text-sm rounded-lg hover:bg-primary/90 transition-colors"
