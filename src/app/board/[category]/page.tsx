@@ -23,9 +23,16 @@ export default function BoardPage() {
 
   useEffect(() => {
     if (category) {
-      getPosts(category.slug).then(setPosts);
+      getPosts(category.slug).then((data) => {
+        // 건의방: 관리자는 전체, 회원은 본인 글만
+        if (category.isPrivate && !isAdmin && user) {
+          setPosts(data.filter((p) => p.author_id === user.id));
+        } else {
+          setPosts(data);
+        }
+      });
     }
-  }, [categorySlug]);
+  }, [categorySlug, isAdmin, user]);
 
   useEffect(() => {
     let filtered = activeTag === "전체" ? posts : posts.filter((p) => p.tag === activeTag);
@@ -43,11 +50,16 @@ export default function BoardPage() {
     );
   }
 
-  // 건의방은 관리자만
-  if (category.isPrivate && !isAdmin) {
+  // 건의방: 비회원은 접근 불가
+  if (category.isPrivate && !isMember) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-12 text-center">
-        <p className="text-gray-400">관리자만 열람할 수 있는 게시판입니다.</p>
+        <p className="text-gray-400">회원만 이용할 수 있는 게시판입니다.</p>
+        {!user && (
+          <Link href="/login" className="inline-block mt-4 px-4 py-2 bg-primary text-white text-sm rounded-lg">
+            로그인하기
+          </Link>
+        )}
       </div>
     );
   }
