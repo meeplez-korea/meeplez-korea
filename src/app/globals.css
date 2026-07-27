@@ -9,6 +9,10 @@
   --foreground: #3D3D3D;
 }
 
+html {
+  background: white;
+}
+
 body {
   color: var(--foreground);
   background: var(--background);
