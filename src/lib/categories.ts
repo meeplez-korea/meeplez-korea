@@ -7,7 +7,7 @@ export const CATEGORIES: CategoryInfo[] = [
   { slug: "tournaments", label: "대회 기록", icon: "🏆", description: "", color: "#C1A0D0" },
   { slug: "events", label: "이벤트", icon: "🎉", description: "", color: "#6BA3D0" },
   { slug: "chat", label: "잡담방", icon: "💬", description: "", color: "#A0C1D0" },
-  { slug: "suggestions", label: "건의방", icon: "📝", description: "", color: "#7A7A7A", isPrivate: true },
+  { slug: "suggestions", label: "건의방", icon: "📝", description: "작성된 건의사항은 관리자만 확인할 수 있습니다.", color: "#7A7A7A", isPrivate: true },
 ];
 
 export function getCategoryBySlug(slug: string): CategoryInfo | undefined {

@@ -91,13 +91,6 @@ export default function BoardPage() {
         )}
       </div>
 
-      {/* 건의방 안내 */}
-      {category.isPrivate && !isAdmin && (
-        <div className="mb-4 p-3 bg-gray-100 rounded-lg text-xs text-gray-500">
-          작성된 건의사항은 관리자만 확인할 수 있습니다.
-        </div>
-      )}
-
       {/* Tag filter for reviews */}
       {category.hasTags && (
         <div className="flex gap-2 mb-6">
