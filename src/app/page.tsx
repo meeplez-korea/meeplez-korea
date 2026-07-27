@@ -152,22 +152,9 @@ export default function Home() {
         )}
       </section>
 
-      {/* 오픈채팅 */}
-      <a
-        href="https://open.kakao.com/o/gBomGhqi"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex items-center justify-center gap-2 py-3 bg-[#FEE500] rounded-xl text-xs font-bold text-[#191919] hover:brightness-95 transition-all"
-      >
-        <svg width="14" height="14" viewBox="0 0 18 18" fill="none">
-          <path d="M9 1C4.58 1 1 3.79 1 7.21c0 2.17 1.44 4.08 3.62 5.17-.16.56-.57 2.03-.66 2.35-.1.39.14.39.3.28.13-.08 2.01-1.36 2.82-1.91.6.09 1.23.13 1.87.13 4.42 0 8-2.79 8-6.23C17 3.79 13.42 1 9 1z" fill="#191919"/>
-        </svg>
-        오픈채팅 참여하기
-      </a>
-
       {/* Quick Links */}
       <section className="bg-white rounded-xl border border-gray-100 p-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           {[
             { href: "/board/introductions", icon: "👋", label: "자기소개방" },
             { href: "/board/tournaments", icon: "🏆", label: "대회 기록" },
@@ -183,6 +170,17 @@ export default function Home() {
               <span className="font-medium text-gray-600">{link.label}</span>
             </Link>
           ))}
+          <a
+            href="https://open.kakao.com/o/gBomGhqi"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 px-4 py-3 rounded-lg bg-[#FEE500]/20 hover:bg-[#FEE500]/40 transition-colors text-sm"
+          >
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M9 1C4.58 1 1 3.79 1 7.21c0 2.17 1.44 4.08 3.62 5.17-.16.56-.57 2.03-.66 2.35-.1.39.14.39.3.28.13-.08 2.01-1.36 2.82-1.91.6.09 1.23.13 1.87.13 4.42 0 8-2.79 8-6.23C17 3.79 13.42 1 9 1z" fill="#191919"/>
+            </svg>
+            <span className="font-medium text-gray-600">오픈채팅</span>
+          </a>
         </div>
       </section>
     </div>
