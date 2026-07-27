@@ -23,7 +23,7 @@ export default function RichEditor({ value, onChange, placeholder }: RichEditorP
           [{ size: ["small", false, "large", "huge"] }],
           [{ list: "ordered" }, { list: "bullet" }],
           [{ align: [] }],
-          ["image"],
+          ["link", "image"],
           ["clean"],
         ],
       },
@@ -42,6 +42,7 @@ export default function RichEditor({ value, onChange, placeholder }: RichEditorP
     "size",
     "list",
     "align",
+    "link",
     "image",
   ];
 
