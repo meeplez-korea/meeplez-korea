@@ -127,4 +127,7 @@ textarea,
 .post-content h3 { font-size: 1.1em; font-weight: bold; margin: 0.5em 0; }
 .post-content ul { list-style: disc; padding-left: 1.5em; }
 .post-content ol { list-style: decimal; padding-left: 1.5em; }
-.post-content p { margin: 0.3em 0; }
+.post-content p { margin: 0.5em 0; min-height: 1.4em; }
+.post-content p br { display: block; content: ""; margin: 0.3em 0; }
+.post-content .ql-indent-1 { padding-left: 2em; }
+.post-content .ql-indent-2 { padding-left: 4em; }
