@@ -79,7 +79,7 @@ export default function BoardPage() {
             <span>{category.icon}</span>
             {category.label}
           </h1>
-          <p className="text-sm text-gray-400 mt-1">{category.description}</p>
+          {category.description && <p className="text-sm text-gray-400 mt-1">{category.description}</p>}
         </div>
         {isMember && (category.slug !== "notices" || isAdmin) && (
           <Link
@@ -90,6 +90,13 @@ export default function BoardPage() {
           </Link>
         )}
       </div>
+
+      {/* 건의방 안내 */}
+      {category.isPrivate && !isAdmin && (
+        <div className="mb-4 p-3 bg-gray-100 rounded-lg text-xs text-gray-500">
+          작성된 건의사항은 관리자만 확인할 수 있습니다.
+        </div>
+      )}
 
       {/* Tag filter for reviews */}
       {category.hasTags && (
