@@ -88,33 +88,7 @@ export default function Home() {
             ))
           )}
           </div>
-
-          {/* 오픈채팅 버튼 (2) */}
-          <a
-            href="https://open.kakao.com/o/gBomGhqi"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hidden md:flex flex-[2] bg-[#FEE500] rounded-xl border border-[#FEE500]/30 flex-col items-center justify-center gap-2 hover:brightness-95 transition-all"
-          >
-            <svg width="20" height="20" viewBox="0 0 18 18" fill="none">
-              <path d="M9 1C4.58 1 1 3.79 1 7.21c0 2.17 1.44 4.08 3.62 5.17-.16.56-.57 2.03-.66 2.35-.1.39.14.39.3.28.13-.08 2.01-1.36 2.82-1.91.6.09 1.23.13 1.87.13 4.42 0 8-2.79 8-6.23C17 3.79 13.42 1 9 1z" fill="#191919"/>
-            </svg>
-            <span className="text-xs font-bold text-[#191919]">오픈채팅</span>
-          </a>
         </div>
-
-        {/* 모바일용 오픈채팅 버튼 */}
-        <a
-          href="https://open.kakao.com/o/gBomGhqi"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="md:hidden flex items-center justify-center gap-2 mt-3 py-3 bg-[#FEE500] rounded-xl text-sm font-bold text-[#191919] hover:brightness-95 transition-all"
-        >
-          <svg width="14" height="14" viewBox="0 0 18 18" fill="none">
-            <path d="M9 1C4.58 1 1 3.79 1 7.21c0 2.17 1.44 4.08 3.62 5.17-.16.56-.57 2.03-.66 2.35-.1.39.14.39.3.28.13-.08 2.01-1.36 2.82-1.91.6.09 1.23.13 1.87.13 4.42 0 8-2.79 8-6.23C17 3.79 13.42 1 9 1z" fill="#191919"/>
-          </svg>
-          오픈채팅 참여하기
-        </a>
       </section>
 
       {/* Reviews */}
@@ -177,6 +151,19 @@ export default function Home() {
           </div>
         )}
       </section>
+
+      {/* 오픈채팅 */}
+      <a
+        href="https://open.kakao.com/o/gBomGhqi"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center justify-center gap-2 py-3 bg-[#FEE500] rounded-xl text-xs font-bold text-[#191919] hover:brightness-95 transition-all"
+      >
+        <svg width="14" height="14" viewBox="0 0 18 18" fill="none">
+          <path d="M9 1C4.58 1 1 3.79 1 7.21c0 2.17 1.44 4.08 3.62 5.17-.16.56-.57 2.03-.66 2.35-.1.39.14.39.3.28.13-.08 2.01-1.36 2.82-1.91.6.09 1.23.13 1.87.13 4.42 0 8-2.79 8-6.23C17 3.79 13.42 1 9 1z" fill="#191919"/>
+        </svg>
+        오픈채팅 참여하기
+      </a>
 
       {/* Quick Links */}
       <section className="bg-white rounded-xl border border-gray-100 p-6">
