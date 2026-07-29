@@ -160,17 +160,17 @@ export default function BoardPage() {
           <table className="w-full">
             <thead className="bg-cream/50">
               <tr className="text-xs text-gray-500">
-                <th className="py-3 px-4 text-left font-medium w-12">No.</th>
+                <th className="py-3 px-4 text-left font-medium w-12 hidden md:table-cell">No.</th>
                 <th className="py-3 px-4 text-left font-medium">제목</th>
-                <th className="py-3 px-4 text-left font-medium w-20">작성자</th>
-                <th className="py-3 px-4 text-left font-medium w-32">날짜</th>
-                <th className="py-3 px-4 text-center font-medium w-16">조회</th>
+                <th className="py-3 px-4 text-left font-medium w-20 hidden md:table-cell">작성자</th>
+                <th className="py-3 px-4 text-left font-medium w-32 hidden md:table-cell">날짜</th>
+                <th className="py-3 px-4 text-center font-medium w-16 hidden md:table-cell">조회</th>
               </tr>
             </thead>
             <tbody>
               {currentPosts.map((post, i) => (
                 <tr key={post.id} className="border-t border-gray-50 hover:bg-cream/30 transition-colors">
-                  <td className="py-3 px-4 text-xs text-gray-400">
+                  <td className="py-3 px-4 text-xs text-gray-400 hidden md:table-cell">
                     {filteredPosts.length - ((page - 1) * perPage + i)}
                   </td>
                   <td className="py-3 px-4">
@@ -182,9 +182,9 @@ export default function BoardPage() {
                       {post.title}
                     </Link>
                   </td>
-                  <td className="py-3 px-4 text-xs text-gray-500">{post.author_name}</td>
-                  <td className="py-3 px-4 text-xs text-gray-400">{formatDate(post.created_at)}</td>
-                  <td className="py-3 px-4 text-xs text-gray-400 text-center">{post.view_count}</td>
+                  <td className="py-3 px-4 text-xs text-gray-500 hidden md:table-cell">{post.author_name}</td>
+                  <td className="py-3 px-4 text-xs text-gray-400 hidden md:table-cell">{formatDate(post.created_at)}</td>
+                  <td className="py-3 px-4 text-xs text-gray-400 text-center hidden md:table-cell">{post.view_count}</td>
                 </tr>
               ))}
             </tbody>
