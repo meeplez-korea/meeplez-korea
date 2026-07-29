@@ -162,7 +162,7 @@ export default function BoardPage() {
               <tr className="text-xs text-gray-500">
                 <th className="py-3 px-4 text-left font-medium w-12 hidden md:table-cell">No.</th>
                 <th className="py-3 px-4 text-left font-medium">제목</th>
-                <th className="py-3 px-4 text-left font-medium w-20 hidden md:table-cell">작성자</th>
+                <th className="py-3 px-4 text-left font-medium w-20">작성자</th>
                 <th className="py-3 px-4 text-left font-medium w-32 hidden md:table-cell">날짜</th>
                 <th className="py-3 px-4 text-center font-medium w-16 hidden md:table-cell">조회</th>
               </tr>
@@ -182,7 +182,7 @@ export default function BoardPage() {
                       {post.title}
                     </Link>
                   </td>
-                  <td className="py-3 px-4 text-xs text-gray-500 hidden md:table-cell">{post.author_name}</td>
+                  <td className="py-3 px-4 text-xs text-gray-500">{post.author_name}</td>
                   <td className="py-3 px-4 text-xs text-gray-400 hidden md:table-cell">{formatDate(post.created_at)}</td>
                   <td className="py-3 px-4 text-xs text-gray-400 text-center hidden md:table-cell">{post.view_count}</td>
                 </tr>
