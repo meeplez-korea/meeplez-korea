@@ -19,7 +19,6 @@ function ThemeToggle() {
     <button
       onClick={toggleTheme}
       className="p-1.5 rounded-lg hover:bg-cream dark:hover:bg-dark-border transition-colors"
-      title={isDark ? "라이트 모드로 전환" : "다크 모드로 전환"}
     >
       {isDark ? (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
