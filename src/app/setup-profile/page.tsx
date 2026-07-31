@@ -37,7 +37,7 @@ export default function SetupProfilePage() {
 
   return (
     <div className="max-w-sm mx-auto px-4 py-16">
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+      <div className="bg-white dark:bg-dark-card rounded-xl shadow-sm border border-gray-100 dark:border-dark-border p-8">
         <div className="text-center mb-6">
           <img src="/meeplez.jpg" alt="미플즈" className="w-16 h-16 mx-auto rounded-xl object-cover mb-3" />
           <h1 className="text-xl font-bold">닉네임 설정</h1>
@@ -45,7 +45,7 @@ export default function SetupProfilePage() {
         </div>
 
         <div className="p-3 bg-secondary/10 border border-secondary/20 rounded-lg mb-4">
-          <p className="text-xs text-gray-600 leading-relaxed">
+          <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
             오픈채팅 닉네임과 동일하게 설정해주세요.
           </p>
         </div>
@@ -55,7 +55,7 @@ export default function SetupProfilePage() {
             type="text"
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
-            className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm"
+            className="w-full px-3 py-2.5 border border-gray-200 dark:border-dark-border dark:bg-dark-card rounded-lg text-sm"
             placeholder="닉네임"
           />
           {error && <p className="text-xs text-danger">{error}</p>}
@@ -68,7 +68,7 @@ export default function SetupProfilePage() {
           </button>
         </form>
 
-        <div className="mt-4 p-3 bg-cream/50 rounded-lg">
+        <div className="mt-4 p-3 bg-cream/50 dark:bg-dark-border/50 rounded-lg">
           <p className="text-xs text-gray-400 leading-relaxed">
             관리자 승인 후 게시판 이용이 가능합니다.<br />
             오픈채팅방에서 관리자에게 승인을 요청해주세요.

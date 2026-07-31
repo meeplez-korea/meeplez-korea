@@ -13,6 +13,10 @@ html {
   background: #FAF8F4;
 }
 
+html.dark {
+  background: #1a1a2e;
+}
+
 body {
   color: var(--foreground);
   background: var(--background);
@@ -99,10 +103,33 @@ textarea,
   border-bottom-right-radius: 8px;
 }
 
+.dark .rich-editor .ql-container {
+  border-color: #2a2a4a;
+  background: #222240;
+  color: #e5e5e5;
+}
+
 .rich-editor .ql-toolbar {
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
   background: #fafafa;
+}
+
+.dark .rich-editor .ql-toolbar {
+  background: #2a2a4a;
+  border-color: #2a2a4a;
+}
+
+.dark .rich-editor .ql-toolbar .ql-stroke {
+  stroke: #a0a0b8;
+}
+
+.dark .rich-editor .ql-toolbar .ql-fill {
+  fill: #a0a0b8;
+}
+
+.dark .rich-editor .ql-toolbar .ql-picker-label {
+  color: #a0a0b8;
 }
 
 .rich-editor .ql-editor {

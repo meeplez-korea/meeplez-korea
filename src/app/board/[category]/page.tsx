@@ -101,7 +101,7 @@ export default function BoardPage() {
               className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
                 activeTag === tag
                   ? "bg-primary text-white"
-                  : "bg-white border border-gray-200 text-gray-600 hover:border-primary"
+                  : "bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border text-gray-600 dark:text-gray-300 hover:border-primary"
               }`}
             >
               {tag}
@@ -112,7 +112,7 @@ export default function BoardPage() {
 
       {/* Posts */}
       {currentPosts.length === 0 ? (
-        <div className="bg-white rounded-xl p-12 text-center text-gray-400 border border-gray-100">
+        <div className="bg-white dark:bg-dark-card rounded-xl p-12 text-center text-gray-400 border border-gray-100 dark:border-dark-border">
           게시글이 없습니다.
         </div>
       ) : category.hasPhotos ? (
@@ -121,10 +121,10 @@ export default function BoardPage() {
             <Link
               key={post.id}
               href={`/board/${category.slug}/${post.id}`}
-              className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5 border border-gray-100"
+              className="bg-white dark:bg-dark-card rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5 border border-gray-100 dark:border-dark-border"
             >
               {post.thumbnail_url ? (
-                <div className="aspect-video bg-gray-100">
+                <div className="aspect-video bg-gray-100 dark:bg-dark-border">
                   <img src={post.thumbnail_url} alt="" className="w-full h-full object-cover" />
                 </div>
               ) : (
@@ -156,10 +156,10 @@ export default function BoardPage() {
           ))}
         </div>
       ) : (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-white dark:bg-dark-card rounded-xl shadow-sm border border-gray-100 dark:border-dark-border overflow-hidden">
           <table className="w-full">
-            <thead className="bg-cream/50">
-              <tr className="text-xs text-gray-500">
+            <thead className="bg-cream/50 dark:bg-dark-border/50">
+              <tr className="text-xs text-gray-500 dark:text-gray-400">
                 <th className="py-3 px-4 text-left font-medium w-12 hidden md:table-cell">No.</th>
                 <th className="py-3 px-4 text-left font-medium">제목</th>
                 <th className="py-3 px-4 text-left font-medium w-20">작성자</th>
@@ -169,7 +169,7 @@ export default function BoardPage() {
             </thead>
             <tbody>
               {currentPosts.map((post, i) => (
-                <tr key={post.id} className="border-t border-gray-50 hover:bg-cream/30 transition-colors">
+                <tr key={post.id} className="border-t border-gray-50 dark:border-dark-border hover:bg-cream/30 dark:hover:bg-dark-border/50 transition-colors">
                   <td className="py-3 px-4 text-xs text-gray-400 hidden md:table-cell">
                     {filteredPosts.length - ((page - 1) * perPage + i)}
                   </td>
@@ -182,7 +182,7 @@ export default function BoardPage() {
                       {post.title}
                     </Link>
                   </td>
-                  <td className="py-3 px-4 text-xs text-gray-500">{post.author_name}</td>
+                  <td className="py-3 px-4 text-xs text-gray-500 dark:text-gray-400">{post.author_name}</td>
                   <td className="py-3 px-4 text-xs text-gray-400 hidden md:table-cell">{formatDate(post.created_at)}</td>
                   <td className="py-3 px-4 text-xs text-gray-400 text-center hidden md:table-cell">{post.view_count}</td>
                 </tr>
@@ -202,7 +202,7 @@ export default function BoardPage() {
               className={`w-8 h-8 text-sm rounded-lg transition-colors ${
                 page === p
                   ? "bg-primary text-white"
-                  : "bg-white border border-gray-200 hover:border-primary text-gray-600"
+                  : "bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border hover:border-primary text-gray-600 dark:text-gray-300"
               }`}
             >
               {p}

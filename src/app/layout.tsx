@@ -3,6 +3,7 @@ import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 
 export const metadata: Metadata = {
   title: "미플즈",
@@ -18,13 +19,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko">
-      <body className="font-pretendard antialiased min-h-screen flex flex-col">
-        <AuthProvider>
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
-        </AuthProvider>
+    <html lang="ko" suppressHydrationWarning>
+      <body className="font-pretendard antialiased min-h-screen flex flex-col bg-cream dark:bg-dark-bg text-gray-800 dark:text-gray-200">
+        <ThemeProvider>
+          <AuthProvider>
+            <Header />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

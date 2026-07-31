@@ -49,7 +49,7 @@ export default function LoginPage() {
 
   return (
     <div className="max-w-sm mx-auto px-4 py-16">
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+      <div className="bg-white dark:bg-dark-card rounded-xl shadow-sm border border-gray-100 dark:border-dark-border p-8">
         <div className="text-center mb-8">
           <img src="/meeplez.jpg" alt="미플즈" className="w-16 h-16 mx-auto rounded-xl object-cover mb-3" />
           <h1 className="text-xl font-bold">미플즈 로그인</h1>
@@ -58,7 +58,7 @@ export default function LoginPage() {
         {signUpDone ? (
           <div className="p-4 bg-primary/10 border border-primary/20 rounded-xl text-center">
             <p className="text-sm font-semibold text-primary mb-2">회원가입이 완료되었습니다!</p>
-            <p className="text-xs text-gray-500 leading-relaxed">
+            <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
               관리자 승인 후 게시판 이용이 가능합니다.<br />
               오픈채팅방에서 관리자에게 승인을 요청해주세요.
             </p>
@@ -84,9 +84,9 @@ export default function LoginPage() {
             </button>
 
             <div className="flex items-center gap-3 mb-6">
-              <div className="flex-1 h-px bg-gray-200" />
+              <div className="flex-1 h-px bg-gray-200 dark:bg-dark-border" />
               <span className="text-xs text-gray-400">또는</span>
-              <div className="flex-1 h-px bg-gray-200" />
+              <div className="flex-1 h-px bg-gray-200 dark:bg-dark-border" />
             </div>
 
             {/* Email login */}
@@ -97,7 +97,7 @@ export default function LoginPage() {
                     type="text"
                     value={nickname}
                     onChange={(e) => setNickname(e.target.value)}
-                    className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm"
+                    className="w-full px-3 py-2.5 border border-gray-200 dark:border-dark-border dark:bg-dark-card rounded-lg text-sm"
                     placeholder="닉네임"
                   />
                   <p className="text-xs text-gray-400 -mt-1">
@@ -109,14 +109,14 @@ export default function LoginPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm"
+                className="w-full px-3 py-2.5 border border-gray-200 dark:border-dark-border dark:bg-dark-card rounded-lg text-sm"
                 placeholder="이메일"
               />
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm"
+                className="w-full px-3 py-2.5 border border-gray-200 dark:border-dark-border dark:bg-dark-card rounded-lg text-sm"
                 placeholder="비밀번호 (6자 이상)"
               />
               {error && <p className="text-xs text-danger">{error}</p>}
@@ -131,7 +131,7 @@ export default function LoginPage() {
 
             <button
               onClick={() => { setIsSignUp(!isSignUp); setError(""); }}
-              className="w-full text-xs text-gray-400 hover:text-gray-600 mt-4 text-center"
+              className="w-full text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 mt-4 text-center"
             >
               {isSignUp ? "이미 계정이 있나요? 로그인" : "계정이 없나요? 회원가입"}
             </button>

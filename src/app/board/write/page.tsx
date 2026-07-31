@@ -94,7 +94,7 @@ function WriteForm() {
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value as CategorySlug)}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+            className="w-full px-3 py-2 border border-gray-200 dark:border-dark-border dark:bg-dark-card rounded-lg text-sm"
           >
             {CATEGORIES.filter((cat) => cat.slug !== "notices" || isAdmin).map((cat) => (
               <option key={cat.slug} value={cat.slug}>
@@ -117,7 +117,7 @@ function WriteForm() {
                   className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
                     tag === t
                       ? "bg-primary text-white"
-                      : "bg-white border border-gray-200 text-gray-600 hover:border-primary"
+                      : "bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border text-gray-600 dark:text-gray-300 hover:border-primary"
                   }`}
                 >
                   {t}
@@ -128,7 +128,7 @@ function WriteForm() {
         )}
 
         {categoryInfo?.isPrivate && (
-          <div className="p-3 bg-gray-100 rounded-lg text-sm text-gray-500">
+          <div className="p-3 bg-gray-100 dark:bg-dark-border rounded-lg text-sm text-gray-500 dark:text-gray-400">
             이 게시판의 글은 운영진만 확인할 수 있습니다.
           </div>
         )}
@@ -140,7 +140,7 @@ function WriteForm() {
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+            className="w-full px-3 py-2 border border-gray-200 dark:border-dark-border dark:bg-dark-card rounded-lg text-sm"
             placeholder="제목을 입력하세요"
           />
         </div>
@@ -171,7 +171,7 @@ function WriteForm() {
           <button
             type="button"
             onClick={() => router.back()}
-            className="px-6 py-2.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+            className="px-6 py-2.5 border border-gray-200 dark:border-dark-border rounded-lg hover:bg-gray-50 dark:hover:bg-dark-border transition-colors text-sm"
           >
             취소
           </button>

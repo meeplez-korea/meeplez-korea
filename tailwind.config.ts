@@ -6,6 +6,7 @@ const config: Config = {
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  darkMode: "class",
   theme: {
     extend: {
       colors: {
@@ -17,6 +18,9 @@ const config: Config = {
         "tag-board": "#6BA3D0",
         "tag-outdoor": "#7CB8A0",
         "tag-all": "#E8A87C",
+        "dark-bg": "#1a1a2e",
+        "dark-card": "#222240",
+        "dark-border": "#2a2a4a",
       },
       fontFamily: {
         pretendard: ["Pretendard", "sans-serif"],

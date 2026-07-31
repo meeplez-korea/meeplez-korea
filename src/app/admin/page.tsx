@@ -121,13 +121,13 @@ export default function AdminPage() {
       <h1 className="text-2xl font-bold mb-6">관리자 페이지</h1>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 bg-white rounded-xl p-1 border border-gray-100">
+      <div className="flex gap-1 mb-6 bg-white dark:bg-dark-card rounded-xl p-1 border border-gray-100 dark:border-dark-border">
         {tabs.map((t) => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
             className={`flex-1 py-2.5 text-sm rounded-lg transition-colors ${
-              tab === t.key ? "bg-primary text-white" : "text-gray-500 hover:bg-cream"
+              tab === t.key ? "bg-primary text-white" : "text-gray-500 dark:text-gray-400 hover:bg-cream dark:hover:bg-dark-border"
             }`}
           >
             {t.label} ({t.count})
@@ -139,7 +139,7 @@ export default function AdminPage() {
       {tab === "suggestions" && (
         <div className="space-y-3">
           {suggestions.length === 0 ? (
-            <div className="bg-white rounded-xl p-8 text-center text-gray-400 border border-gray-100">
+            <div className="bg-white dark:bg-dark-card rounded-xl p-8 text-center text-gray-400 border border-gray-100 dark:border-dark-border">
               건의사항이 없습니다.
             </div>
           ) : (
@@ -147,13 +147,13 @@ export default function AdminPage() {
               <Link
                 key={post.id}
                 href={`/board/suggestions/${post.id}`}
-                className="block bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-all"
+                className="block bg-white dark:bg-dark-card rounded-xl p-4 shadow-sm border border-gray-100 dark:border-dark-border hover:shadow-md transition-all"
               >
                 <h3 className="font-semibold text-sm">{post.title}</h3>
                 <p className="text-xs text-gray-400 mt-1">
                   {post.author_name} | {formatDate(post.created_at)}
                 </p>
-                <p className="text-sm text-gray-500 mt-2 line-clamp-2">{post.content}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 line-clamp-2">{post.content}</p>
               </Link>
             ))
           )}
@@ -164,7 +164,7 @@ export default function AdminPage() {
       {tab === "members" && (
         <div className="space-y-3">
           {members.map((member) => (
-            <div key={member.id} className="bg-white rounded-xl p-4 border border-gray-100">
+            <div key={member.id} className="bg-white dark:bg-dark-card rounded-xl p-4 border border-gray-100 dark:border-dark-border">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   {editingMember === member.id ? (
@@ -173,7 +173,7 @@ export default function AdminPage() {
                         type="text"
                         value={editNickname}
                         onChange={(e) => setEditNickname(e.target.value)}
-                        className="px-2 py-1 border border-gray-200 rounded text-sm w-32"
+                        className="px-2 py-1 border border-gray-200 dark:border-dark-border dark:bg-dark-card rounded text-sm w-32"
                       />
                       <button
                         onClick={() => handleNicknameSave(member.id)}
@@ -183,7 +183,7 @@ export default function AdminPage() {
                       </button>
                       <button
                         onClick={() => setEditingMember(null)}
-                        className="text-xs text-gray-400 hover:text-gray-600"
+                        className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                       >
                         취소
                       </button>
@@ -206,7 +206,7 @@ export default function AdminPage() {
                       ? "bg-danger/10 text-danger"
                       : member.role === "member"
                       ? "bg-primary/10 text-primary"
-                      : "bg-gray-100 text-gray-500"
+                      : "bg-gray-100 dark:bg-dark-border text-gray-500 dark:text-gray-400"
                   }`}
                 >
                   {member.role === "admin" ? "관리자" : member.role === "member" ? "회원" : "대기"}
@@ -221,7 +221,7 @@ export default function AdminPage() {
                 <select
                   value={member.role}
                   onChange={(e) => handleRoleChange(member.id, e.target.value)}
-                  className="text-xs border border-gray-200 rounded px-2 py-1"
+                  className="text-xs border border-gray-200 dark:border-dark-border dark:bg-dark-card rounded px-2 py-1"
                 >
                   <option value="pending">대기</option>
                   <option value="member">회원</option>
@@ -239,7 +239,7 @@ export default function AdminPage() {
                     </button>
                     <button
                       onClick={() => setDeleteConfirm(null)}
-                      className="text-xs px-2 py-1 border border-gray-200 rounded hover:bg-gray-50"
+                      className="text-xs px-2 py-1 border border-gray-200 dark:border-dark-border rounded hover:bg-gray-50 dark:hover:bg-dark-border"
                     >
                       취소
                     </button>
@@ -261,12 +261,12 @@ export default function AdminPage() {
       {/* Promotions Tab */}
       {tab === "promotions" && (
         <div className="space-y-4">
-          <form onSubmit={handlePromoSubmit} className="bg-white rounded-xl p-4 border border-gray-100 space-y-3">
+          <form onSubmit={handlePromoSubmit} className="bg-white dark:bg-dark-card rounded-xl p-4 border border-gray-100 dark:border-dark-border space-y-3">
             <input
               type="text"
               value={promoTitle}
               onChange={(e) => setPromoTitle(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+              className="w-full px-3 py-2 border border-gray-200 dark:border-dark-border dark:bg-dark-card rounded-lg text-sm"
               placeholder="홍보 제목"
             />
             <RichEditor
@@ -282,7 +282,7 @@ export default function AdminPage() {
                 <button
                   type="button"
                   onClick={() => { setEditingPromo(null); setPromoTitle(""); setPromoContent(""); }}
-                  className="px-4 py-2 border border-gray-200 text-sm rounded-lg hover:bg-gray-50"
+                  className="px-4 py-2 border border-gray-200 dark:border-dark-border text-sm rounded-lg hover:bg-gray-50 dark:hover:bg-dark-border"
                 >
                   취소
                 </button>
@@ -291,10 +291,10 @@ export default function AdminPage() {
           </form>
 
           {promotions.map((promo) => (
-            <div key={promo.id} className="bg-white rounded-xl p-4 border border-gray-100 flex justify-between items-start">
+            <div key={promo.id} className="bg-white dark:bg-dark-card rounded-xl p-4 border border-gray-100 dark:border-dark-border flex justify-between items-start">
               <div>
                 <h3 className="font-semibold text-sm">{promo.title}</h3>
-                <div className="post-content text-xs text-gray-500 mt-1" dangerouslySetInnerHTML={{ __html: promo.content }} />
+                <div className="post-content text-xs text-gray-500 dark:text-gray-400 mt-1" dangerouslySetInnerHTML={{ __html: promo.content }} />
               </div>
               <div className="flex gap-2 shrink-0 ml-4">
                 <button
