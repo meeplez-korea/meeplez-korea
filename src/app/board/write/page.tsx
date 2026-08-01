@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CATEGORIES, getCategoryBySlug } from "@/lib/categories";
 import { createPost, getPost, updatePost } from "@/lib/storage";
+import { supabase } from "@/lib/supabase";
 import { CategorySlug, ReviewTag } from "@/lib/types";
 import { MAX_IMAGES } from "@/lib/constants";
 import { useAuth } from "@/contexts/AuthContext";
@@ -59,6 +60,13 @@ function WriteForm() {
       return;
     }
 
+    // 세션 갱신
+    const { data: sessionData } = await supabase.auth.refreshSession();
+    if (!sessionData.session) {
+      alert("로그인이 만료되었습니다. 다시 로그인해주세요.\n작성 중인 글은 복사해두세요.");
+      return;
+    }
+
     // content에서 첫 번째 이미지를 썸네일로 추출
     const imgMatch = content.match(/<img[^>]+src="([^"]+)"/);
     const thumbnailUrl = imgMatch ? imgMatch[1] : undefined;
@@ -74,10 +82,16 @@ function WriteForm() {
       is_private: categoryInfo?.isPrivate || false,
     };
 
+    let result;
     if (editId) {
-      await updatePost(editId, postData);
+      result = await updatePost(editId, postData);
     } else {
-      await createPost(postData);
+      result = await createPost(postData);
+    }
+
+    if (result?.error) {
+      alert("저장에 실패했습니다. 다시 시도해주세요.\n" + (result.error.message || ""));
+      return;
     }
 
     router.push(`/board/${category}`);
