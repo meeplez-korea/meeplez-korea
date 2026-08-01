@@ -54,7 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // 30분마다 세션 자동 갱신
     const refreshInterval = setInterval(() => {
       supabase.auth.refreshSession();
-    }, 30 * 60 * 1000);
+    }, 20 * 60 * 1000);
 
     return () => {
       subscription.unsubscribe();
