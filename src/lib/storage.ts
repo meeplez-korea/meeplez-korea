@@ -42,14 +42,12 @@ export async function updateNickname(userId: string, nickname: string) {
   // 프로필이 없으면 생성, 있으면 업데이트
   const existing = await getProfile(userId);
   if (existing) {
-    return supabase
-      .from("profiles")
-      .update({ nickname })
-      .eq("id", userId);
+    await supabase.from("profiles").update({ nickname }).eq("id", userId);
+    // 기존 게시글/댓글 닉네임도 업데이트
+    await supabase.from("posts").update({ author_name: nickname }).eq("author_id", userId);
+    await supabase.from("comments").update({ author_name: nickname }).eq("author_id", userId);
   } else {
-    return supabase
-      .from("profiles")
-      .insert({ id: userId, nickname, role: "pending" });
+    await supabase.from("profiles").insert({ id: userId, nickname, role: "pending" });
   }
 }
 
@@ -71,10 +69,12 @@ export async function updateUserRole(userId: string, role: string) {
 }
 
 export async function adminUpdateNickname(userId: string, nickname: string) {
-  return supabase
-    .from("profiles")
-    .update({ nickname })
-    .eq("id", userId);
+  // 프로필 업데이트
+  await supabase.from("profiles").update({ nickname }).eq("id", userId);
+  // 기존 게시글 닉네임 업데이트
+  await supabase.from("posts").update({ author_name: nickname }).eq("author_id", userId);
+  // 기존 댓글 닉네임 업데이트
+  await supabase.from("comments").update({ author_name: nickname }).eq("author_id", userId);
 }
 
 export async function adminDeleteUser(userId: string) {
