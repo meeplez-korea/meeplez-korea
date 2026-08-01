@@ -98,7 +98,7 @@ export default function Home() {
               >
                 {post.thumbnail_url ? (
                   <div className="aspect-[16/10] bg-gray-50 dark:bg-dark-border">
-                    <img src={post.thumbnail_url} alt="" className="w-full h-full object-cover" />
+                    <img src={post.thumbnail_url} alt="" className="w-full h-full object-cover" loading="lazy" />
                   </div>
                 ) : (
                   <div className="aspect-[16/10] bg-gradient-to-br from-primary/[0.03] to-accent/[0.06] flex items-center justify-center">

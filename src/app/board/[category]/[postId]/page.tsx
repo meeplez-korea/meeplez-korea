@@ -6,7 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { getCategoryBySlug } from "@/lib/categories";
 import { getPost, incrementViewCount, deletePost, updatePost, getComments, addComment, deleteComment } from "@/lib/storage";
 import { Post, Comment } from "@/lib/types";
-import { formatDate, autoLinkUrls } from "@/lib/utils";
+import { formatDate, autoLinkUrls, addLazyLoading } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function PostDetailPage() {
@@ -117,7 +117,7 @@ export default function PostDetailPage() {
         <div className="p-6">
           <div
             className="post-content text-sm leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: autoLinkUrls(post.content) }}
+            dangerouslySetInnerHTML={{ __html: addLazyLoading(autoLinkUrls(post.content)) }}
           />
         </div>
 

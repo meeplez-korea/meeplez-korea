@@ -125,7 +125,7 @@ export default function BoardPage() {
             >
               {post.thumbnail_url ? (
                 <div className="aspect-video bg-gray-100 dark:bg-dark-border">
-                  <img src={post.thumbnail_url} alt="" className="w-full h-full object-cover" />
+                  <img src={post.thumbnail_url} alt="" className="w-full h-full object-cover" loading="lazy" />
                 </div>
               ) : (
                 <div className="aspect-video bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
