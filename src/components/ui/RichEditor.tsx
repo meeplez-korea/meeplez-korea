@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import "react-quill-new/dist/quill.snow.css";
 import { supabase } from "@/lib/supabase";
 import { generateId } from "@/lib/utils";
@@ -84,24 +84,10 @@ const FORMATS = [
 export default function RichEditor({ value, onChange, placeholder }: RichEditorProps) {
   const quillRef = useRef<any>(null);
   const handlerAttached = useRef(false);
+  const [selectedImg, setSelectedImg] = useState<HTMLImageElement | null>(null);
+  const [imgMenuPos, setImgMenuPos] = useState<{ top: number; left: number } | null>(null);
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      import("react-quill-new").then((mod) => {
-        const Quill = mod.default.Quill || (mod as any).Quill;
-        if (Quill) {
-          import("quill-image-resize").then((resize) => {
-            const ResizeModule = resize.default || resize;
-            if (!Quill.imports?.["modules/imageResize"]) {
-              Quill.register("modules/imageResize", ResizeModule);
-            }
-          });
-        }
-      });
-    }
-  }, []);
-
-  // 에디터 로드 후 이미지 핸들러 연결
+  // 이미지 업로드 핸들러
   useEffect(() => {
     const interval = setInterval(() => {
       const editor = quillRef.current?.getEditor?.();
@@ -141,11 +127,77 @@ export default function RichEditor({ value, onChange, placeholder }: RichEditorP
     return () => clearInterval(interval);
   }, []);
 
+  // 이미지 클릭 감지
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const editorEl = document.querySelector(".rich-editor .ql-editor");
+      if (!editorEl) return;
+
+      if (target.tagName === "IMG" && editorEl.contains(target)) {
+        const img = target as HTMLImageElement;
+        setSelectedImg(img);
+        const rect = img.getBoundingClientRect();
+        const editorRect = editorEl.getBoundingClientRect();
+        setImgMenuPos({
+          top: rect.top - editorRect.top + editorEl.scrollTop,
+          left: rect.left - editorRect.left,
+        });
+        img.style.outline = "2px solid #7CB8A0";
+      } else {
+        if (selectedImg) {
+          selectedImg.style.outline = "";
+        }
+        setSelectedImg(null);
+        setImgMenuPos(null);
+      }
+    };
+
+    document.addEventListener("click", handleClick);
+    return () => document.removeEventListener("click", handleClick);
+  }, [selectedImg]);
+
+  const resizeImage = (widthPercent: number) => {
+    if (!selectedImg) return;
+    selectedImg.style.width = `${widthPercent}%`;
+    selectedImg.style.height = "auto";
+    // 에디터 내용 변경 반영
+    const editor = quillRef.current?.getEditor?.();
+    if (editor) {
+      const html = editor.root.innerHTML;
+      onChange(html);
+    }
+  };
+
+  const setAspectRatio = (ratio: string) => {
+    if (!selectedImg) return;
+    const width = selectedImg.clientWidth;
+    let height: number;
+    switch (ratio) {
+      case "1:1": height = width; break;
+      case "4:3": height = width * 3 / 4; break;
+      case "16:9": height = width * 9 / 16; break;
+      default: selectedImg.style.height = "auto"; return;
+    }
+    selectedImg.style.height = `${height}px`;
+    selectedImg.style.objectFit = "cover";
+    const editor = quillRef.current?.getEditor?.();
+    if (editor) onChange(editor.root.innerHTML);
+  };
+
+  const deleteImage = () => {
+    if (!selectedImg) return;
+    selectedImg.remove();
+    setSelectedImg(null);
+    setImgMenuPos(null);
+    const editor = quillRef.current?.getEditor?.();
+    if (editor) onChange(editor.root.innerHTML);
+  };
+
   const modules = {
     toolbar: {
       container: TOOLBAR,
     },
-    imageResize: {},
     keyboard: {
       bindings: {
         "list autofill": {
@@ -157,7 +209,7 @@ export default function RichEditor({ value, onChange, placeholder }: RichEditorP
   };
 
   return (
-    <div className="rich-editor">
+    <div className="rich-editor relative">
       <ReactQuill
         ref={quillRef}
         theme="snow"
@@ -167,6 +219,28 @@ export default function RichEditor({ value, onChange, placeholder }: RichEditorP
         formats={FORMATS}
         placeholder={placeholder}
       />
+
+      {/* 이미지 편집 메뉴 */}
+      {selectedImg && imgMenuPos && (
+        <div
+          className="absolute z-10 bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-lg shadow-lg p-2 flex flex-wrap gap-1"
+          style={{ top: imgMenuPos.top + 40, left: imgMenuPos.left }}
+        >
+          <span className="text-[10px] text-gray-400 w-full mb-0.5">크기</span>
+          <button onClick={() => resizeImage(25)} className="px-2 py-1 text-[11px] bg-gray-100 dark:bg-dark-border rounded hover:bg-primary/20">25%</button>
+          <button onClick={() => resizeImage(50)} className="px-2 py-1 text-[11px] bg-gray-100 dark:bg-dark-border rounded hover:bg-primary/20">50%</button>
+          <button onClick={() => resizeImage(75)} className="px-2 py-1 text-[11px] bg-gray-100 dark:bg-dark-border rounded hover:bg-primary/20">75%</button>
+          <button onClick={() => resizeImage(100)} className="px-2 py-1 text-[11px] bg-gray-100 dark:bg-dark-border rounded hover:bg-primary/20">100%</button>
+
+          <span className="text-[10px] text-gray-400 w-full mt-1 mb-0.5">비율</span>
+          <button onClick={() => setAspectRatio("원본")} className="px-2 py-1 text-[11px] bg-gray-100 dark:bg-dark-border rounded hover:bg-primary/20">원본</button>
+          <button onClick={() => setAspectRatio("1:1")} className="px-2 py-1 text-[11px] bg-gray-100 dark:bg-dark-border rounded hover:bg-primary/20">1:1</button>
+          <button onClick={() => setAspectRatio("4:3")} className="px-2 py-1 text-[11px] bg-gray-100 dark:bg-dark-border rounded hover:bg-primary/20">4:3</button>
+          <button onClick={() => setAspectRatio("16:9")} className="px-2 py-1 text-[11px] bg-gray-100 dark:bg-dark-border rounded hover:bg-primary/20">16:9</button>
+
+          <button onClick={deleteImage} className="w-full mt-1 px-2 py-1 text-[11px] text-danger bg-danger/10 rounded hover:bg-danger/20">삭제</button>
+        </div>
+      )}
     </div>
   );
 }
