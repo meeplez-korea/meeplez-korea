@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import "react-quill-new/dist/quill.snow.css";
 
 const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
@@ -13,6 +13,22 @@ interface RichEditorProps {
 }
 
 export default function RichEditor({ value, onChange, placeholder }: RichEditorProps) {
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      import("react-quill-new").then((mod) => {
+        const Quill = mod.default.Quill || (mod as any).Quill;
+        if (Quill) {
+          import("quill-resize-image").then((resize) => {
+            const ResizeModule = resize.default || resize;
+            if (!Quill.imports?.["modules/resize"]) {
+              Quill.register("modules/resize", ResizeModule);
+            }
+          });
+        }
+      });
+    }
+  }, []);
+
   const modules = useMemo(
     () => ({
       toolbar: {
@@ -26,6 +42,9 @@ export default function RichEditor({ value, onChange, placeholder }: RichEditorP
           ["link", "image"],
           ["clean"],
         ],
+      },
+      resize: {
+        locale: {},
       },
     }),
     []
@@ -44,6 +63,9 @@ export default function RichEditor({ value, onChange, placeholder }: RichEditorP
     "align",
     "link",
     "image",
+    "width",
+    "height",
+    "style",
   ];
 
   return (
