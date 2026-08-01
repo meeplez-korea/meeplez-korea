@@ -51,7 +51,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    // 30분마다 세션 자동 갱신
+    const refreshInterval = setInterval(() => {
+      supabase.auth.refreshSession();
+    }, 30 * 60 * 1000);
+
+    return () => {
+      subscription.unsubscribe();
+      clearInterval(refreshInterval);
+    };
   }, []);
 
   const isAdmin = profile?.role === "admin";
