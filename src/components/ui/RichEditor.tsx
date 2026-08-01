@@ -86,19 +86,50 @@ export default function RichEditor({ value, onChange, placeholder }: RichEditorP
   const handlerAttached = useRef(false);
   const resizeRegistered = useRef(false);
 
-  // Quill 리사이즈 모듈 등록
+  // Quill 리사이즈 모듈 + 커스텀 Image 블롯 등록
   useEffect(() => {
     if (typeof window !== "undefined" && !resizeRegistered.current) {
       import("react-quill-new").then((mod) => {
         const Quill = mod.default.Quill || (mod as any).Quill;
         if (Quill) {
+          // style 속성을 보존하는 커스텀 Image 블롯
+          const BaseImage = Quill.import("formats/image") as any;
+          class StyledImage extends (BaseImage as any) {
+            static create(value: string) {
+              const node = super.create(value);
+              return node;
+            }
+            static formats(node: HTMLElement) {
+              const formats: any = {};
+              if (node.getAttribute("style")) formats.style = node.getAttribute("style");
+              if (node.getAttribute("width")) formats.width = node.getAttribute("width");
+              if (node.getAttribute("height")) formats.height = node.getAttribute("height");
+              return formats;
+            }
+            format(name: string, value: any) {
+              if (name === "style" || name === "width" || name === "height") {
+                if (value) {
+                  this.domNode.setAttribute(name, value);
+                } else {
+                  this.domNode.removeAttribute(name);
+                }
+              } else {
+                super.format(name, value);
+              }
+            }
+          }
+          StyledImage.blotName = "image";
+          StyledImage.tagName = "IMG";
+
+          try {
+            Quill.register(StyledImage, true);
+          } catch (e) {}
+
           import("quill-resize-image").then((resize) => {
             const ResizeModule = resize.default || resize;
             try {
               Quill.register("modules/resize", ResizeModule);
-            } catch (e) {
-              // already registered
-            }
+            } catch (e) {}
             resizeRegistered.current = true;
           });
         }
