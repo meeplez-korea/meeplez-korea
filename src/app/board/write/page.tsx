@@ -72,10 +72,6 @@ function WriteForm() {
     let processedContent = content;
     const base64Matches = processedContent.match(/src="(data:image\/[^"]+)"/g);
     if (base64Matches) {
-      if (base64Matches.length > 10) {
-        alert("이미지는 최대 10장까지만 첨부할 수 있습니다.");
-        return;
-      }
       for (const match of base64Matches) {
         const base64 = match.replace('src="', '').replace('"', '');
         const res = await fetch(base64);
@@ -89,13 +85,6 @@ function WriteForm() {
           processedContent = processedContent.replace(base64, urlData.publicUrl);
         }
       }
-    }
-
-    // 전체 이미지 개수 체크
-    const allImages = processedContent.match(/<img/g);
-    if (allImages && allImages.length > 10) {
-      alert("이미지는 최대 10장까지만 첨부할 수 있습니다.");
-      return;
     }
 
     // 첫 번째 이미지를 썸네일로 추출
