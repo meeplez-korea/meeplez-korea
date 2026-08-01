@@ -12,6 +12,7 @@
     "@supabase/ssr": "^0.12.3",
     "@supabase/supabase-js": "^2.110.8",
     "next": "14.2.35",
+    "quill-image-resize": "^3.0.9",
     "quill-resize-image": "^1.0.11",
     "react": "^18",
     "react-dom": "^18",

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { CATEGORIES, getCategoryBySlug } from "@/lib/categories";
 import { createPost, getPost, updatePost } from "@/lib/storage";
 import { supabase } from "@/lib/supabase";
+import { generateId } from "@/lib/utils";
 import { CategorySlug, ReviewTag } from "@/lib/types";
 import { MAX_IMAGES } from "@/lib/constants";
 import { useAuth } from "@/contexts/AuthContext";
@@ -67,13 +68,43 @@ function WriteForm() {
       return;
     }
 
-    // content에서 첫 번째 이미지를 썸네일로 추출
-    const imgMatch = content.match(/<img[^>]+src="([^"]+)"/);
+    // base64 이미지를 Storage로 업로드 후 URL로 교체
+    let processedContent = content;
+    const base64Matches = processedContent.match(/src="(data:image\/[^"]+)"/g);
+    if (base64Matches) {
+      if (base64Matches.length > 10) {
+        alert("이미지는 최대 10장까지만 첨부할 수 있습니다.");
+        return;
+      }
+      for (const match of base64Matches) {
+        const base64 = match.replace('src="', '').replace('"', '');
+        const res = await fetch(base64);
+        const blob = await res.blob();
+        const fileName = `${Date.now()}-${generateId()}.jpg`;
+        const { error: uploadError } = await supabase.storage
+          .from("post-images")
+          .upload(`uploads/${fileName}`, blob, { contentType: "image/jpeg" });
+        if (!uploadError) {
+          const { data: urlData } = supabase.storage.from("post-images").getPublicUrl(`uploads/${fileName}`);
+          processedContent = processedContent.replace(base64, urlData.publicUrl);
+        }
+      }
+    }
+
+    // 전체 이미지 개수 체크
+    const allImages = processedContent.match(/<img/g);
+    if (allImages && allImages.length > 10) {
+      alert("이미지는 최대 10장까지만 첨부할 수 있습니다.");
+      return;
+    }
+
+    // 첫 번째 이미지를 썸네일로 추출
+    const imgMatch = processedContent.match(/<img[^>]+src="([^"]+)"/);
     const thumbnailUrl = imgMatch ? imgMatch[1] : undefined;
 
     const postData = {
       title,
-      content,
+      content: processedContent,
       category,
       author_id: user.id,
       author_name: profile.nickname,

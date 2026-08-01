@@ -90,10 +90,10 @@ export default function RichEditor({ value, onChange, placeholder }: RichEditorP
       import("react-quill-new").then((mod) => {
         const Quill = mod.default.Quill || (mod as any).Quill;
         if (Quill) {
-          import("quill-resize-image").then((resize) => {
+          import("quill-image-resize").then((resize) => {
             const ResizeModule = resize.default || resize;
-            if (!Quill.imports?.["modules/resize"]) {
-              Quill.register("modules/resize", ResizeModule);
+            if (!Quill.imports?.["modules/imageResize"]) {
+              Quill.register("modules/imageResize", ResizeModule);
             }
           });
         }
@@ -145,9 +145,7 @@ export default function RichEditor({ value, onChange, placeholder }: RichEditorP
     toolbar: {
       container: TOOLBAR,
     },
-    resize: {
-      locale: {},
-    },
+    imageResize: {},
     keyboard: {
       bindings: {
         "list autofill": {
