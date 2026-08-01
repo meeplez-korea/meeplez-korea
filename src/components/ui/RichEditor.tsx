@@ -225,6 +225,8 @@ export default function RichEditor({ value, onChange, placeholder }: RichEditorP
         <div
           className="absolute z-10 bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-lg shadow-lg p-2 flex flex-wrap gap-1"
           style={{ top: imgMenuPos.top + 40, left: imgMenuPos.left }}
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
         >
           <span className="text-[10px] text-gray-400 w-full mb-0.5">크기</span>
           <button onClick={() => resizeImage(25)} className="px-2 py-1 text-[11px] bg-gray-100 dark:bg-dark-border rounded hover:bg-primary/20">25%</button>
