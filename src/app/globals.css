@@ -109,6 +109,10 @@ textarea,
   color: #e5e5e5;
 }
 
+.rich-editor .ql-resize-handle {
+  display: none !important;
+}
+
 .rich-editor .ql-toolbar {
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
