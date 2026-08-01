@@ -46,6 +46,14 @@ export default function RichEditor({ value, onChange, placeholder }: RichEditorP
       resize: {
         locale: {},
       },
+      keyboard: {
+        bindings: {
+          "list autofill": {
+            prefix: /^\s*?(1\.|-|\*)$/,
+            handler: () => true,
+          },
+        },
+      },
     }),
     []
   );
