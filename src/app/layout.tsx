@@ -20,7 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" suppressHydrationWarning>
-      <body className="font-pretendard antialiased min-h-screen flex flex-col bg-cream dark:bg-dark-bg text-gray-800 dark:text-gray-200">
+      <body className="font-pretendard antialiased min-h-screen flex flex-col bg-cream dark:bg-dark-bg text-gray-800 dark:text-gray-100">
         <ThemeProvider>
           <AuthProvider>
             <Header />

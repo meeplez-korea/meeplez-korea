@@ -10,17 +10,17 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        primary: "#7CB8A0",
-        secondary: "#E8A87C",
-        accent: "#C1A0D0",
-        cream: "#F5F0E8",
-        danger: "#D06B6B",
-        "tag-board": "#6BA3D0",
-        "tag-outdoor": "#7CB8A0",
-        "tag-all": "#E8A87C",
-        "dark-bg": "#1a1a2e",
-        "dark-card": "#222240",
-        "dark-border": "#2a2a4a",
+        primary: "#6EA896",
+        secondary: "#D4956A",
+        accent: "#B08FC0",
+        cream: "#F7F4EF",
+        danger: "#C45C5C",
+        "tag-board": "#5A8FBA",
+        "tag-outdoor": "#6EA896",
+        "tag-all": "#D4956A",
+        "dark-bg": "#161622",
+        "dark-card": "#1e1e32",
+        "dark-border": "#2c2c48",
       },
       fontFamily: {
         pretendard: ["Pretendard", "sans-serif"],

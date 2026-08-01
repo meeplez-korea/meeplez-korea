@@ -5,16 +5,16 @@
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
 
 :root {
-  --background: #F5F0E8;
-  --foreground: #3D3D3D;
+  --background: #F7F4EF;
+  --foreground: #2D2D2D;
 }
 
 html {
-  background: #FAF8F4;
+  background: #F7F4EF;
 }
 
 html.dark {
-  background: #1a1a2e;
+  background: #161622;
 }
 
 body {

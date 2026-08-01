@@ -1,7 +1,7 @@
 export default function Footer() {
   return (
-    <footer className="bg-[#FAF8F4] dark:bg-dark-bg border-t border-primary/10 dark:border-dark-border mt-auto">
-      <div className="max-w-6xl mx-auto px-4 py-6 text-center text-sm text-gray-400">
+    <footer className="bg-cream dark:bg-dark-bg border-t border-black/[0.04] dark:border-white/[0.04] mt-auto">
+      <div className="max-w-5xl mx-auto px-5 py-8 text-center text-[13px] text-gray-400">
         <p>&copy; 2026 미플즈 (Meeplez)</p>
       </div>
     </footer>

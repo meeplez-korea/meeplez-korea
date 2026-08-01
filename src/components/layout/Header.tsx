@@ -11,22 +11,18 @@ import { signOut } from "@/lib/storage";
 function ThemeToggle() {
   const { theme, setTheme, isDark } = useTheme();
 
-  const toggleTheme = () => {
-    setTheme(isDark ? "light" : "dark");
-  };
-
   return (
     <button
-      onClick={toggleTheme}
-      className="p-1.5 rounded-lg hover:bg-cream dark:hover:bg-dark-border transition-colors"
+      onClick={() => setTheme(isDark ? "light" : "dark")}
+      className="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
     >
       {isDark ? (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+        <svg className="w-[18px] h-[18px] text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
         </svg>
       ) : (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+        <svg className="w-[18px] h-[18px] text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
         </svg>
       )}
     </button>
@@ -43,72 +39,72 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-[#FAF8F4] dark:bg-dark-bg border-b border-primary/20 dark:border-dark-border shadow-sm">
-      <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2">
-          <img src="/meeplez.jpg" alt="미플즈" className="w-10 h-10 rounded-lg object-cover" />
-          <span className="text-xl font-bold text-primary">{SITE_NAME}</span>
+    <header className="sticky top-0 z-50 bg-cream/80 dark:bg-dark-bg/80 backdrop-blur-md border-b border-black/[0.06] dark:border-white/[0.06]">
+      <div className="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-2.5">
+          <img src="/meeplez.jpg" alt="미플즈" className="w-8 h-8 rounded-lg object-cover" />
+          <span className="text-lg font-semibold tracking-tight text-primary">{SITE_NAME}</span>
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden lg:flex items-center gap-1">
+        <nav className="hidden lg:flex items-center gap-0.5">
           {CATEGORIES.map((cat) => (
             <Link
               key={cat.slug}
               href={`/board/${cat.slug}`}
-              className="px-3 py-2 text-sm rounded-lg hover:bg-cream dark:hover:bg-dark-border transition-colors"
+              className="px-3 py-1.5 text-[13px] text-gray-500 dark:text-gray-400 rounded-md hover:text-gray-900 dark:hover:text-gray-200 hover:bg-black/[0.04] dark:hover:bg-white/[0.04] transition-colors"
             >
-              <span className="mr-1">{cat.icon}</span>
               {cat.label}
             </Link>
           ))}
           {isAdmin && (
             <Link
               href="/admin"
-              className="ml-2 px-3 py-2 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+              className="px-3 py-1.5 text-[13px] text-gray-400 dark:text-gray-500 rounded-md hover:text-gray-900 dark:hover:text-gray-200 hover:bg-black/[0.04] dark:hover:bg-white/[0.04] transition-colors"
             >
               관리
             </Link>
           )}
 
-          <ThemeToggle />
-
-          {!loading && (
-            <div className="ml-2 pl-3 border-l border-gray-200 dark:border-dark-border flex items-center gap-2">
-              {user ? (
-                <>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">{profile?.nickname}</span>
-                  <button
-                    onClick={handleSignOut}
-                    className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+          <div className="ml-1 pl-2 border-l border-black/[0.06] dark:border-white/[0.06] flex items-center gap-1">
+            <ThemeToggle />
+            {!loading && (
+              <>
+                {user ? (
+                  <>
+                    <span className="text-[13px] text-gray-500 dark:text-gray-400 ml-1">{profile?.nickname}</span>
+                    <button
+                      onClick={handleSignOut}
+                      className="text-[13px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors ml-1"
+                    >
+                      로그아웃
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    href="/login"
+                    className="ml-1 px-3 py-1.5 text-[13px] bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
                   >
-                    로그아웃
-                  </button>
-                </>
-              ) : (
-                <Link
-                  href="/login"
-                  className="px-3 py-1.5 text-sm bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
-                >
-                  로그인
-                </Link>
-              )}
-            </div>
-          )}
+                    로그인
+                  </Link>
+                )}
+              </>
+            )}
+          </div>
         </nav>
 
         {/* Mobile */}
-        <div className="lg:hidden flex items-center gap-1">
+        <div className="lg:hidden flex items-center gap-0.5">
           <ThemeToggle />
           <button
-            className="p-2 rounded-lg hover:bg-cream dark:hover:bg-dark-border"
+            className="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5"
             onClick={() => setMenuOpen(!menuOpen)}
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               {menuOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
               ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
               )}
             </svg>
           </button>
@@ -117,34 +113,33 @@ export default function Header() {
 
       {/* Mobile menu */}
       {menuOpen && (
-        <nav className="lg:hidden bg-white dark:bg-dark-card border-t border-gray-100 dark:border-dark-border py-2 px-4">
+        <nav className="lg:hidden bg-cream dark:bg-dark-card border-t border-black/[0.04] dark:border-white/[0.04] py-1 px-4">
           {CATEGORIES.map((cat) => (
             <Link
               key={cat.slug}
               href={`/board/${cat.slug}`}
-              className="block px-3 py-3 text-sm rounded-lg hover:bg-cream dark:hover:bg-dark-border transition-colors"
+              className="block px-3 py-2.5 text-[14px] text-gray-600 dark:text-gray-300 rounded-md hover:bg-black/[0.04] dark:hover:bg-white/[0.04] transition-colors"
               onClick={() => setMenuOpen(false)}
             >
-              <span className="mr-2">{cat.icon}</span>
               {cat.label}
             </Link>
           ))}
           {isAdmin && (
             <Link
               href="/admin"
-              className="block px-3 py-3 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              className="block px-3 py-2.5 text-[13px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               onClick={() => setMenuOpen(false)}
             >
               관리자
             </Link>
           )}
-          <div className="border-t border-gray-100 dark:border-dark-border mt-2 pt-2">
+          <div className="border-t border-black/[0.04] dark:border-white/[0.04] mt-1 pt-1">
             {user ? (
-              <div className="px-3 py-3 flex items-center justify-between">
-                <span className="text-sm text-gray-500 dark:text-gray-400">{profile?.nickname}</span>
+              <div className="px-3 py-2.5 flex items-center justify-between">
+                <span className="text-[14px] text-gray-500 dark:text-gray-400">{profile?.nickname}</span>
                 <button
                   onClick={() => { handleSignOut(); setMenuOpen(false); }}
-                  className="text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  className="text-[13px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                 >
                   로그아웃
                 </button>
@@ -152,7 +147,7 @@ export default function Header() {
             ) : (
               <Link
                 href="/login"
-                className="block px-3 py-3 text-sm text-primary font-medium"
+                className="block px-3 py-2.5 text-[14px] text-primary font-medium"
                 onClick={() => setMenuOpen(false)}
               >
                 로그인
