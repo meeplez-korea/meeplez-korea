@@ -30,6 +30,7 @@ function WriteForm() {
   const [content, setContent] = useState("");
   const [category, setCategory] = useState<CategorySlug>(initialCategory as CategorySlug);
   const [tag, setTag] = useState<ReviewTag>("보드게임");
+  const [submitting, setSubmitting] = useState(false);
 
   const categoryInfo = getCategoryBySlug(category);
 
@@ -60,61 +61,79 @@ function WriteForm() {
       alert("모든 필수 항목을 입력해주세요.");
       return;
     }
+    if (submitting) return;
+    setSubmitting(true);
 
-    // 세션 갱신
-    const { data: sessionData } = await supabase.auth.refreshSession();
-    if (!sessionData.session) {
-      alert("로그인이 만료되었습니다. 다시 로그인해주세요.\n작성 중인 글은 복사해두세요.");
-      return;
-    }
+    try {
+      // 세션 갱신
+      const { data: sessionData } = await supabase.auth.refreshSession();
+      if (!sessionData.session) {
+        alert("로그인이 만료되었습니다. 다시 로그인해주세요.\n작성 중인 글은 복사해두세요.");
+        setSubmitting(false);
+        return;
+      }
 
-    // base64 이미지를 Storage로 업로드 후 URL로 교체
-    let processedContent = content;
-    const base64Matches = processedContent.match(/src="(data:image\/[^"]+)"/g);
-    if (base64Matches) {
-      for (const match of base64Matches) {
-        const base64 = match.replace('src="', '').replace('"', '');
-        const res = await fetch(base64);
-        const blob = await res.blob();
-        const fileName = `${Date.now()}-${generateId()}.jpg`;
-        const { error: uploadError } = await supabase.storage
-          .from("post-images")
-          .upload(`uploads/${fileName}`, blob, { contentType: "image/jpeg" });
-        if (!uploadError) {
-          const { data: urlData } = supabase.storage.from("post-images").getPublicUrl(`uploads/${fileName}`);
-          processedContent = processedContent.replace(base64, urlData.publicUrl);
+      // base64 이미지를 Storage로 업로드 후 URL로 교체
+      let processedContent = content;
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(processedContent, "text/html");
+      const images = doc.querySelectorAll("img");
+
+      for (let i = 0; i < images.length; i++) {
+        const img = images[i];
+        const src = img.getAttribute("src") || "";
+        if (src.startsWith("data:")) {
+          try {
+            const res = await fetch(src);
+            const blob = await res.blob();
+            const fileName = `${Date.now()}-${generateId()}.jpg`;
+            const { error: uploadError } = await supabase.storage
+              .from("post-images")
+              .upload(`uploads/${fileName}`, blob, { contentType: "image/jpeg" });
+            if (!uploadError) {
+              const { data: urlData } = supabase.storage.from("post-images").getPublicUrl(`uploads/${fileName}`);
+              img.setAttribute("src", urlData.publicUrl);
+            }
+          } catch (err) {
+            console.error("Image upload failed:", err);
+          }
         }
       }
+      processedContent = doc.body.innerHTML;
+
+      // 첫 번째 이미지를 썸네일로 추출
+      const imgMatch = processedContent.match(/<img[^>]+src="([^"]+)"/);
+      const thumbnailUrl = imgMatch ? imgMatch[1] : undefined;
+
+      const postData = {
+        title,
+        content: processedContent,
+        category,
+        author_id: user.id,
+        author_name: profile.nickname,
+        tag: categoryInfo?.hasTags ? tag : undefined,
+        thumbnail_url: thumbnailUrl,
+        is_private: categoryInfo?.isPrivate || false,
+      };
+
+      let result;
+      if (editId) {
+        result = await updatePost(editId, postData);
+      } else {
+        result = await createPost(postData);
+      }
+
+      if (result?.error) {
+        alert("저장에 실패했습니다. 다시 시도해주세요.\n" + (result.error.message || ""));
+        setSubmitting(false);
+        return;
+      }
+
+      router.push(`/board/${category}`);
+    } catch (err) {
+      alert("오류가 발생했습니다. 다시 시도해주세요.");
+      setSubmitting(false);
     }
-
-    // 첫 번째 이미지를 썸네일로 추출
-    const imgMatch = processedContent.match(/<img[^>]+src="([^"]+)"/);
-    const thumbnailUrl = imgMatch ? imgMatch[1] : undefined;
-
-    const postData = {
-      title,
-      content: processedContent,
-      category,
-      author_id: user.id,
-      author_name: profile.nickname,
-      tag: categoryInfo?.hasTags ? tag : undefined,
-      thumbnail_url: thumbnailUrl,
-      is_private: categoryInfo?.isPrivate || false,
-    };
-
-    let result;
-    if (editId) {
-      result = await updatePost(editId, postData);
-    } else {
-      result = await createPost(postData);
-    }
-
-    if (result?.error) {
-      alert("저장에 실패했습니다. 다시 시도해주세요.\n" + (result.error.message || ""));
-      return;
-    }
-
-    router.push(`/board/${category}`);
   };
 
   return (
@@ -198,9 +217,10 @@ function WriteForm() {
         <div className="flex gap-2 pt-4">
           <button
             type="submit"
-            className="px-6 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium"
+            disabled={submitting}
+            className="px-6 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium disabled:opacity-50"
           >
-            {editId ? "수정 완료" : "작성 완료"}
+            {submitting ? "업로드 중..." : editId ? "수정 완료" : "작성 완료"}
           </button>
           <button
             type="button"
