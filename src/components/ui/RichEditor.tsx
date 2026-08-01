@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useRef, useCallback } from "react";
+import { useEffect, useRef } from "react";
 import "react-quill-new/dist/quill.snow.css";
 import { supabase } from "@/lib/supabase";
 import { generateId } from "@/lib/utils";
@@ -15,7 +15,6 @@ interface RichEditorProps {
 }
 
 async function uploadImage(file: File): Promise<string | null> {
-  // 이미지 압축
   const compressed = await compressFile(file);
   const fileName = `${Date.now()}-${generateId()}.jpg`;
   const filePath = `uploads/${fileName}`;
@@ -65,8 +64,26 @@ async function compressFile(file: File): Promise<Blob> {
   });
 }
 
+const TOOLBAR = [
+  [{ header: [1, 2, 3, false] }],
+  ["bold", "italic", "underline", "strike"],
+  [{ color: [] }, { background: [] }],
+  [{ size: ["small", false, "large", "huge"] }],
+  [{ list: "ordered" }, { list: "bullet" }],
+  [{ align: [] }],
+  ["link", "image"],
+  ["clean"],
+];
+
+const FORMATS = [
+  "header", "bold", "italic", "underline", "strike",
+  "color", "background", "size", "list", "align",
+  "link", "image", "width", "height", "style",
+];
+
 export default function RichEditor({ value, onChange, placeholder }: RichEditorProps) {
   const quillRef = useRef<any>(null);
+  const handlerAttached = useRef(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -84,101 +101,72 @@ export default function RichEditor({ value, onChange, placeholder }: RichEditorP
     }
   }, []);
 
-  const imageHandler = useCallback(() => {
-    const input = document.createElement("input");
-    input.setAttribute("type", "file");
-    input.setAttribute("accept", "image/*");
-    input.setAttribute("multiple", "true");
-    input.click();
+  // 에디터 로드 후 이미지 핸들러 연결
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const editor = quillRef.current?.getEditor?.();
+      if (editor && !handlerAttached.current) {
+        const toolbar = editor.getModule("toolbar");
+        if (toolbar) {
+          toolbar.addHandler("image", () => {
+            const input = document.createElement("input");
+            input.type = "file";
+            input.accept = "image/*";
+            input.multiple = true;
+            input.click();
 
-    input.onchange = async () => {
-      const files = input.files;
-      if (!files) return;
+            input.onchange = async () => {
+              const files = input.files;
+              if (!files) return;
 
-      const editor = quillRef.current?.getEditor();
-      if (!editor) return;
+              for (let i = 0; i < files.length; i++) {
+                const range = editor.getSelection(true);
+                const url = await uploadImage(files[i]);
 
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const range = editor.getSelection(true);
-
-        // 업로드 중 표시
-        editor.insertText(range.index, "이미지 업로드 중...", { color: "#999" });
-
-        const url = await uploadImage(file);
-
-        // 업로드 중 텍스트 제거
-        editor.deleteText(range.index, "이미지 업로드 중...".length);
-
-        if (url) {
-          editor.insertEmbed(range.index, "image", url);
-          editor.setSelection(range.index + 1);
-        } else {
-          alert("이미지 업로드에 실패했습니다. 다시 시도해주세요.");
+                if (url) {
+                  editor.insertEmbed(range.index, "image", url);
+                  editor.setSelection(range.index + 1);
+                } else {
+                  alert("이미지 업로드에 실패했습니다. 다시 시도해주세요.");
+                }
+              }
+            };
+          });
+          handlerAttached.current = true;
+          clearInterval(interval);
         }
       }
-    };
+    }, 200);
+
+    return () => clearInterval(interval);
   }, []);
 
-  const modules = useMemo(
-    () => ({
-      toolbar: {
-        container: [
-          [{ header: [1, 2, 3, false] }],
-          ["bold", "italic", "underline", "strike"],
-          [{ color: [] }, { background: [] }],
-          [{ size: ["small", false, "large", "huge"] }],
-          [{ list: "ordered" }, { list: "bullet" }],
-          [{ align: [] }],
-          ["link", "image"],
-          ["clean"],
-        ],
-        handlers: {
-          image: imageHandler,
+  const modules = {
+    toolbar: {
+      container: TOOLBAR,
+    },
+    resize: {
+      locale: {},
+    },
+    keyboard: {
+      bindings: {
+        "list autofill": {
+          prefix: /^\s*?(1\.|-|\*)$/,
+          handler: () => true,
         },
       },
-      resize: {
-        locale: {},
-      },
-      keyboard: {
-        bindings: {
-          "list autofill": {
-            prefix: /^\s*?(1\.|-|\*)$/,
-            handler: () => true,
-          },
-        },
-      },
-    }),
-    [imageHandler]
-  );
-
-  const formats = [
-    "header",
-    "bold",
-    "italic",
-    "underline",
-    "strike",
-    "color",
-    "background",
-    "size",
-    "list",
-    "align",
-    "link",
-    "image",
-    "width",
-    "height",
-    "style",
-  ];
+    },
+  };
 
   return (
     <div className="rich-editor">
       <ReactQuill
-        ref={quillRef as any}
+        ref={quillRef}
         theme="snow"
         value={value}
         onChange={onChange}
         modules={modules}
-        formats={formats}
+        formats={FORMATS}
         placeholder={placeholder}
       />
     </div>
