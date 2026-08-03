@@ -9,21 +9,41 @@ export default function AuthCallback() {
   const router = useRouter();
 
   useEffect(() => {
-    supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === "SIGNED_IN" && session?.user) {
-        // 잠시 대기 (트리거가 프로필 생성할 시간)
-        await new Promise((r) => setTimeout(r, 500));
+    const handleCallback = async () => {
+      // URL에서 세션 토큰 추출 시도
+      const { data: { session }, error } = await supabase.auth.getSession();
 
-        const profile = await getProfile(session.user.id);
+      if (error || !session) {
+        // 세션 없으면 잠시 대기 후 재시도
+        await new Promise((r) => setTimeout(r, 2000));
+        const { data: retry } = await supabase.auth.getSession();
 
-        // 프로필 없거나 닉네임 빈값이거나 pending이면 닉네임 설정으로
-        if (!profile || !profile.nickname || profile.nickname === "" || profile.role === "pending") {
-          router.push("/setup-profile");
-        } else {
-          router.push("/");
+        if (!retry.session) {
+          // 그래도 없으면 로그인 페이지로
+          router.push("/login");
+          return;
         }
       }
-    });
+
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) {
+        router.push("/login");
+        return;
+      }
+
+      // 트리거가 프로필 만들 시간 대기
+      await new Promise((r) => setTimeout(r, 1000));
+
+      const profile = await getProfile(userData.user.id);
+
+      if (!profile || !profile.nickname || profile.role === "pending") {
+        router.push("/setup-profile");
+      } else {
+        router.push("/");
+      }
+    };
+
+    handleCallback();
   }, [router]);
 
   return (
