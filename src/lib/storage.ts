@@ -1,6 +1,11 @@
 import { supabase } from "./supabase";
 import { Post, Comment, CategorySlug, Profile, Promotion } from "./types";
 
+// DB 쓰기 전 세션 갱신
+async function ensureSession() {
+  await supabase.auth.refreshSession();
+}
+
 // ── Auth ──
 
 export async function signInWithKakao() {
@@ -39,6 +44,7 @@ export async function getProfile(userId: string): Promise<Profile | null> {
 }
 
 export async function updateNickname(userId: string, nickname: string) {
+  await ensureSession();
   const existing = await getProfile(userId);
   if (existing) {
     const { error } = await supabase.from("profiles").update({ nickname }).eq("id", userId);
@@ -62,6 +68,7 @@ export async function getAllProfiles(): Promise<Profile[]> {
 }
 
 export async function updateUserRole(userId: string, role: string) {
+  await ensureSession();
   return supabase
     .from("profiles")
     .update({ role })
@@ -69,7 +76,7 @@ export async function updateUserRole(userId: string, role: string) {
 }
 
 export async function adminUpdateNickname(userId: string, nickname: string) {
-  // 프로필 업데이트
+  await ensureSession();
   await supabase.from("profiles").update({ nickname }).eq("id", userId);
   // 기존 게시글 닉네임 업데이트
   await supabase.from("posts").update({ author_name: nickname }).eq("author_id", userId);
@@ -78,7 +85,7 @@ export async function adminUpdateNickname(userId: string, nickname: string) {
 }
 
 export async function adminDeleteUser(userId: string) {
-  // 프로필 삭제 (posts/comments는 CASCADE로 자동 삭제)
+  await ensureSession();
   await supabase.from("profiles").delete().eq("id", userId);
   // auth 유저는 admin API로만 삭제 가능하므로 프로필만 삭제
   // 유저는 다시 로그인 시 프로필이 없어서 접근 불가
@@ -120,10 +127,12 @@ export async function createPost(post: {
   images?: string[];
   is_private?: boolean;
 }) {
+  await ensureSession();
   return supabase.from("posts").insert(post).select().single();
 }
 
 export async function updatePost(id: string, updates: Partial<Post>) {
+  await ensureSession();
   return supabase
     .from("posts")
     .update({ ...updates, updated_at: new Date().toISOString() })
@@ -131,6 +140,7 @@ export async function updatePost(id: string, updates: Partial<Post>) {
 }
 
 export async function deletePost(id: string) {
+  await ensureSession();
   return supabase.from("posts").delete().eq("id", id);
 }
 
@@ -156,6 +166,7 @@ export async function getComments(postId: string): Promise<Comment[]> {
 }
 
 export async function addComment(postId: string, authorId: string, authorName: string, content: string) {
+  await ensureSession();
   return supabase
     .from("comments")
     .insert({ post_id: postId, author_id: authorId, author_name: authorName, content })
@@ -164,6 +175,7 @@ export async function addComment(postId: string, authorId: string, authorName: s
 }
 
 export async function deleteComment(commentId: string) {
+  await ensureSession();
   return supabase.from("comments").delete().eq("id", commentId);
 }
 
@@ -179,10 +191,12 @@ export async function getPromotions(): Promise<Promotion[]> {
 }
 
 export async function createPromotion(promotion: { title: string; content: string; image_url?: string }) {
+  await ensureSession();
   return supabase.from("promotions").insert(promotion).select().single();
 }
 
 export async function updatePromotion(id: string, updates: Partial<Promotion>) {
+  await ensureSession();
   return supabase
     .from("promotions")
     .update({ ...updates, updated_at: new Date().toISOString() })
@@ -190,5 +204,6 @@ export async function updatePromotion(id: string, updates: Partial<Promotion>) {
 }
 
 export async function deletePromotion(id: string) {
+  await ensureSession();
   return supabase.from("promotions").delete().eq("id", id);
 }
