@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { updateNickname } from "@/lib/storage";
+import { supabase } from "@/lib/supabase";
 
 export default function SetupProfilePage() {
   const router = useRouter();
@@ -21,10 +22,14 @@ export default function SetupProfilePage() {
     if (!user) return;
 
     setLoading(true);
-    await updateNickname(user.id, nickname.trim());
-    router.push("/");
-    router.refresh();
-    window.location.href = "/";
+    try {
+      await supabase.auth.refreshSession();
+      await updateNickname(user.id, nickname.trim());
+      window.location.href = "/";
+    } catch (err) {
+      setError("닉네임 저장에 실패했습니다. 다시 시도해주세요.");
+      setLoading(false);
+    }
   };
 
   if (!user) {

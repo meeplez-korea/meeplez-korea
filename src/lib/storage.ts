@@ -39,15 +39,15 @@ export async function getProfile(userId: string): Promise<Profile | null> {
 }
 
 export async function updateNickname(userId: string, nickname: string) {
-  // 프로필이 없으면 생성, 있으면 업데이트
   const existing = await getProfile(userId);
   if (existing) {
-    await supabase.from("profiles").update({ nickname }).eq("id", userId);
-    // 기존 게시글/댓글 닉네임도 업데이트
+    const { error } = await supabase.from("profiles").update({ nickname }).eq("id", userId);
+    if (error) throw new Error("프로필 업데이트 실패: " + error.message);
     await supabase.from("posts").update({ author_name: nickname }).eq("author_id", userId);
     await supabase.from("comments").update({ author_name: nickname }).eq("author_id", userId);
   } else {
-    await supabase.from("profiles").insert({ id: userId, nickname, role: "pending" });
+    const { error } = await supabase.from("profiles").insert({ id: userId, nickname, role: "pending" });
+    if (error) throw new Error("프로필 생성 실패: " + error.message);
   }
 }
 
