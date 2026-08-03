@@ -11,13 +11,15 @@ export default function AuthCallback() {
   useEffect(() => {
     supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === "SIGNED_IN" && session?.user) {
+        // 잠시 대기 (트리거가 프로필 생성할 시간)
+        await new Promise((r) => setTimeout(r, 500));
+
         const profile = await getProfile(session.user.id);
 
-        if (!profile || profile.nickname === "" || !profile.nickname) {
-          // 프로필 없거나 닉네임 미설정 → 닉네임 설정 페이지
+        // 프로필 없거나 닉네임 빈값이거나 pending이면 닉네임 설정으로
+        if (!profile || !profile.nickname || profile.nickname === "" || profile.role === "pending") {
           router.push("/setup-profile");
         } else {
-          // 닉네임 이미 설정됨 → 홈으로
           router.push("/");
         }
       }
