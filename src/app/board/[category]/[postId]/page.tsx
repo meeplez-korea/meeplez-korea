@@ -214,6 +214,7 @@ export default function PostDetailPage() {
               placeholder="댓글을 작성하세요..."
               value={commentContent}
               onChange={(e) => setCommentContent(e.target.value)}
+              onFocus={(e) => setTimeout(() => e.target.scrollIntoView({ behavior: "smooth", block: "center" }), 300)}
               className="flex-1 px-3 py-2 border border-gray-200 dark:border-dark-border dark:bg-dark-card rounded-lg text-sm resize-none h-20"
             />
             <button
