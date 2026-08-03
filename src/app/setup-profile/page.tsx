@@ -1,17 +1,32 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { updateNickname } from "@/lib/storage";
 import { supabase } from "@/lib/supabase";
+import { getProfile } from "@/lib/storage";
 
 export default function SetupProfilePage() {
-  const router = useRouter();
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const [nickname, setNickname] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [done, setDone] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+
+  // 유저가 아직 로딩 중이면 기다림
+  const [authReady, setAuthReady] = useState(false);
+  useEffect(() => {
+    const check = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        setAuthReady(true);
+      } else {
+        // 1초 후 재확인
+        setTimeout(check, 1000);
+      }
+    };
+    check();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,23 +34,87 @@ export default function SetupProfilePage() {
       setError("닉네임을 입력해주세요.");
       return;
     }
-    if (!user) return;
 
     setLoading(true);
+    setError("");
+
     try {
-      await supabase.auth.refreshSession();
-      await updateNickname(user.id, nickname.trim());
-      window.location.href = "/";
-    } catch (err) {
-      setError("닉네임 저장에 실패했습니다. 다시 시도해주세요.");
-      setLoading(false);
+      // 세션 확보
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
+        await supabase.auth.refreshSession();
+      }
+
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) {
+        setError("로그인 정보를 찾을 수 없습니다. 다시 로그인해주세요.");
+        setLoading(false);
+        return;
+      }
+
+      const userId = userData.user.id;
+
+      // 프로필 확인
+      const profile = await getProfile(userId);
+
+      if (profile) {
+        // 프로필 있으면 업데이트
+        const { error: updateError } = await supabase
+          .from("profiles")
+          .update({ nickname: nickname.trim() })
+          .eq("id", userId);
+
+        if (updateError) {
+          throw new Error(updateError.message);
+        }
+      } else {
+        // 프로필 없으면 생성
+        const { error: insertError } = await supabase
+          .from("profiles")
+          .insert({ id: userId, nickname: nickname.trim(), role: "pending" });
+
+        if (insertError) {
+          throw new Error(insertError.message);
+        }
+      }
+
+      setDone(true);
+    } catch (err: any) {
+      if (retryCount < 2) {
+        // 자동 재시도
+        setRetryCount((c) => c + 1);
+        setTimeout(() => handleSubmit(e), 1000);
+      } else {
+        setError("닉네임 저장에 실패했습니다: " + (err?.message || "다시 시도해주세요."));
+        setLoading(false);
+      }
     }
   };
 
-  if (!user) {
+  if (done) {
+    return (
+      <div className="max-w-sm mx-auto px-4 py-16">
+        <div className="bg-white dark:bg-dark-card rounded-xl shadow-sm border border-gray-100 dark:border-dark-border p-8 text-center">
+          <p className="text-sm font-semibold text-primary mb-2">닉네임이 설정되었습니다!</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+            관리자 승인 후 게시판 이용이 가능합니다.<br />
+            오픈채팅방에서 관리자에게 승인을 요청해주세요.
+          </p>
+          <button
+            onClick={() => { window.location.href = "/"; }}
+            className="mt-4 px-4 py-2 bg-primary text-white text-sm rounded-lg hover:bg-primary/90 transition-colors"
+          >
+            홈으로 이동
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!authReady) {
     return (
       <div className="max-w-sm mx-auto px-4 py-16 text-center text-gray-400">
-        로그인이 필요합니다.
+        로그인 처리 중...
       </div>
     );
   }
