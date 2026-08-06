@@ -15,13 +15,11 @@ export default function AdminPage() {
   const [members, setMembers] = useState<Profile[]>([]);
   const [promotions, setPromotions] = useState<Promotion[]>([]);
 
-  // Promotion form
   const [promoTitle, setPromoTitle] = useState("");
   const [promoContent, setPromoContent] = useState("");
   const [promoIcon, setPromoIcon] = useState("📣");
   const [editingPromo, setEditingPromo] = useState<string | null>(null);
 
-  // Member edit
   const [editingMember, setEditingMember] = useState<string | null>(null);
   const [editNickname, setEditNickname] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
@@ -102,12 +100,12 @@ export default function AdminPage() {
   };
 
   if (loading) {
-    return <div className="max-w-4xl mx-auto px-4 py-12 text-center text-gray-400">로딩 중...</div>;
+    return <div className="max-w-4xl mx-auto px-4 py-16 text-center text-gray-400">로딩 중...</div>;
   }
 
   if (!isAdmin) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-12 text-center text-gray-400">
+      <div className="max-w-4xl mx-auto px-4 py-16 text-center text-gray-400">
         관리자만 접근할 수 있습니다.
       </div>
     );
@@ -121,16 +119,18 @@ export default function AdminPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">관리자 페이지</h1>
+      <h1 className="text-2xl font-bold tracking-tight mb-6">관리자 페이지</h1>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 bg-white dark:bg-dark-card rounded-xl p-1 border border-gray-100 dark:border-dark-border">
+      <div className="flex gap-1 mb-8 bg-white dark:bg-dark-card rounded-xl p-1 shadow-card dark:shadow-card-dark">
         {tabs.map((t) => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`flex-1 py-2.5 text-sm rounded-lg transition-colors ${
-              tab === t.key ? "bg-primary text-white" : "text-gray-500 dark:text-gray-400 hover:bg-cream dark:hover:bg-dark-border"
+            className={`flex-1 py-2.5 text-sm font-medium rounded-lg transition-all ${
+              tab === t.key
+                ? "bg-primary text-white shadow-sm"
+                : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-cream/50 dark:hover:bg-dark-hover"
             }`}
           >
             {t.label} ({t.count})
@@ -142,7 +142,7 @@ export default function AdminPage() {
       {tab === "suggestions" && (
         <div className="space-y-3">
           {suggestions.length === 0 ? (
-            <div className="bg-white dark:bg-dark-card rounded-xl p-8 text-center text-gray-400 border border-gray-100 dark:border-dark-border">
+            <div className="bg-white dark:bg-dark-card rounded-xl p-12 text-center text-gray-400 shadow-card dark:shadow-card-dark">
               건의사항이 없습니다.
             </div>
           ) : (
@@ -150,13 +150,13 @@ export default function AdminPage() {
               <Link
                 key={post.id}
                 href={`/board/suggestions/${post.id}`}
-                className="block bg-white dark:bg-dark-card rounded-xl p-4 shadow-sm border border-gray-100 dark:border-dark-border hover:shadow-md transition-all"
+                className="block bg-white dark:bg-dark-card rounded-xl p-5 shadow-card dark:shadow-card-dark hover:shadow-card-hover dark:hover:shadow-card-dark-hover hover:-translate-y-px transition-all duration-200 group"
               >
-                <h3 className="font-semibold text-sm">{post.title}</h3>
-                <p className="text-xs text-gray-400 mt-1">
-                  {post.author_name} | {formatDate(post.created_at)}
+                <h3 className="font-semibold text-sm group-hover:text-primary transition-colors">{post.title}</h3>
+                <p className="text-xs text-gray-400 mt-1.5 tabular-nums">
+                  {post.author_name} · {formatDate(post.created_at)}
                 </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 line-clamp-2">{post.content}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 line-clamp-2 leading-relaxed">{post.content}</p>
               </Link>
             ))
           )}
@@ -167,7 +167,7 @@ export default function AdminPage() {
       {tab === "members" && (
         <div className="space-y-3">
           {members.map((member) => (
-            <div key={member.id} className="bg-white dark:bg-dark-card rounded-xl p-4 border border-gray-100 dark:border-dark-border">
+            <div key={member.id} className="bg-white dark:bg-dark-card rounded-xl p-5 shadow-card dark:shadow-card-dark">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   {editingMember === member.id ? (
@@ -176,11 +176,11 @@ export default function AdminPage() {
                         type="text"
                         value={editNickname}
                         onChange={(e) => setEditNickname(e.target.value)}
-                        className="px-2 py-1 border border-gray-200 dark:border-dark-border dark:bg-dark-card rounded text-sm w-32"
+                        className="px-2.5 py-1 border border-gray-200 dark:border-dark-border dark:bg-dark-card rounded-lg text-sm w-32"
                       />
                       <button
                         onClick={() => handleNicknameSave(member.id)}
-                        className="text-xs text-primary hover:text-primary/80"
+                        className="text-xs font-medium text-primary hover:text-primary-dark"
                       >
                         저장
                       </button>
@@ -196,7 +196,7 @@ export default function AdminPage() {
                       <span className="font-semibold text-sm">{member.nickname}</span>
                       <button
                         onClick={() => handleNicknameEdit(member)}
-                        className="text-[11px] text-gray-400 hover:text-primary"
+                        className="text-[11px] text-gray-400 hover:text-primary font-medium"
                       >
                         이름변경
                       </button>
@@ -204,19 +204,19 @@ export default function AdminPage() {
                   )}
                 </div>
                 <span
-                  className={`text-xs px-2 py-0.5 rounded-full ${
+                  className={`text-[11px] px-2 py-0.5 rounded-md font-medium ${
                     member.role === "admin"
                       ? "bg-danger/10 text-danger"
                       : member.role === "member"
                       ? "bg-primary/10 text-primary"
-                      : "bg-gray-100 dark:bg-dark-border text-gray-500 dark:text-gray-400"
+                      : "bg-gray-100 dark:bg-dark-hover text-gray-500 dark:text-gray-400"
                   }`}
                 >
                   {member.role === "admin" ? "관리자" : member.role === "member" ? "회원" : "대기"}
                 </span>
               </div>
 
-              <div className="text-xs text-gray-400 mb-3">
+              <div className="text-xs text-gray-400 mb-3 tabular-nums">
                 가입일: {formatDate(member.created_at)}
               </div>
 
@@ -224,7 +224,7 @@ export default function AdminPage() {
                 <select
                   value={member.role}
                   onChange={(e) => handleRoleChange(member.id, e.target.value)}
-                  className="text-xs border border-gray-200 dark:border-dark-border dark:bg-dark-card rounded px-2 py-1"
+                  className="text-xs border border-gray-200 dark:border-dark-border dark:bg-dark-card rounded-lg px-2.5 py-1.5"
                 >
                   <option value="pending">대기</option>
                   <option value="member">회원</option>
@@ -233,16 +233,16 @@ export default function AdminPage() {
 
                 {deleteConfirm === member.id ? (
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-danger">정말 삭제?</span>
+                    <span className="text-xs text-danger font-medium">정말 삭제?</span>
                     <button
                       onClick={() => handleDeleteUser(member.id)}
-                      className="text-xs px-2 py-1 bg-danger text-white rounded hover:bg-danger/90"
+                      className="text-xs px-2.5 py-1 bg-danger text-white rounded-lg hover:brightness-95 font-medium"
                     >
                       확인
                     </button>
                     <button
                       onClick={() => setDeleteConfirm(null)}
-                      className="text-xs px-2 py-1 border border-gray-200 dark:border-dark-border rounded hover:bg-gray-50 dark:hover:bg-dark-border"
+                      className="text-xs px-2.5 py-1 border border-gray-200 dark:border-dark-border rounded-lg hover:bg-gray-50 dark:hover:bg-dark-hover font-medium"
                     >
                       취소
                     </button>
@@ -250,7 +250,7 @@ export default function AdminPage() {
                 ) : (
                   <button
                     onClick={() => setDeleteConfirm(member.id)}
-                    className="text-xs text-gray-400 hover:text-danger"
+                    className="text-xs text-gray-400 hover:text-danger font-medium"
                   >
                     계정 삭제
                   </button>
@@ -264,19 +264,19 @@ export default function AdminPage() {
       {/* Promotions Tab */}
       {tab === "promotions" && (
         <div className="space-y-4">
-          <form onSubmit={handlePromoSubmit} className="bg-white dark:bg-dark-card rounded-xl p-4 border border-gray-100 dark:border-dark-border space-y-3">
+          <form onSubmit={handlePromoSubmit} className="bg-white dark:bg-dark-card rounded-xl p-5 shadow-card dark:shadow-card-dark space-y-4">
             <div>
-              <label className="block text-xs text-gray-500 mb-1">아이콘</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1.5">아이콘</label>
               <div className="flex gap-1.5 flex-wrap">
                 {["📣", "🎉", "🔔", "⭐", "🎯", "🎁", "💡", "🏆", "📢", "✨", "🔥", "💬", "📌", "❤️", "👋", "🎮"].map((icon) => (
                   <button
                     key={icon}
                     type="button"
                     onClick={() => setPromoIcon(icon)}
-                    className={`w-9 h-9 text-lg rounded-lg flex items-center justify-center transition-colors ${
+                    className={`w-9 h-9 text-lg rounded-lg flex items-center justify-center transition-all ${
                       promoIcon === icon
-                        ? "bg-primary/20 border-2 border-primary"
-                        : "bg-gray-100 dark:bg-dark-border hover:bg-gray-200 dark:hover:bg-dark-border/80"
+                        ? "bg-primary/15 ring-2 ring-primary"
+                        : "bg-gray-50 dark:bg-dark-hover hover:bg-gray-100 dark:hover:bg-dark-border"
                     }`}
                   >
                     {icon}
@@ -288,7 +288,7 @@ export default function AdminPage() {
               type="text"
               value={promoTitle}
               onChange={(e) => setPromoTitle(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-200 dark:border-dark-border dark:bg-dark-card rounded-lg text-sm"
+              className="w-full px-3.5 py-2.5 border border-gray-200 dark:border-dark-border dark:bg-dark-card rounded-xl text-sm"
               placeholder="홍보 제목"
             />
             <RichEditor
@@ -297,14 +297,14 @@ export default function AdminPage() {
               placeholder="홍보 내용을 입력하세요"
             />
             <div className="flex gap-2">
-              <button type="submit" className="px-4 py-2 bg-primary text-white text-sm rounded-lg hover:bg-primary/90">
+              <button type="submit" className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-dark">
                 {editingPromo ? "수정" : "추가"}
               </button>
               {editingPromo && (
                 <button
                   type="button"
                   onClick={() => { setEditingPromo(null); setPromoTitle(""); setPromoContent(""); setPromoIcon("📣"); }}
-                  className="px-4 py-2 border border-gray-200 dark:border-dark-border text-sm rounded-lg hover:bg-gray-50 dark:hover:bg-dark-border"
+                  className="px-4 py-2 border border-gray-200 dark:border-dark-border text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-dark-hover"
                 >
                   취소
                 </button>
@@ -313,21 +313,21 @@ export default function AdminPage() {
           </form>
 
           {promotions.map((promo) => (
-            <div key={promo.id} className="bg-white dark:bg-dark-card rounded-xl p-4 border border-gray-100 dark:border-dark-border flex justify-between items-start">
-              <div>
+            <div key={promo.id} className="bg-white dark:bg-dark-card rounded-xl p-5 shadow-card dark:shadow-card-dark flex justify-between items-start">
+              <div className="min-w-0">
                 <h3 className="font-semibold text-sm">{promo.title}</h3>
                 <div className="post-content text-xs text-gray-500 dark:text-gray-400 mt-1" dangerouslySetInnerHTML={{ __html: promo.content }} />
               </div>
               <div className="flex gap-2 shrink-0 ml-4">
                 <button
                   onClick={() => startEditPromo(promo)}
-                  className="text-xs text-gray-400 hover:text-primary"
+                  className="text-xs text-gray-400 hover:text-primary font-medium"
                 >
                   수정
                 </button>
                 <button
                   onClick={() => handlePromoDelete(promo.id)}
-                  className="text-xs text-gray-400 hover:text-danger"
+                  className="text-xs text-gray-400 hover:text-danger font-medium"
                 >
                   삭제
                 </button>

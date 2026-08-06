@@ -13,7 +13,6 @@ export default function SetupProfilePage() {
   const [done, setDone] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
 
-  // 유저가 아직 로딩 중이면 기다림
   const [authReady, setAuthReady] = useState(false);
   useEffect(() => {
     const check = async () => {
@@ -21,7 +20,6 @@ export default function SetupProfilePage() {
       if (data.session) {
         setAuthReady(true);
       } else {
-        // 1초 후 재확인
         setTimeout(check, 1000);
       }
     };
@@ -39,7 +37,6 @@ export default function SetupProfilePage() {
     setError("");
 
     try {
-      // 세션 확보
       const { data: sessionData } = await supabase.auth.getSession();
       if (!sessionData.session) {
         await supabase.auth.refreshSession();
@@ -53,12 +50,9 @@ export default function SetupProfilePage() {
       }
 
       const userId = userData.user.id;
-
-      // 프로필 확인
       const profile = await getProfile(userId);
 
       if (profile) {
-        // 프로필 있으면 업데이트
         const { error: updateError } = await supabase
           .from("profiles")
           .update({ nickname: nickname.trim() })
@@ -68,7 +62,6 @@ export default function SetupProfilePage() {
           throw new Error(updateError.message);
         }
       } else {
-        // 프로필 없으면 생성
         const { error: insertError } = await supabase
           .from("profiles")
           .insert({ id: userId, nickname: nickname.trim(), role: "pending" });
@@ -81,7 +74,6 @@ export default function SetupProfilePage() {
       setDone(true);
     } catch (err: any) {
       if (retryCount < 2) {
-        // 자동 재시도
         setRetryCount((c) => c + 1);
         setTimeout(() => handleSubmit(e), 1000);
       } else {
@@ -93,16 +85,16 @@ export default function SetupProfilePage() {
 
   if (done) {
     return (
-      <div className="max-w-sm mx-auto px-4 py-16">
-        <div className="bg-white dark:bg-dark-card rounded-xl shadow-sm border border-gray-100 dark:border-dark-border p-8 text-center">
-          <p className="text-sm font-semibold text-primary mb-2">닉네임이 설정되었습니다!</p>
+      <div className="min-h-[70vh] flex items-center justify-center px-4 py-12">
+        <div className="w-full max-w-sm bg-white dark:bg-dark-card rounded-2xl shadow-card dark:shadow-card-dark p-8 text-center animate-slide-up">
+          <p className="text-sm font-semibold text-primary mb-2">닉네임이 설정되었습니다</p>
           <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
             관리자 승인 후 게시판 이용이 가능합니다.<br />
             오픈채팅방에서 관리자에게 승인을 요청해주세요.
           </p>
           <button
             onClick={() => { window.location.href = "/"; }}
-            className="mt-4 px-4 py-2 bg-primary text-white text-sm rounded-lg hover:bg-primary/90 transition-colors"
+            className="mt-4 px-5 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-dark"
           >
             홈으로 이동
           </button>
@@ -120,43 +112,47 @@ export default function SetupProfilePage() {
   }
 
   return (
-    <div className="max-w-sm mx-auto px-4 py-16">
-      <div className="bg-white dark:bg-dark-card rounded-xl shadow-sm border border-gray-100 dark:border-dark-border p-8">
-        <div className="text-center mb-6">
-          <img src="/meeplez.jpg" alt="미플즈" className="w-16 h-16 mx-auto rounded-xl object-cover mb-3" />
-          <h1 className="text-xl font-bold">닉네임 설정</h1>
-          <p className="text-sm text-gray-400 mt-1">미플즈에서 사용할 닉네임을 설정해주세요.</p>
-        </div>
+    <div className="min-h-[70vh] flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-sm animate-slide-up">
+        <div className="bg-white dark:bg-dark-card rounded-2xl shadow-card dark:shadow-card-dark p-8">
+          <div className="text-center mb-6">
+            <img src="/meeplez.jpg" alt="미플즈" className="w-16 h-16 mx-auto rounded-xl object-cover ring-1 ring-black/5 dark:ring-white/10 mb-4" />
+            <h1 className="text-xl font-bold tracking-tight">닉네임 설정</h1>
+            <p className="text-sm text-gray-400 mt-1.5">미플즈에서 사용할 닉네임을 설정해주세요.</p>
+          </div>
 
-        <div className="p-3 bg-secondary/10 border border-secondary/20 rounded-lg mb-4">
-          <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
-            오픈채팅 닉네임과 동일하게 설정해주세요.
-          </p>
-        </div>
+          <div className="p-3.5 bg-secondary/8 border border-secondary/12 rounded-xl mb-5">
+            <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
+              오픈채팅 닉네임과 동일하게 설정해주세요.
+            </p>
+          </div>
 
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <input
-            type="text"
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
-            className="w-full px-3 py-2.5 border border-gray-200 dark:border-dark-border dark:bg-dark-card rounded-lg text-sm"
-            placeholder="닉네임"
-          />
-          {error && <p className="text-xs text-danger">{error}</p>}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium disabled:opacity-50"
-          >
-            {loading ? "처리 중..." : "설정 완료"}
-          </button>
-        </form>
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <input
+              type="text"
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+              className="w-full px-3.5 py-2.5 border border-gray-200 dark:border-dark-border dark:bg-dark-card rounded-xl text-sm"
+              placeholder="닉네임"
+            />
+            {error && (
+              <p className="text-xs text-danger bg-danger/5 px-3 py-2 rounded-lg">{error}</p>
+            )}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-2.5 bg-primary text-white rounded-xl hover:bg-primary-dark text-sm font-medium disabled:opacity-50"
+            >
+              {loading ? "처리 중..." : "설정 완료"}
+            </button>
+          </form>
 
-        <div className="mt-4 p-3 bg-cream/50 dark:bg-dark-border/50 rounded-lg">
-          <p className="text-xs text-gray-400 leading-relaxed">
-            관리자 승인 후 게시판 이용이 가능합니다.<br />
-            오픈채팅방에서 관리자에게 승인을 요청해주세요.
-          </p>
+          <div className="mt-5 p-3.5 bg-cream/50 dark:bg-dark-hover rounded-xl">
+            <p className="text-xs text-gray-400 leading-relaxed">
+              관리자 승인 후 게시판 이용이 가능합니다.<br />
+              오픈채팅방에서 관리자에게 승인을 요청해주세요.
+            </p>
+          </div>
         </div>
       </div>
     </div>

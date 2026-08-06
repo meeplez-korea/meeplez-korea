@@ -49,7 +49,7 @@ function WriteForm() {
 
   if (!isMember) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-12 text-center text-gray-400">
+      <div className="max-w-3xl mx-auto px-4 py-16 text-center text-gray-400">
         {user ? "관리자 승인 후 글쓰기가 가능합니다." : "로그인이 필요합니다."}
       </div>
     );
@@ -65,7 +65,6 @@ function WriteForm() {
     setSubmitting(true);
 
     try {
-      // 세션 갱신
       const { data: sessionData } = await supabase.auth.refreshSession();
       if (!sessionData.session) {
         alert("로그인이 만료되었습니다. 다시 로그인해주세요.\n작성 중인 글은 복사해두세요.");
@@ -73,7 +72,6 @@ function WriteForm() {
         return;
       }
 
-      // base64 이미지를 Storage로 업로드 후 URL로 교체
       let processedContent = content;
       const parser = new DOMParser();
       const doc = parser.parseFromString(processedContent, "text/html");
@@ -101,7 +99,6 @@ function WriteForm() {
       }
       processedContent = doc.body.innerHTML;
 
-      // 첫 번째 이미지를 썸네일로 추출
       const imgMatch = processedContent.match(/<img[^>]+src="([^"]+)"/);
       const thumbnailUrl = imgMatch ? imgMatch[1] : undefined;
 
@@ -138,16 +135,16 @@ function WriteForm() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">{editId ? "글 수정" : "글쓰기"}</h1>
+      <h1 className="text-2xl font-bold tracking-tight mb-6">{editId ? "글 수정" : "글쓰기"}</h1>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-5">
         {/* Category */}
         <div>
-          <label className="block text-sm font-medium mb-1">게시판 *</label>
+          <label className="block text-sm font-medium mb-1.5">게시판 *</label>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value as CategorySlug)}
-            className="w-full px-3 py-2 border border-gray-200 dark:border-dark-border dark:bg-dark-card rounded-lg text-sm"
+            className="w-full px-3.5 py-2.5 border border-gray-200 dark:border-dark-border dark:bg-dark-card rounded-xl text-sm"
           >
             {CATEGORIES.filter((cat) => cat.slug !== "notices" || isAdmin).map((cat) => (
               <option key={cat.slug} value={cat.slug}>
@@ -157,20 +154,20 @@ function WriteForm() {
           </select>
         </div>
 
-        {/* Tag (reviews only) */}
+        {/* Tag */}
         {categoryInfo?.hasTags && (
           <div>
-            <label className="block text-sm font-medium mb-1">말머리 *</label>
+            <label className="block text-sm font-medium mb-1.5">말머리 *</label>
             <div className="flex gap-2">
               {(["보드게임", "외부활동"] as ReviewTag[]).map((t) => (
                 <button
                   key={t}
                   type="button"
                   onClick={() => setTag(t)}
-                  className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
+                  className={`px-3.5 py-1.5 text-sm font-medium rounded-lg transition-colors ${
                     tag === t
-                      ? "bg-primary text-white"
-                      : "bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border text-gray-600 dark:text-gray-300 hover:border-primary"
+                      ? "bg-primary text-white shadow-sm"
+                      : "bg-white dark:bg-dark-card text-gray-500 dark:text-gray-400 shadow-card dark:shadow-card-dark hover:text-gray-700 dark:hover:text-gray-300"
                   }`}
                 >
                   {t}
@@ -181,26 +178,26 @@ function WriteForm() {
         )}
 
         {categoryInfo?.isPrivate && (
-          <div className="p-3 bg-gray-100 dark:bg-dark-border rounded-lg text-sm text-gray-500 dark:text-gray-400">
+          <div className="p-3.5 bg-cream/50 dark:bg-dark-hover rounded-xl text-sm text-gray-500 dark:text-gray-400">
             이 게시판의 글은 운영진만 확인할 수 있습니다.
           </div>
         )}
 
         {/* Title */}
         <div>
-          <label className="block text-sm font-medium mb-1">제목 *</label>
+          <label className="block text-sm font-medium mb-1.5">제목 *</label>
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-200 dark:border-dark-border dark:bg-dark-card rounded-lg text-sm"
+            className="w-full px-3.5 py-2.5 border border-gray-200 dark:border-dark-border dark:bg-dark-card rounded-xl text-sm"
             placeholder="제목을 입력하세요"
           />
         </div>
 
-        {/* Content - Rich Editor */}
+        {/* Content */}
         <div>
-          <label className="block text-sm font-medium mb-1">내용 *</label>
+          <label className="block text-sm font-medium mb-1.5">내용 *</label>
           <RichEditor
             value={content}
             onChange={setContent}
@@ -208,24 +205,23 @@ function WriteForm() {
           />
         </div>
 
-        {/* 이미지는 에디터 툴바에서 삽입 */}
         {false && (
           <div></div>
         )}
 
         {/* Submit */}
-        <div className="flex gap-2 pt-4">
+        <div className="flex gap-2 pt-2">
           <button
             type="submit"
             disabled={submitting}
-            className="px-6 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium disabled:opacity-50"
+            className="px-6 py-2.5 bg-primary text-white rounded-xl hover:bg-primary-dark text-sm font-medium disabled:opacity-50"
           >
             {submitting ? "업로드 중..." : editId ? "수정 완료" : "작성 완료"}
           </button>
           <button
             type="button"
             onClick={() => router.back()}
-            className="px-6 py-2.5 border border-gray-200 dark:border-dark-border rounded-lg hover:bg-gray-50 dark:hover:bg-dark-border transition-colors text-sm"
+            className="px-6 py-2.5 border border-gray-200 dark:border-dark-border rounded-xl hover:bg-gray-50 dark:hover:bg-dark-hover text-sm font-medium"
           >
             취소
           </button>

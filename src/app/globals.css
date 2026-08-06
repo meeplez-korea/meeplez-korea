@@ -5,16 +5,17 @@
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
 
 :root {
-  --background: #F5F0E8;
-  --foreground: #3D3D3D;
+  --background: #F7F4EE;
+  --foreground: #2D2D2D;
 }
 
 html {
-  background: #FAF8F4;
+  background: #F7F4EE;
+  scroll-behavior: smooth;
 }
 
 html.dark {
-  background: #1a1a2e;
+  background: #161618;
 }
 
 body {
@@ -23,9 +24,16 @@ body {
   font-family: "Pretendard", sans-serif;
   -webkit-user-select: none;
   user-select: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* 게시글 내용, 에디터, 입력창은 선택 가능 */
+.dark body {
+  --background: #161618;
+  --foreground: #E0E0E0;
+}
+
+/* Selectable content areas */
 .post-content,
 .rich-editor,
 input,
@@ -33,6 +41,51 @@ textarea,
 .ql-editor {
   -webkit-user-select: text;
   user-select: text;
+}
+
+/* Subtle grain overlay */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.015;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
+
+.dark body::after {
+  opacity: 0.03;
+}
+
+/* Global transitions */
+a, button {
+  transition-property: color, background-color, border-color, box-shadow, transform, opacity;
+  transition-duration: 200ms;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Active press effect for buttons */
+button:active:not(:disabled),
+a:active {
+  transform: scale(0.98);
+}
+
+/* Focus ring */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid #6BA68E;
+  outline-offset: 2px;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: #6BA68E;
+  box-shadow: 0 0 0 3px rgba(107, 166, 142, 0.1);
 }
 
 @layer utilities {
@@ -57,19 +110,24 @@ textarea,
   }
 
   .animate-fade-in {
-    animation: fade-in 0.8s ease-out forwards;
+    animation: fade-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
   .animate-fade-in-slow {
-    animation: fade-in 1.2s ease-out forwards;
+    animation: fade-in 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
   .animate-slide-up {
-    animation: slide-up 0.8s ease-out forwards;
+    animation: slide-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
   .animate-slide-up-delay {
-    animation: slide-up 0.8s ease-out 0.2s forwards;
+    animation: slide-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
+    opacity: 0;
+  }
+
+  .animate-slide-up-delay-2 {
+    animation: slide-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
     opacity: 0;
   }
 }
@@ -90,7 +148,7 @@ textarea,
 }
 
 @keyframes slide-up {
-  from { opacity: 0; transform: translateY(20px); }
+  from { opacity: 0; transform: translateY(16px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
@@ -99,13 +157,13 @@ textarea,
   min-height: 300px;
   font-family: "Pretendard", sans-serif;
   font-size: 14px;
-  border-bottom-left-radius: 8px;
-  border-bottom-right-radius: 8px;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
 }
 
 .dark .rich-editor .ql-container {
-  border-color: #2a2a4a;
-  background: #222240;
+  border-color: #2A2A30;
+  background: #1E1E22;
   color: #e5e5e5;
 }
 
@@ -114,26 +172,26 @@ textarea,
 }
 
 .rich-editor .ql-toolbar {
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
-  background: #fafafa;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  background: #f8f8f6;
 }
 
 .dark .rich-editor .ql-toolbar {
-  background: #2a2a4a;
-  border-color: #2a2a4a;
+  background: #28282E;
+  border-color: #2A2A30;
 }
 
 .dark .rich-editor .ql-toolbar .ql-stroke {
-  stroke: #a0a0b8;
+  stroke: #a0a0a8;
 }
 
 .dark .rich-editor .ql-toolbar .ql-fill {
-  fill: #a0a0b8;
+  fill: #a0a0a8;
 }
 
 .dark .rich-editor .ql-toolbar .ql-picker-label {
-  color: #a0a0b8;
+  color: #a0a0a8;
 }
 
 .rich-editor .ql-editor {
@@ -142,24 +200,25 @@ textarea,
 
 .rich-editor .ql-editor img {
   max-width: 100%;
-  border-radius: 8px;
+  border-radius: 10px;
   margin: 8px 0;
 }
 
 /* Post content rendered HTML */
 .post-content img {
   max-width: 100%;
-  border-radius: 8px;
+  border-radius: 10px;
   margin: 8px 0;
 }
 
-.post-content h1 { font-size: 1.5em; font-weight: bold; margin: 0.5em 0; }
-.post-content h2 { font-size: 1.3em; font-weight: bold; margin: 0.5em 0; }
-.post-content h3 { font-size: 1.1em; font-weight: bold; margin: 0.5em 0; }
+.post-content h1 { font-size: 1.5em; font-weight: 700; margin: 0.5em 0; letter-spacing: -0.02em; }
+.post-content h2 { font-size: 1.3em; font-weight: 700; margin: 0.5em 0; letter-spacing: -0.01em; }
+.post-content h3 { font-size: 1.1em; font-weight: 600; margin: 0.5em 0; }
 .post-content ul { list-style: disc; padding-left: 1.5em; }
 .post-content ol { list-style: decimal; padding-left: 1.5em; }
-.post-content a { color: #6BA3D0; text-decoration: underline; cursor: pointer; }
-.post-content p { margin: 0.2em 0; min-height: 1.2em; }
+.post-content a { color: #5A90B8; text-decoration: underline; cursor: pointer; text-underline-offset: 2px; }
+.post-content a:hover { color: #6BA68E; }
+.post-content p { margin: 0.2em 0; min-height: 1.2em; line-height: 1.7; }
 .post-content p br { display: block; content: ""; margin: 0.3em 0; }
 .post-content .ql-indent-1 { padding-left: 2em; }
 .post-content .ql-indent-2 { padding-left: 4em; }

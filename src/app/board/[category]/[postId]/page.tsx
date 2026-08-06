@@ -53,7 +53,7 @@ export default function PostDetailPage() {
 
   if (!post || !category) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-12 text-center text-gray-400">
+      <div className="max-w-4xl mx-auto px-4 py-16 text-center text-gray-400">
         게시글을 찾을 수 없습니다.
       </div>
     );
@@ -65,21 +65,21 @@ export default function PostDetailPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm text-gray-400 mb-6">
+      <nav className="flex items-center gap-2 text-sm text-gray-400 mb-6">
         <Link href="/" className="hover:text-primary">홈</Link>
-        <span>/</span>
+        <span className="text-gray-300 dark:text-gray-600">/</span>
         <Link href={`/board/${categorySlug}`} className="hover:text-primary">{category.label}</Link>
-        <span>/</span>
-        <span className="text-gray-600 dark:text-gray-300 truncate">{post.title}</span>
-      </div>
+        <span className="text-gray-300 dark:text-gray-600">/</span>
+        <span className="text-gray-500 dark:text-gray-400 truncate max-w-[200px]">{post.title}</span>
+      </nav>
 
-      {/* 비회원/대기: 공지사항 외 상세 열람 제한 */}
+      {/* Non-member restriction */}
       {!isMember && categorySlug !== "notices" && (
-        <div className="bg-white dark:bg-dark-card rounded-xl shadow-sm border border-gray-100 dark:border-dark-border p-8 text-center">
-          <div className="p-6 bg-cream/50 dark:bg-dark-border/50 rounded-xl">
+        <div className="bg-white dark:bg-dark-card rounded-2xl shadow-card dark:shadow-card-dark p-10 text-center">
+          <div className="p-6 bg-cream/50 dark:bg-dark-hover rounded-xl">
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">회원만 전체 내용을 볼 수 있습니다.</p>
             {!user ? (
-              <Link href="/login" className="inline-block px-4 py-2 bg-primary text-white text-sm rounded-lg">
+              <Link href="/login" className="inline-block px-5 py-2 bg-primary text-white text-sm font-medium rounded-lg">
                 로그인하기
               </Link>
             ) : (
@@ -89,28 +89,30 @@ export default function PostDetailPage() {
         </div>
       )}
 
-      {/* Post (회원/관리자 or 공지사항) */}
+      {/* Post */}
       {(isMember || categorySlug === "notices") && (
-      <article className="bg-white dark:bg-dark-card rounded-xl shadow-sm border border-gray-100 dark:border-dark-border overflow-hidden">
-        <div className="p-6 border-b border-gray-100 dark:border-dark-border">
+      <article className="bg-white dark:bg-dark-card rounded-2xl shadow-card dark:shadow-card-dark overflow-hidden">
+        <div className="p-6 pb-5 border-b border-gray-100 dark:border-dark-border">
           {post.tag && (
             <span
-              className={`text-xs px-2 py-0.5 rounded-full ${
+              className={`text-[11px] px-2 py-0.5 rounded-md font-medium ${
                 post.tag === "보드게임"
-                  ? "bg-tag-board/20 text-tag-board"
+                  ? "bg-tag-board/10 text-tag-board"
                   : post.tag === "외부활동"
-                  ? "bg-tag-outdoor/20 text-tag-outdoor"
-                  : "bg-tag-all/20 text-tag-all"
+                  ? "bg-tag-outdoor/10 text-tag-outdoor"
+                  : "bg-tag-all/10 text-tag-all"
               }`}
             >
               {post.tag}
             </span>
           )}
-          <h1 className="text-xl font-bold mt-2 mb-3">{post.title}</h1>
-          <div className="flex items-center gap-4 text-sm text-gray-400">
+          <h1 className="text-xl font-bold tracking-tight mt-2 mb-3">{post.title}</h1>
+          <div className="flex items-center gap-3 text-sm text-gray-400">
             <span className="font-medium text-gray-600 dark:text-gray-300">{post.author_name}</span>
-            <span>{formatDate(post.created_at)}</span>
-            <span>조회 {post.view_count}</span>
+            <span className="w-px h-3 bg-gray-200 dark:bg-dark-border" />
+            <span className="tabular-nums">{formatDate(post.created_at)}</span>
+            <span className="w-px h-3 bg-gray-200 dark:bg-dark-border" />
+            <span className="tabular-nums">조회 {post.view_count}</span>
           </div>
         </div>
 
@@ -125,13 +127,13 @@ export default function PostDetailPage() {
           <div className="px-6 pb-6 flex gap-2 flex-wrap">
             <Link
               href={`/board/write?category=${categorySlug}&edit=${post.id}`}
-              className="px-4 py-2 text-sm border border-gray-200 dark:border-dark-border rounded-lg hover:bg-gray-50 dark:hover:bg-dark-border transition-colors"
+              className="px-4 py-2 text-sm font-medium border border-gray-200 dark:border-dark-border rounded-lg hover:bg-gray-50 dark:hover:bg-dark-hover"
             >
               수정
             </Link>
             <button
               onClick={() => setShowDeleteConfirm(true)}
-              className="px-4 py-2 text-sm border border-danger/30 text-danger rounded-lg hover:bg-danger/5 transition-colors"
+              className="px-4 py-2 text-sm font-medium border border-danger/20 text-danger rounded-lg hover:bg-danger/5"
             >
               삭제
             </button>
@@ -141,10 +143,10 @@ export default function PostDetailPage() {
                   await updatePost(post.id, { is_pinned: !post.is_pinned });
                   setPost({ ...post, is_pinned: !post.is_pinned });
                 }}
-                className={`px-4 py-2 text-sm border rounded-lg transition-colors ${
+                className={`px-4 py-2 text-sm font-medium border rounded-lg ${
                   post.is_pinned
-                    ? "border-danger/30 text-danger hover:bg-danger/5"
-                    : "border-primary/30 text-primary hover:bg-primary/5"
+                    ? "border-danger/20 text-danger hover:bg-danger/5"
+                    : "border-primary/20 text-primary hover:bg-primary/5"
                 }`}
               >
                 {post.is_pinned ? "고정 해제" : "상단 고정"}
@@ -157,20 +159,20 @@ export default function PostDetailPage() {
 
       {/* Delete confirm */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-dark-card rounded-xl p-6 w-full max-w-sm">
-            <h3 className="font-bold mb-3">게시글 삭제</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">정말 삭제하시겠습니까?</p>
+        <div className="fixed inset-0 bg-black/30 dark:bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-dark-card rounded-2xl p-6 w-full max-w-sm shadow-card-hover dark:shadow-card-dark-hover animate-slide-up">
+            <h3 className="font-bold mb-2">게시글 삭제</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.</p>
             <div className="flex gap-2 justify-end">
               <button
                 onClick={() => setShowDeleteConfirm(false)}
-                className="px-4 py-2 text-sm border border-gray-200 dark:border-dark-border rounded-lg hover:bg-gray-50 dark:hover:bg-dark-border"
+                className="px-4 py-2 text-sm font-medium border border-gray-200 dark:border-dark-border rounded-lg hover:bg-gray-50 dark:hover:bg-dark-hover"
               >
                 취소
               </button>
               <button
                 onClick={handleDelete}
-                className="px-4 py-2 text-sm bg-danger text-white rounded-lg hover:bg-danger/90"
+                className="px-4 py-2 text-sm font-medium bg-danger text-white rounded-lg hover:brightness-95"
               >
                 삭제
               </button>
@@ -179,26 +181,29 @@ export default function PostDetailPage() {
         </div>
       )}
 
-      {/* Comments - 회원/공지사항만 */}
+      {/* Comments */}
       {(isMember || categorySlug === "notices") && (
-      <section className="mt-6 bg-white dark:bg-dark-card rounded-xl shadow-sm border border-gray-100 dark:border-dark-border p-6">
-        <h3 className="font-bold mb-4">댓글 {comments.length}개</h3>
+      <section className="mt-6 bg-white dark:bg-dark-card rounded-2xl shadow-card dark:shadow-card-dark p-6">
+        <h3 className="font-bold mb-4 flex items-center gap-2">
+          댓글
+          <span className="text-sm font-medium text-gray-400 tabular-nums">{comments.length}</span>
+        </h3>
 
         {comments.length > 0 && (
-          <div className="space-y-3 mb-6">
+          <div className="space-y-2 mb-6">
             {comments.map((comment) => (
-              <div key={comment.id} className="flex justify-between items-start p-3 bg-cream/30 dark:bg-dark-border/50 rounded-lg">
+              <div key={comment.id} className="flex justify-between items-start p-3.5 bg-cream/30 dark:bg-dark-hover rounded-xl">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm font-medium">{comment.author_name}</span>
-                    <span className="text-xs text-gray-400">{formatDate(comment.created_at)}</span>
+                    <span className="text-sm font-semibold">{comment.author_name}</span>
+                    <span className="text-[11px] text-gray-400 tabular-nums">{formatDate(comment.created_at)}</span>
                   </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">{comment.content}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{comment.content}</p>
                 </div>
                 {(user?.id === comment.author_id || isAdmin) && (
                   <button
                     onClick={() => handleDeleteComment(comment.id)}
-                    className="text-xs text-gray-400 hover:text-danger"
+                    className="text-xs text-gray-400 hover:text-danger shrink-0 ml-3"
                   >
                     삭제
                   </button>
@@ -215,11 +220,11 @@ export default function PostDetailPage() {
               value={commentContent}
               onChange={(e) => setCommentContent(e.target.value)}
               onFocus={(e) => setTimeout(() => e.target.scrollIntoView({ behavior: "smooth", block: "center" }), 300)}
-              className="flex-1 px-3 py-2 border border-gray-200 dark:border-dark-border dark:bg-dark-card rounded-lg text-sm resize-none h-20"
+              className="flex-1 px-3.5 py-2.5 border border-gray-200 dark:border-dark-border dark:bg-dark-card rounded-xl text-sm resize-none h-20"
             />
             <button
               type="submit"
-              className="px-4 py-2 bg-primary text-white text-sm rounded-lg hover:bg-primary/90 transition-colors self-end"
+              className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-xl hover:bg-primary-dark self-end"
             >
               등록
             </button>
@@ -235,7 +240,7 @@ export default function PostDetailPage() {
       <div className="mt-6">
         <Link
           href={`/board/${categorySlug}`}
-          className="px-4 py-2 text-sm border border-gray-200 dark:border-dark-border rounded-lg hover:bg-gray-50 dark:hover:bg-dark-border transition-colors inline-block"
+          className="px-4 py-2 text-sm font-medium border border-gray-200 dark:border-dark-border rounded-lg hover:bg-gray-50 dark:hover:bg-dark-hover inline-block"
         >
           목록으로
         </Link>
