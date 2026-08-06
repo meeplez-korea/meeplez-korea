@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import "react-quill-new/dist/quill.snow.css";
 import { supabase } from "@/lib/supabase";
 import { generateId } from "@/lib/utils";
@@ -85,6 +85,8 @@ export default function RichEditor({ value, onChange, placeholder }: RichEditorP
   const quillRef = useRef<any>(null);
   const handlerAttached = useRef(false);
   const resizeRegistered = useRef(false);
+  const lastValueRef = useRef(value);
+  const isInternalChange = useRef(false);
 
   // Quill 리사이즈 모듈 + 커스텀 Image 블롯 등록
   useEffect(() => {
@@ -136,6 +138,31 @@ export default function RichEditor({ value, onChange, placeholder }: RichEditorP
       });
     }
   }, []);
+
+  // 외부에서 value가 변경되었을 때만 에디터에 반영 (편집 모드 로드 등)
+  useEffect(() => {
+    if (isInternalChange.current) {
+      isInternalChange.current = false;
+      return;
+    }
+    if (value !== lastValueRef.current) {
+      lastValueRef.current = value;
+      const editor = quillRef.current?.getEditor?.();
+      if (editor) {
+        const selection = editor.getSelection();
+        editor.clipboard.dangerouslyPasteHTML(value);
+        if (selection) {
+          editor.setSelection(selection);
+        }
+      }
+    }
+  }, [value]);
+
+  const handleChange = useCallback((content: string) => {
+    lastValueRef.current = content;
+    isInternalChange.current = true;
+    onChange(content);
+  }, [onChange]);
 
   // 이미지 업로드 핸들러
   useEffect(() => {
@@ -199,8 +226,8 @@ export default function RichEditor({ value, onChange, placeholder }: RichEditorP
       <ReactQuill
         ref={quillRef}
         theme="snow"
-        value={value}
-        onChange={onChange}
+        defaultValue={value}
+        onChange={handleChange}
         modules={modules}
         formats={FORMATS}
         placeholder={placeholder}
