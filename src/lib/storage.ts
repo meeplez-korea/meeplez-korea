@@ -160,12 +160,19 @@ export async function deletePost(id: string) {
 }
 
 export async function incrementViewCount(id: string) {
-  const post = await getPost(id);
-  if (post) {
+  // 캐시 우회: DB에서 직접 현재 조회수를 읽어서 +1
+  const { data } = await supabase
+    .from("posts")
+    .select("view_count")
+    .eq("id", id)
+    .single();
+
+  if (data) {
     await supabase
       .from("posts")
-      .update({ view_count: post.view_count + 1 })
+      .update({ view_count: data.view_count + 1 })
       .eq("id", id);
+    clearCache();
   }
 }
 
