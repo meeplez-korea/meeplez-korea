@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { getPosts, getPromotions } from "@/lib/storage";
 import { Post, Promotion } from "@/lib/types";
 import { formatDate, truncate, stripHtml, sanitizeHtml } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function Home() {
+  const router = useRouter();
   const { user, profile, isPending, loading } = useAuth();
   const [notices, setNotices] = useState<Post[]>([]);
   const [reviews, setReviews] = useState<Post[]>([]);
@@ -59,6 +61,19 @@ export default function Home() {
           </div>
         </section>
       )}
+
+      {/* Search */}
+      <div
+        className="relative cursor-text animate-fade-in"
+        onClick={() => router.push("/search")}
+      >
+        <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <div className="w-full pl-10 pr-4 py-3 bg-white dark:bg-dark-card rounded-xl shadow-card dark:shadow-card-dark text-sm text-gray-400 dark:text-gray-500">
+          게시글 검색...
+        </div>
+      </div>
 
       {/* Notices */}
       <section className="animate-slide-up">
