@@ -324,3 +324,43 @@ export async function createNotification(userId: string, type: string, title: st
     .from("notifications")
     .insert({ user_id: userId, type, title, message, link });
 }
+
+// ── Likes ──
+
+export async function toggleLike(postId: string, userId: string): Promise<boolean> {
+  await ensureSession();
+  const { data } = await supabase
+    .from("post_likes")
+    .select("id")
+    .eq("post_id", postId)
+    .eq("user_id", userId)
+    .single();
+
+  if (data) {
+    await supabase.from("post_likes").delete().eq("id", data.id);
+    return false;
+  } else {
+    await supabase.from("post_likes").insert({ post_id: postId, user_id: userId });
+    return true;
+  }
+}
+
+export async function getLikeStatus(postId: string, userId?: string): Promise<{ count: number; liked: boolean }> {
+  const { count } = await supabase
+    .from("post_likes")
+    .select("*", { count: "exact", head: true })
+    .eq("post_id", postId);
+
+  let liked = false;
+  if (userId) {
+    const { data } = await supabase
+      .from("post_likes")
+      .select("id")
+      .eq("post_id", postId)
+      .eq("user_id", userId)
+      .single();
+    liked = !!data;
+  }
+
+  return { count: count || 0, liked };
+}

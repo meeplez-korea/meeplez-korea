@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { getCategoryBySlug } from "@/lib/categories";
-import { getPost, incrementViewCount, deletePost, updatePost, getComments, addComment, deleteComment, createNotification } from "@/lib/storage";
+import { getPost, incrementViewCount, deletePost, updatePost, getComments, addComment, deleteComment, createNotification, toggleLike, getLikeStatus } from "@/lib/storage";
 import { Post, Comment } from "@/lib/types";
 import { formatDate, autoLinkUrls, addLazyLoading, sanitizeHtml } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -24,6 +24,9 @@ export default function PostDetailPage() {
   const [dataLoading, setDataLoading] = useState(true);
   const [commentSubmitting, setCommentSubmitting] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+  const [liked, setLiked] = useState(false);
+  const [likeAnimating, setLikeAnimating] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -39,6 +42,22 @@ export default function PostDetailPage() {
     ]).finally(() => { if (!cancelled) setDataLoading(false); });
     return () => { cancelled = true; };
   }, [postId]);
+
+  useEffect(() => {
+    getLikeStatus(postId, user?.id).then(({ count, liked: l }) => {
+      setLikeCount(count);
+      setLiked(l);
+    }).catch(() => {});
+  }, [postId, user?.id]);
+
+  const handleLike = async () => {
+    if (!user) return;
+    setLikeAnimating(true);
+    const nowLiked = await toggleLike(postId, user.id);
+    setLiked(nowLiked);
+    setLikeCount((prev) => prev + (nowLiked ? 1 : -1));
+    setTimeout(() => setLikeAnimating(false), 300);
+  };
 
   const handleDelete = async () => {
     if (!post || deleting) return;
@@ -174,6 +193,28 @@ export default function PostDetailPage() {
             className="post-content text-sm leading-relaxed"
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(addLazyLoading(autoLinkUrls(post.content))) }}
           />
+        </div>
+
+        <div className="px-6 pb-4 flex items-center gap-4 border-t border-gray-100 dark:border-dark-border pt-4">
+          <button
+            onClick={handleLike}
+            disabled={!user}
+            className="flex items-center gap-1.5 group disabled:opacity-40 disabled:cursor-default"
+            title={user ? (liked ? "좋아요 취소" : "좋아요") : "로그인 후 이용 가능"}
+          >
+            <svg
+              className={`w-5 h-5 transition-all duration-200 ${liked ? "text-red-500 fill-red-500" : "text-gray-400 group-hover:text-red-400"} ${likeAnimating ? "scale-125" : "scale-100"}`}
+              viewBox="0 0 24 24"
+              fill={liked ? "currentColor" : "none"}
+              stroke="currentColor"
+              strokeWidth={1.5}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+            </svg>
+            <span className={`text-sm tabular-nums ${liked ? "text-red-500 font-semibold" : "text-gray-400"}`}>
+              {likeCount > 0 ? likeCount : ""}
+            </span>
+          </button>
         </div>
 
         {canEdit && (
