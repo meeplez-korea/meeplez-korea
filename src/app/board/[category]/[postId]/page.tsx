@@ -35,6 +35,7 @@ export default function PostDetailPage() {
   const [likeCount, setLikeCount] = useState(0);
   const [liked, setLiked] = useState(false);
   const [likeAnimating, setLikeAnimating] = useState(false);
+  const [likeLoading, setLikeLoading] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -95,12 +96,14 @@ export default function PostDetailPage() {
   };
 
   const handleLike = async () => {
-    if (!user) return;
+    if (!user || likeLoading) return;
+    setLikeLoading(true);
     setLikeAnimating(true);
     const nowLiked = await toggleLike(postId, user.id);
     setLiked(nowLiked);
     setLikeCount((prev) => prev + (nowLiked ? 1 : -1));
     setTimeout(() => setLikeAnimating(false), 300);
+    setLikeLoading(false);
   };
 
   const handleDelete = async () => {
@@ -274,7 +277,7 @@ export default function PostDetailPage() {
         <div className="px-6 pb-4 flex items-center gap-3 border-t border-gray-100 dark:border-dark-border pt-4">
           <button
             onClick={handleLike}
-            disabled={!user}
+            disabled={!user || likeLoading}
             className="flex items-center gap-1.5 group disabled:opacity-40 disabled:cursor-default"
             title={user ? (liked ? "좋아요 취소" : "좋아요") : "로그인 후 이용 가능"}
           >
