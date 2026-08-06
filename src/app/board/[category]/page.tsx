@@ -20,6 +20,7 @@ export default function BoardPage() {
   const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
   const [activeTag, setActiveTag] = useState<ReviewTag | "전체">("전체");
   const [page, setPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
   const [dataLoading, setDataLoading] = useState(true);
 
   useEffect(() => {
@@ -37,11 +38,17 @@ export default function BoardPage() {
 
   useEffect(() => {
     let filtered = activeTag === "전체" ? posts : posts.filter((p) => p.tag === activeTag);
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      filtered = filtered.filter((p) =>
+        p.title.toLowerCase().includes(q) || p.author_name.toLowerCase().includes(q)
+      );
+    }
     const pinned = filtered.filter((p) => p.is_pinned);
     const unpinned = filtered.filter((p) => !p.is_pinned);
     setFilteredPosts([...pinned, ...unpinned]);
     setPage(1);
-  }, [posts, activeTag]);
+  }, [posts, activeTag, searchQuery]);
 
   if (!category) {
     return (
@@ -83,14 +90,28 @@ export default function BoardPage() {
             <p className="text-sm text-gray-400 mt-1.5">{category.description}</p>
           )}
         </div>
-        {isMember && (category.slug !== "notices" || isAdmin) && (
-          <Link
-            href={`/board/write?category=${category.slug}`}
-            className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-dark"
-          >
-            글쓰기
-          </Link>
-        )}
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="검색"
+              className="w-36 sm:w-44 pl-8 pr-3 py-2 text-xs bg-white dark:bg-dark-card rounded-lg shadow-card dark:shadow-card-dark border-0 focus:ring-1 focus:ring-primary/30 placeholder:text-gray-400"
+            />
+          </div>
+          {isMember && (category.slug !== "notices" || isAdmin) && (
+            <Link
+              href={`/board/write?category=${category.slug}`}
+              className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-dark shrink-0"
+            >
+              글쓰기
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* Tag filter */}
