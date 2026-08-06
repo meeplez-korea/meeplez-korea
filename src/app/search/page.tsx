@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { searchPosts } from "@/lib/storage";
 import { Post } from "@/lib/types";
-import { formatDate, truncate, stripHtml } from "@/lib/utils";
+import { formatDateShort, truncate, stripHtml } from "@/lib/utils";
 import { getCategoryBySlug } from "@/lib/categories";
 
 export default function SearchPage() {
@@ -115,7 +115,7 @@ export default function SearchPage() {
                   <div className="flex items-center gap-2 mt-2.5 text-[11px] text-gray-400">
                     <span className="font-medium">{post.author_name}</span>
                     <span className="text-gray-300 dark:text-gray-600">·</span>
-                    <span className="tabular-nums">{formatDate(post.created_at)}</span>
+                    <span className="tabular-nums">{formatDateShort(post.created_at)}</span>
                   </div>
                 </Link>
               );

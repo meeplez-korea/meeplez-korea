@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { getMyPosts, getMyComments } from "@/lib/storage";
 import { Post, Comment } from "@/lib/types";
-import { formatDate, truncate, stripHtml } from "@/lib/utils";
+import { formatDateShort, truncate, stripHtml } from "@/lib/utils";
 import { getCategoryBySlug } from "@/lib/categories";
 
 export default function ProfilePage() {
@@ -100,7 +100,7 @@ export default function ProfilePage() {
                     )}
                   </div>
                   <div className="flex items-center gap-2 mt-2.5 text-[11px] text-gray-400">
-                    <span className="tabular-nums">{formatDate(post.created_at)}</span>
+                    <span className="tabular-nums">{formatDateShort(post.created_at)}</span>
                     <span className="text-gray-300 dark:text-gray-600">·</span>
                     <span className="tabular-nums">조회 {post.view_count}</span>
                   </div>
@@ -132,7 +132,7 @@ export default function ProfilePage() {
                       <span className="text-gray-300 dark:text-gray-600">·</span>
                     </>
                   )}
-                  <span className="tabular-nums shrink-0">{formatDate(comment.created_at)}</span>
+                  <span className="tabular-nums shrink-0">{formatDateShort(comment.created_at)}</span>
                 </div>
               </Link>
             ))

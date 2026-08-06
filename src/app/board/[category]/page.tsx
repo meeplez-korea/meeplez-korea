@@ -6,7 +6,7 @@ import { useParams } from "next/navigation";
 import { getCategoryBySlug } from "@/lib/categories";
 import { getPosts } from "@/lib/storage";
 import { Post, ReviewTag } from "@/lib/types";
-import { formatDate } from "@/lib/utils";
+import { formatDateShort } from "@/lib/utils";
 import { POSTS_PER_PAGE, CARDS_PER_PAGE } from "@/lib/constants";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -163,7 +163,7 @@ export default function BoardPage() {
                 <h3 className="font-semibold text-sm mt-2 line-clamp-2 group-hover:text-primary transition-colors">{post.title}</h3>
                 <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-100 dark:border-dark-border text-[11px] text-gray-400">
                   <span className="font-medium">{post.author_name}</span>
-                  <span className="tabular-nums">{formatDate(post.created_at)}</span>
+                  <span className="tabular-nums">{formatDateShort(post.created_at)}</span>
                 </div>
               </div>
             </Link>
@@ -197,7 +197,7 @@ export default function BoardPage() {
                     </Link>
                   </td>
                   <td className="py-3.5 px-4 text-xs text-gray-500 dark:text-gray-400 font-medium">{post.author_name}</td>
-                  <td className="py-3.5 px-4 text-xs text-gray-400 hidden md:table-cell tabular-nums">{formatDate(post.created_at)}</td>
+                  <td className="py-3.5 px-4 text-xs text-gray-400 hidden md:table-cell tabular-nums">{formatDateShort(post.created_at)}</td>
                   <td className="py-3.5 px-4 text-xs text-gray-400 text-center hidden md:table-cell tabular-nums">{post.view_count}</td>
                 </tr>
               ))}

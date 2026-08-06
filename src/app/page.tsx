@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getPosts, getPromotions } from "@/lib/storage";
 import { Post, Promotion } from "@/lib/types";
-import { formatDate, truncate, stripHtml, sanitizeHtml } from "@/lib/utils";
+import { formatDateShort, truncate, stripHtml, sanitizeHtml } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function Home() {
@@ -92,7 +92,7 @@ export default function Home() {
                     </p>
                   </div>
                   <span className="text-[11px] text-gray-300 dark:text-gray-600 whitespace-nowrap shrink-0 font-medium tabular-nums">
-                    {formatDate(post.created_at)}
+                    {formatDateShort(post.created_at)}
                   </span>
                 </div>
               </Link>
@@ -158,7 +158,7 @@ export default function Home() {
                   </p>
                   <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-100 dark:border-dark-border text-[11px] text-gray-400 dark:text-gray-500">
                     <span className="font-medium">{post.author_name}</span>
-                    <span className="tabular-nums">{formatDate(post.created_at)}</span>
+                    <span className="tabular-nums">{formatDateShort(post.created_at)}</span>
                   </div>
                 </div>
               </Link>
