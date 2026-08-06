@@ -43,9 +43,14 @@ export default function Home() {
       {promotions.length > 0 && (
         <section className="space-y-3">
           {promotions.map((promo) => (
-            <div key={promo.id} className="bg-white dark:bg-dark-card rounded-xl p-5 border border-gray-100 dark:border-dark-border shadow-sm">
-              <h3 className="font-semibold text-sm">{promo.title}</h3>
-              <div className="post-content text-xs text-gray-500 dark:text-gray-400 mt-1" dangerouslySetInnerHTML={{ __html: promo.content }} />
+            <div key={promo.id} className="bg-gradient-to-r from-primary/10 to-accent/10 dark:from-primary/20 dark:to-accent/20 rounded-xl p-5 border border-primary/20 dark:border-primary/30">
+              <div className="flex items-start gap-3">
+                <span className="text-lg mt-0.5">📣</span>
+                <div>
+                  <h3 className="font-bold text-sm text-primary">{promo.title}</h3>
+                  <div className="post-content text-xs text-gray-600 dark:text-gray-300 mt-1" dangerouslySetInnerHTML={{ __html: promo.content }} />
+                </div>
+              </div>
             </div>
           ))}
         </section>
