@@ -22,6 +22,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" suppressHydrationWarning>
+      <head>
+        <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js" integrity="sha384-DKYJZ8NLiK8MN4/C5P2dtSmLQ4KwPaoqAfyA/DfmEc1VDxu4kyatJ/e3Ize5Mfo" crossOrigin="anonymous" async />
+      </head>
       <body className="font-pretendard antialiased min-h-screen flex flex-col bg-[#F7F4EE] dark:bg-dark-bg text-gray-800 dark:text-gray-200">
         <ThemeProvider>
           <AuthProvider>

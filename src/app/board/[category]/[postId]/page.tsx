@@ -6,8 +6,14 @@ import { useParams, useRouter } from "next/navigation";
 import { getCategoryBySlug } from "@/lib/categories";
 import { getPost, incrementViewCount, deletePost, updatePost, getComments, addComment, deleteComment, createNotification, toggleLike, getLikeStatus } from "@/lib/storage";
 import { Post, Comment } from "@/lib/types";
-import { formatDate, autoLinkUrls, addLazyLoading, sanitizeHtml } from "@/lib/utils";
+import { formatDate, autoLinkUrls, addLazyLoading, sanitizeHtml, stripHtml } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
+
+declare global {
+  interface Window {
+    Kakao?: any;
+  }
+}
 
 export default function PostDetailPage() {
   const params = useParams();
@@ -51,6 +57,35 @@ export default function PostDetailPage() {
       setLiked(l);
     }).catch(() => {});
   }, [postId, user?.id]);
+
+  const handleKakaoShare = () => {
+    if (!window.Kakao || !post) return;
+    if (!window.Kakao.isInitialized()) {
+      window.Kakao.init(process.env.NEXT_PUBLIC_KAKAO_JS_KEY);
+    }
+    const description = stripHtml(post.content).slice(0, 100);
+    window.Kakao.Share.sendDefault({
+      objectType: "feed",
+      content: {
+        title: post.title,
+        description,
+        imageUrl: post.thumbnail_url || `${window.location.origin}/meeplez.jpg`,
+        link: {
+          mobileWebUrl: window.location.href,
+          webUrl: window.location.href,
+        },
+      },
+      buttons: [
+        {
+          title: "게시글 보기",
+          link: {
+            mobileWebUrl: window.location.href,
+            webUrl: window.location.href,
+          },
+        },
+      ],
+    });
+  };
 
   const handleLike = async () => {
     if (!user) return;
@@ -229,7 +264,7 @@ export default function PostDetailPage() {
           />
         </div>
 
-        <div className="px-6 pb-4 flex items-center gap-4 border-t border-gray-100 dark:border-dark-border pt-4">
+        <div className="px-6 pb-4 flex items-center gap-3 border-t border-gray-100 dark:border-dark-border pt-4">
           <button
             onClick={handleLike}
             disabled={!user}
@@ -248,6 +283,19 @@ export default function PostDetailPage() {
             <span className={`text-sm tabular-nums ${liked ? "text-red-500 font-semibold" : "text-gray-400"}`}>
               {likeCount > 0 ? likeCount : ""}
             </span>
+          </button>
+
+          <span className="w-px h-4 bg-gray-200 dark:bg-dark-border" />
+
+          <button
+            onClick={handleKakaoShare}
+            className="flex items-center gap-1.5 text-gray-400 hover:text-[#391B1B] dark:hover:text-yellow-400 transition-colors"
+            title="카카오톡 공유"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 3C6.48 3 2 6.58 2 10.9c0 2.78 1.8 5.22 4.52 6.62-.2.74-.72 2.68-.83 3.1-.13.52.19.51.4.37.17-.11 2.63-1.8 3.7-2.53.7.1 1.42.14 2.21.14 5.52 0 10-3.58 10-7.9S17.52 3 12 3z" />
+            </svg>
+            <span className="text-sm">공유</span>
           </button>
         </div>
 
