@@ -1,3 +1,12 @@
+import DOMPurify from "isomorphic-dompurify";
+
+export function sanitizeHtml(html: string): string {
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: ["p", "br", "b", "i", "u", "s", "strong", "em", "h1", "h2", "h3", "ul", "ol", "li", "a", "img", "span", "div", "blockquote"],
+    ALLOWED_ATTR: ["href", "src", "alt", "target", "rel", "class", "style", "width", "height", "loading"],
+  });
+}
+
 export function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
 }

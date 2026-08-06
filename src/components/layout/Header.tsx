@@ -1,18 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { CATEGORIES } from "@/lib/categories";
 import { SITE_NAME } from "@/lib/constants";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
-import { signOut } from "@/lib/storage";
+import { signOut, getUnreadCount, getNotifications, markNotificationsRead } from "@/lib/storage";
+import { Notification } from "@/lib/types";
 
 function ThemeToggle() {
-  const { theme, setTheme, isDark } = useTheme();
+  const { setTheme, isDark } = useTheme();
+  const debouncing = useRef(false);
 
   const toggleTheme = () => {
+    if (debouncing.current) return;
+    debouncing.current = true;
     setTheme(isDark ? "light" : "dark");
+    setTimeout(() => { debouncing.current = false; }, 300);
   };
 
   return (
@@ -34,9 +39,86 @@ function ThemeToggle() {
   );
 }
 
+function NotificationBell() {
+  const { user } = useAuth();
+  const [unread, setUnread] = useState(0);
+  const [open, setOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    getUnreadCount(user.id).then(setUnread).catch(() => {});
+    const interval = setInterval(() => {
+      getUnreadCount(user.id).then(setUnread).catch(() => {});
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [user]);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const handleOpen = async () => {
+    if (!user) return;
+    setOpen(!open);
+    if (!open) {
+      const data = await getNotifications(user.id);
+      setNotifications(data);
+      if (unread > 0) {
+        await markNotificationsRead(user.id);
+        setUnread(0);
+      }
+    }
+  };
+
+  if (!user) return null;
+
+  return (
+    <div className="relative" ref={ref}>
+      <button onClick={handleOpen} className="p-2 rounded-lg hover:bg-cream-dark dark:hover:bg-dark-hover relative" aria-label="알림">
+        <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+        </svg>
+        {unread > 0 && (
+          <span className="absolute top-1 right-1 w-2 h-2 bg-danger rounded-full" />
+        )}
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full mt-2 w-80 max-h-96 overflow-y-auto bg-white dark:bg-dark-card rounded-xl shadow-card-hover dark:shadow-card-dark-hover border border-gray-200/50 dark:border-dark-border z-50 animate-slide-up">
+          <div className="p-3 border-b border-gray-100 dark:border-dark-border">
+            <h3 className="text-sm font-bold">알림</h3>
+          </div>
+          {notifications.length === 0 ? (
+            <p className="p-4 text-sm text-gray-400 text-center">알림이 없습니다.</p>
+          ) : (
+            notifications.map((n) => (
+              <Link
+                key={n.id}
+                href={n.link}
+                onClick={() => setOpen(false)}
+                className={`block px-4 py-3 border-b border-gray-50 dark:border-dark-border/50 hover:bg-cream/40 dark:hover:bg-dark-hover transition-colors ${!n.is_read ? "bg-primary/3" : ""}`}
+              >
+                <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">{n.message}</p>
+                <p className="text-[11px] text-gray-400 mt-1 tabular-nums">{new Date(n.created_at).toLocaleDateString("ko-KR")}</p>
+              </Link>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const { user, profile, isAdmin, loading } = useAuth();
 
   useEffect(() => {
@@ -45,7 +127,6 @@ export default function Header() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Prevent body scroll when mobile menu is open
   useEffect(() => {
     if (menuOpen) {
       document.body.style.overflow = "hidden";
@@ -61,6 +142,7 @@ export default function Header() {
   };
 
   return (
+    <>
     <header
       className={`sticky top-0 z-50 transition-all duration-300 ${
         scrolled
@@ -70,58 +152,43 @@ export default function Header() {
     >
       <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2.5 group">
-          <img
-            src="/meeplez.jpg"
-            alt="미플즈"
-            className="w-9 h-9 rounded-lg object-cover ring-1 ring-black/5 dark:ring-white/10 group-hover:ring-primary/30 transition-all"
-          />
+          <img src="/meeplez.jpg" alt="미플즈" className="w-9 h-9 rounded-lg object-cover ring-1 ring-black/5 dark:ring-white/10 group-hover:ring-primary/30 transition-all" />
           <span className="text-lg font-bold tracking-tight text-gray-800 dark:text-gray-100">{SITE_NAME}</span>
         </Link>
 
         {/* Desktop nav */}
         <nav className="hidden lg:flex items-center gap-0.5">
+          <Link href="/search" className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-cream-dark dark:hover:bg-dark-hover" aria-label="검색">
+            <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </Link>
+
+          <div className="w-px h-5 bg-gray-200 dark:bg-dark-border mx-1" />
+
           {CATEGORIES.map((cat) => (
-            <Link
-              key={cat.slug}
-              href={`/board/${cat.slug}`}
-              className="px-3 py-1.5 text-[13px] font-medium rounded-lg text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-cream-dark dark:hover:bg-dark-hover"
-            >
-              <span className="mr-1">{cat.icon}</span>
-              {cat.label}
+            <Link key={cat.slug} href={`/board/${cat.slug}`} className="px-3 py-1.5 text-[13px] font-medium rounded-lg text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-cream-dark dark:hover:bg-dark-hover">
+              <span className="mr-1">{cat.icon}</span>{cat.label}
             </Link>
           ))}
           {isAdmin && (
-            <Link
-              href="/admin"
-              className="ml-1 px-2.5 py-1.5 text-xs font-medium text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-cream-dark dark:hover:bg-dark-hover"
-            >
-              관리
-            </Link>
+            <Link href="/admin" className="ml-1 px-2.5 py-1.5 text-xs font-medium text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-cream-dark dark:hover:bg-dark-hover">관리</Link>
           )}
 
           <div className="w-px h-5 bg-gray-200 dark:bg-dark-border mx-1.5" />
 
           <ThemeToggle />
+          <NotificationBell />
 
           {!loading && (
             <div className="ml-1 flex items-center gap-2">
               {user ? (
                 <>
-                  <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{profile?.nickname}</span>
-                  <button
-                    onClick={handleSignOut}
-                    className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                  >
-                    로그아웃
-                  </button>
+                  <Link href="/profile" className="text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-primary">{profile?.nickname}</Link>
+                  <button onClick={() => setShowLogoutConfirm(true)} className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">로그아웃</button>
                 </>
               ) : (
-                <Link
-                  href="/login"
-                  className="px-3.5 py-1.5 text-sm font-medium bg-primary text-white rounded-lg hover:bg-primary-dark active:bg-primary-dark"
-                >
-                  로그인
-                </Link>
+                <Link href="/login" className="px-3.5 py-1.5 text-sm font-medium bg-primary text-white rounded-lg hover:bg-primary-dark active:bg-primary-dark">로그인</Link>
               )}
             </div>
           )}
@@ -129,12 +196,14 @@ export default function Header() {
 
         {/* Mobile */}
         <div className="lg:hidden flex items-center gap-0.5">
+          <Link href="/search" className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-cream-dark dark:hover:bg-dark-hover" aria-label="검색">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </Link>
+          <NotificationBell />
           <ThemeToggle />
-          <button
-            className="p-2 rounded-lg hover:bg-cream-dark dark:hover:bg-dark-hover"
-            onClick={() => setMenuOpen(!menuOpen)}
-            aria-label={menuOpen ? "메뉴 닫기" : "메뉴 열기"}
-          >
+          <button className="p-2 rounded-lg hover:bg-cream-dark dark:hover:bg-dark-hover" onClick={() => setMenuOpen(!menuOpen)} aria-label={menuOpen ? "메뉴 닫기" : "메뉴 열기"}>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               {menuOpen ? (
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
@@ -147,62 +216,45 @@ export default function Header() {
       </div>
 
       {/* Mobile menu overlay */}
-      <div
-        className={`lg:hidden fixed inset-0 top-14 bg-black/20 dark:bg-black/40 z-40 transition-opacity duration-300 ${
-          menuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
-        onClick={() => setMenuOpen(false)}
-      />
+      <div className={`lg:hidden fixed inset-0 top-14 bg-black/20 dark:bg-black/40 z-40 transition-opacity duration-300 ${menuOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`} onClick={() => setMenuOpen(false)} />
 
-      {/* Mobile menu panel */}
-      <nav
-        className={`lg:hidden fixed top-14 left-0 right-0 z-50 bg-[#F7F4EE] dark:bg-dark-card border-b border-gray-200/50 dark:border-dark-border shadow-card-hover dark:shadow-card-dark-hover transition-all duration-300 ease-out-expo ${
-          menuOpen ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0 pointer-events-none"
-        }`}
-      >
+      {/* Mobile menu */}
+      <nav className={`lg:hidden fixed top-14 left-0 right-0 z-50 bg-[#F7F4EE] dark:bg-dark-card border-b border-gray-200/50 dark:border-dark-border shadow-card-hover dark:shadow-card-dark-hover transition-all duration-300 ease-out-expo ${menuOpen ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0 pointer-events-none"}`}>
         <div className="max-w-6xl mx-auto px-4 py-2">
           {CATEGORIES.map((cat) => (
-            <Link
-              key={cat.slug}
-              href={`/board/${cat.slug}`}
-              className="flex items-center gap-2.5 px-3 py-3 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-300 hover:bg-cream-dark dark:hover:bg-dark-hover"
-              onClick={() => setMenuOpen(false)}
-            >
-              <span className="text-base">{cat.icon}</span>
-              {cat.label}
+            <Link key={cat.slug} href={`/board/${cat.slug}`} className="flex items-center gap-2.5 px-3 py-3 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-300 hover:bg-cream-dark dark:hover:bg-dark-hover" onClick={() => setMenuOpen(false)}>
+              <span className="text-base">{cat.icon}</span>{cat.label}
             </Link>
           ))}
           {isAdmin && (
-            <Link
-              href="/admin"
-              className="flex items-center gap-2.5 px-3 py-3 text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-              onClick={() => setMenuOpen(false)}
-            >
-              관리자
-            </Link>
+            <Link href="/admin" className="flex items-center gap-2.5 px-3 py-3 text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" onClick={() => setMenuOpen(false)}>관리자</Link>
           )}
           <div className="border-t border-gray-200/50 dark:border-dark-border my-1" />
           {user ? (
             <div className="px-3 py-3 flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">{profile?.nickname}</span>
-              <button
-                onClick={() => { handleSignOut(); setMenuOpen(false); }}
-                className="text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-              >
-                로그아웃
-              </button>
+              <Link href="/profile" className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary" onClick={() => setMenuOpen(false)}>{profile?.nickname}</Link>
+              <button onClick={() => { setMenuOpen(false); setShowLogoutConfirm(true); }} className="text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">로그아웃</button>
             </div>
           ) : (
-            <Link
-              href="/login"
-              className="block px-3 py-3 text-sm font-medium text-primary"
-              onClick={() => setMenuOpen(false)}
-            >
-              로그인
-            </Link>
+            <Link href="/login" className="block px-3 py-3 text-sm font-medium text-primary" onClick={() => setMenuOpen(false)}>로그인</Link>
           )}
         </div>
       </nav>
     </header>
+
+    {/* Logout confirm */}
+    {showLogoutConfirm && (
+      <div className="fixed inset-0 bg-black/30 dark:bg-black/50 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
+        <div className="bg-white dark:bg-dark-card rounded-2xl p-6 w-full max-w-xs shadow-card-hover dark:shadow-card-dark-hover animate-slide-up">
+          <h3 className="font-bold mb-2">로그아웃</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">로그아웃 하시겠습니까?</p>
+          <div className="flex gap-2 justify-end">
+            <button onClick={() => setShowLogoutConfirm(false)} className="px-4 py-2 text-sm font-medium border border-gray-200 dark:border-dark-border rounded-lg hover:bg-gray-50 dark:hover:bg-dark-hover">취소</button>
+            <button onClick={handleSignOut} className="px-4 py-2 text-sm font-medium bg-primary text-white rounded-lg hover:bg-primary-dark">로그아웃</button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }

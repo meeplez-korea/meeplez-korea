@@ -1,5 +1,5 @@
 import { supabase } from "./supabase";
-import { Post, Comment, CategorySlug, Profile, Promotion } from "./types";
+import { Post, Comment, CategorySlug, Profile, Promotion, Notification } from "./types";
 import { getCached, setCache, clearCache } from "./cache";
 
 // DB 쓰기 전 세션 갱신
@@ -70,26 +70,25 @@ export async function getAllProfiles(): Promise<Profile[]> {
 
 export async function updateUserRole(userId: string, role: string) {
   await ensureSession();
-  return supabase
+  const { error } = await supabase
     .from("profiles")
     .update({ role })
     .eq("id", userId);
+  if (error) throw new Error("역할 변경 실패: " + error.message);
 }
 
 export async function adminUpdateNickname(userId: string, nickname: string) {
   await ensureSession();
-  await supabase.from("profiles").update({ nickname }).eq("id", userId);
-  // 기존 게시글 닉네임 업데이트
+  const { error } = await supabase.from("profiles").update({ nickname }).eq("id", userId);
+  if (error) throw new Error("닉네임 변경 실패: " + error.message);
   await supabase.from("posts").update({ author_name: nickname }).eq("author_id", userId);
-  // 기존 댓글 닉네임 업데이트
   await supabase.from("comments").update({ author_name: nickname }).eq("author_id", userId);
 }
 
 export async function adminDeleteUser(userId: string) {
   await ensureSession();
-  await supabase.from("profiles").delete().eq("id", userId);
-  // auth 유저는 admin API로만 삭제 가능하므로 프로필만 삭제
-  // 유저는 다시 로그인 시 프로필이 없어서 접근 불가
+  const { error } = await supabase.from("profiles").delete().eq("id", userId);
+  if (error) throw new Error("계정 삭제 실패: " + error.message);
 }
 
 // ── Posts ──
@@ -140,27 +139,29 @@ export async function createPost(post: {
   is_private?: boolean;
 }) {
   await ensureSession();
-  clearCache();
-  return supabase.from("posts").insert(post).select().single();
+  const result = await supabase.from("posts").insert(post).select().single();
+  if (!result.error) clearCache();
+  return result;
 }
 
 export async function updatePost(id: string, updates: Partial<Post>) {
   await ensureSession();
-  clearCache();
-  return supabase
+  const result = await supabase
     .from("posts")
     .update({ ...updates, updated_at: new Date().toISOString() })
     .eq("id", id);
+  if (!result.error) clearCache();
+  return result;
 }
 
 export async function deletePost(id: string) {
   await ensureSession();
-  clearCache();
-  return supabase.from("posts").delete().eq("id", id);
+  const result = await supabase.from("posts").delete().eq("id", id);
+  if (!result.error) clearCache();
+  return result;
 }
 
 export async function incrementViewCount(id: string) {
-  // 캐시 우회: DB에서 직접 현재 조회수를 읽어서 +1
   const { data } = await supabase
     .from("posts")
     .select("view_count")
@@ -195,18 +196,20 @@ export async function getComments(postId: string): Promise<Comment[]> {
 
 export async function addComment(postId: string, authorId: string, authorName: string, content: string) {
   await ensureSession();
-  clearCache(`comments-${postId}`);
-  return supabase
+  const result = await supabase
     .from("comments")
     .insert({ post_id: postId, author_id: authorId, author_name: authorName, content })
     .select()
     .single();
+  if (!result.error) clearCache(`comments-${postId}`);
+  return result;
 }
 
 export async function deleteComment(commentId: string) {
   await ensureSession();
-  clearCache();
-  return supabase.from("comments").delete().eq("id", commentId);
+  const result = await supabase.from("comments").delete().eq("id", commentId);
+  if (!result.error) clearCache();
+  return result;
 }
 
 // ── Promotions ──
@@ -227,21 +230,97 @@ export async function getPromotions(): Promise<Promotion[]> {
 
 export async function createPromotion(promotion: { title: string; content: string; icon?: string; image_url?: string }) {
   await ensureSession();
-  clearCache("promotions");
-  return supabase.from("promotions").insert(promotion).select().single();
+  const result = await supabase.from("promotions").insert(promotion).select().single();
+  if (!result.error) clearCache("promotions");
+  return result;
 }
 
 export async function updatePromotion(id: string, updates: Partial<Promotion>) {
   await ensureSession();
-  clearCache("promotions");
-  return supabase
+  const result = await supabase
     .from("promotions")
     .update({ ...updates, updated_at: new Date().toISOString() })
     .eq("id", id);
+  if (!result.error) clearCache("promotions");
+  return result;
 }
 
 export async function deletePromotion(id: string) {
   await ensureSession();
-  clearCache("promotions");
-  return supabase.from("promotions").delete().eq("id", id);
+  const result = await supabase.from("promotions").delete().eq("id", id);
+  if (!result.error) clearCache("promotions");
+  return result;
+}
+
+// ── Search ──
+
+export async function searchPosts(query: string): Promise<Post[]> {
+  if (!query.trim()) return [];
+  const { data } = await supabase
+    .from("posts")
+    .select("*")
+    .or(`title.ilike.%${query}%,content.ilike.%${query}%`)
+    .eq("is_private", false)
+    .order("created_at", { ascending: false })
+    .limit(30);
+  return data || [];
+}
+
+// ── My Posts / Comments (Profile) ──
+
+export async function getMyPosts(userId: string): Promise<Post[]> {
+  const { data } = await supabase
+    .from("posts")
+    .select("*")
+    .eq("author_id", userId)
+    .order("created_at", { ascending: false });
+  return data || [];
+}
+
+export async function getMyComments(userId: string): Promise<(Comment & { post_title?: string })[]> {
+  const { data } = await supabase
+    .from("comments")
+    .select("*, posts(title)")
+    .eq("author_id", userId)
+    .order("created_at", { ascending: false });
+
+  return (data || []).map((c: any) => ({
+    ...c,
+    post_title: c.posts?.title,
+  }));
+}
+
+// ── Notifications ──
+
+export async function getNotifications(userId: string): Promise<Notification[]> {
+  const { data } = await supabase
+    .from("notifications")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(20);
+  return data || [];
+}
+
+export async function getUnreadCount(userId: string): Promise<number> {
+  const { count } = await supabase
+    .from("notifications")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .eq("is_read", false);
+  return count || 0;
+}
+
+export async function markNotificationsRead(userId: string) {
+  await supabase
+    .from("notifications")
+    .update({ is_read: true })
+    .eq("user_id", userId)
+    .eq("is_read", false);
+}
+
+export async function createNotification(userId: string, type: string, title: string, message: string, link: string) {
+  return supabase
+    .from("notifications")
+    .insert({ user_id: userId, type, title, message, link });
 }

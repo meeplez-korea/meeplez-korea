@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { getCategoryBySlug } from "@/lib/categories";
-import { getPost, incrementViewCount, deletePost, updatePost, getComments, addComment, deleteComment } from "@/lib/storage";
+import { getPost, incrementViewCount, deletePost, updatePost, getComments, addComment, deleteComment, createNotification } from "@/lib/storage";
 import { Post, Comment } from "@/lib/types";
-import { formatDate, autoLinkUrls, addLazyLoading } from "@/lib/utils";
+import { formatDate, autoLinkUrls, addLazyLoading, sanitizeHtml } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function PostDetailPage() {
@@ -21,35 +21,88 @@ export default function PostDetailPage() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentContent, setCommentContent] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [dataLoading, setDataLoading] = useState(true);
+  const [commentSubmitting, setCommentSubmitting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    getPost(postId).then((p) => {
-      if (p) {
-        incrementViewCount(postId);
-        setPost({ ...p, view_count: p.view_count + 1 });
-      }
-    });
-    getComments(postId).then(setComments);
+    let cancelled = false;
+    setDataLoading(true);
+    Promise.all([
+      getPost(postId).then((p) => {
+        if (p && !cancelled) {
+          incrementViewCount(postId).catch(() => {});
+          setPost({ ...p, view_count: p.view_count + 1 });
+        }
+      }),
+      getComments(postId).then((c) => { if (!cancelled) setComments(c); }),
+    ]).finally(() => { if (!cancelled) setDataLoading(false); });
+    return () => { cancelled = true; };
   }, [postId]);
 
   const handleDelete = async () => {
-    if (!post) return;
-    await deletePost(post.id);
-    router.push(`/board/${categorySlug}`);
+    if (!post || deleting) return;
+    setDeleting(true);
+    try {
+      const result = await deletePost(post.id);
+      if (result.error) {
+        alert("삭제에 실패했습니다. 다시 시도해주세요.");
+        setDeleting(false);
+        return;
+      }
+      router.push(`/board/${categorySlug}`);
+    } catch {
+      alert("삭제에 실패했습니다. 다시 시도해주세요.");
+      setDeleting(false);
+    }
   };
 
   const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!commentContent.trim() || !user || !profile) return;
-    await addComment(postId, user.id, profile.nickname, commentContent);
-    setCommentContent("");
-    getComments(postId).then(setComments);
+    if (!commentContent.trim() || !user || !profile || commentSubmitting) return;
+    setCommentSubmitting(true);
+    try {
+      const result = await addComment(postId, user.id, profile.nickname, commentContent);
+      if (result.error) {
+        alert("댓글 등록에 실패했습니다. 다시 시도해주세요.");
+      } else {
+        setCommentContent("");
+        // 글 작성자에게 알림 (본인 댓글 제외)
+        if (post && post.author_id !== user.id) {
+          createNotification(
+            post.author_id,
+            "comment",
+            "새 댓글",
+            `${profile.nickname}님이 "${post.title}"에 댓글을 남겼습니다.`,
+            `/board/${categorySlug}/${postId}`
+          ).catch(() => {});
+        }
+        const updated = await getComments(postId);
+        setComments(updated);
+      }
+    } catch {
+      alert("댓글 등록에 실패했습니다. 다시 시도해주세요.");
+    }
+    setCommentSubmitting(false);
   };
 
   const handleDeleteComment = async (commentId: string) => {
-    await deleteComment(commentId);
-    getComments(postId).then(setComments);
+    try {
+      const result = await deleteComment(commentId);
+      if (result.error) {
+        alert("댓글 삭제에 실패했습니다.");
+        return;
+      }
+      const updated = await getComments(postId);
+      setComments(updated);
+    } catch {
+      alert("댓글 삭제에 실패했습니다.");
+    }
   };
+
+  if (dataLoading) {
+    return <div className="max-w-4xl mx-auto px-4 py-16" />;
+  }
 
   if (!post || !category) {
     return (
@@ -119,7 +172,7 @@ export default function PostDetailPage() {
         <div className="p-6">
           <div
             className="post-content text-sm leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: addLazyLoading(autoLinkUrls(post.content)) }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(addLazyLoading(autoLinkUrls(post.content))) }}
           />
         </div>
 
@@ -166,15 +219,17 @@ export default function PostDetailPage() {
             <div className="flex gap-2 justify-end">
               <button
                 onClick={() => setShowDeleteConfirm(false)}
-                className="px-4 py-2 text-sm font-medium border border-gray-200 dark:border-dark-border rounded-lg hover:bg-gray-50 dark:hover:bg-dark-hover"
+                disabled={deleting}
+                className="px-4 py-2 text-sm font-medium border border-gray-200 dark:border-dark-border rounded-lg hover:bg-gray-50 dark:hover:bg-dark-hover disabled:opacity-50"
               >
                 취소
               </button>
               <button
                 onClick={handleDelete}
-                className="px-4 py-2 text-sm font-medium bg-danger text-white rounded-lg hover:brightness-95"
+                disabled={deleting}
+                className="px-4 py-2 text-sm font-medium bg-danger text-white rounded-lg hover:brightness-95 disabled:opacity-50"
               >
-                삭제
+                {deleting ? "삭제 중..." : "삭제"}
               </button>
             </div>
           </div>
@@ -224,9 +279,10 @@ export default function PostDetailPage() {
             />
             <button
               type="submit"
-              className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-xl hover:bg-primary-dark self-end"
+              disabled={commentSubmitting || !commentContent.trim()}
+              className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-xl hover:bg-primary-dark self-end disabled:opacity-50"
             >
-              등록
+              {commentSubmitting ? "등록 중..." : "등록"}
             </button>
           </form>
         ) : (

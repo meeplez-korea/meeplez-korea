@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getPosts, getPromotions } from "@/lib/storage";
 import { Post, Promotion } from "@/lib/types";
-import { formatDate, truncate, stripHtml } from "@/lib/utils";
+import { formatDate, truncate, stripHtml, sanitizeHtml } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function Home() {
@@ -50,7 +50,7 @@ export default function Home() {
                   <span className="text-base mt-0.5 shrink-0">{promo.icon || "📣"}</span>
                   <div className="min-w-0">
                     <h3 className="font-semibold text-sm text-gray-700 dark:text-gray-200">{promo.title}</h3>
-                    <div className="post-content text-xs text-gray-500 dark:text-gray-400 mt-0.5" dangerouslySetInnerHTML={{ __html: promo.content }} />
+                    <div className="post-content text-xs text-gray-500 dark:text-gray-400 mt-0.5" dangerouslySetInnerHTML={{ __html: sanitizeHtml(promo.content) }} />
                   </div>
                 </div>
                 {i < promotions.length - 1 && <div className="border-b border-gray-200/50 dark:border-dark-border mt-3" />}
