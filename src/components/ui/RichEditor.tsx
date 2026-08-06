@@ -2,7 +2,7 @@
 
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import Image from "@tiptap/extension-image";
+import ImageResize from "tiptap-extension-resize-image";
 import Link from "@tiptap/extension-link";
 import TextAlign from "@tiptap/extension-text-align";
 import Underline from "@tiptap/extension-underline";
@@ -197,7 +197,7 @@ export default function RichEditor({ value, onChange, placeholder }: RichEditorP
       StarterKit.configure({
         heading: { levels: [1, 2, 3] },
       }),
-      Image.configure({
+      ImageResize.configure({
         HTMLAttributes: { class: "max-w-full rounded-lg my-2" },
         allowBase64: true,
       }),

@@ -172,6 +172,33 @@ select:focus {
   max-width: 100%;
   border-radius: 10px;
   margin: 8px 0;
+  cursor: pointer;
+}
+
+.rich-editor .tiptap img.ProseMirror-selectednode {
+  outline: 2px solid #6BA68E;
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+
+/* Image resize handle */
+.rich-editor .image-resizer {
+  display: inline-flex;
+  position: relative;
+}
+
+.rich-editor .image-resizer .resize-trigger {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  width: 12px;
+  height: 12px;
+  background: #6BA68E;
+  border: 2px solid white;
+  border-radius: 3px;
+  cursor: se-resize;
+  z-index: 10;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
 }
 
 .rich-editor .tiptap h1 { font-size: 1.5em; font-weight: 700; margin: 0.5em 0; }
