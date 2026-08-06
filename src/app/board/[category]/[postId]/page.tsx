@@ -20,6 +20,8 @@ export default function PostDetailPage() {
   const [post, setPost] = useState<Post | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentContent, setCommentContent] = useState("");
+  const [replyTo, setReplyTo] = useState<Comment | null>(null);
+  const [replyContent, setReplyContent] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
   const [commentSubmitting, setCommentSubmitting] = useState(false);
@@ -105,6 +107,35 @@ export default function PostDetailPage() {
     setCommentSubmitting(false);
   };
 
+  const handleAddReply = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!replyContent.trim() || !user || !profile || !replyTo || commentSubmitting) return;
+    setCommentSubmitting(true);
+    try {
+      const result = await addComment(postId, user.id, profile.nickname, replyContent, replyTo.id);
+      if (result.error) {
+        alert("답글 등록에 실패했습니다. 다시 시도해주세요.");
+      } else {
+        setReplyContent("");
+        setReplyTo(null);
+        if (replyTo.author_id !== user.id) {
+          createNotification(
+            replyTo.author_id,
+            "reply",
+            "새 답글",
+            `${profile.nickname}님이 회원님의 댓글에 답글을 남겼습니다.`,
+            `/board/${categorySlug}/${postId}`
+          ).catch(() => {});
+        }
+        const updated = await getComments(postId);
+        setComments(updated);
+      }
+    } catch {
+      alert("답글 등록에 실패했습니다. 다시 시도해주세요.");
+    }
+    setCommentSubmitting(false);
+  };
+
   const handleDeleteComment = async (commentId: string) => {
     try {
       const result = await deleteComment(commentId);
@@ -118,6 +149,9 @@ export default function PostDetailPage() {
       alert("댓글 삭제에 실패했습니다.");
     }
   };
+
+  const topComments = comments.filter((c) => !c.parent_id);
+  const getReplies = (parentId: string) => comments.filter((c) => c.parent_id === parentId);
 
   if (dataLoading) {
     return <div className="max-w-4xl mx-auto px-4 py-16" />;
@@ -285,27 +319,94 @@ export default function PostDetailPage() {
           <span className="text-sm font-medium text-gray-400 tabular-nums">{comments.length}</span>
         </h3>
 
-        {comments.length > 0 && (
+        {topComments.length > 0 && (
           <div className="space-y-2 mb-6">
-            {comments.map((comment) => (
-              <div key={comment.id} className="flex justify-between items-start p-3.5 bg-cream/30 dark:bg-dark-hover rounded-xl">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm font-semibold">{comment.author_name}</span>
-                    <span className="text-[11px] text-gray-400 tabular-nums">{formatDate(comment.created_at)}</span>
+            {topComments.map((comment) => {
+              const replies = getReplies(comment.id);
+              return (
+                <div key={comment.id}>
+                  <div className="flex justify-between items-start p-3.5 bg-cream/30 dark:bg-dark-hover rounded-xl">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-sm font-semibold">{comment.author_name}</span>
+                        <span className="text-[11px] text-gray-400 tabular-nums">{formatDate(comment.created_at)}</span>
+                      </div>
+                      <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{comment.content}</p>
+                      {isMember && (
+                        <button
+                          onClick={() => { setReplyTo(replyTo?.id === comment.id ? null : comment); setReplyContent(""); }}
+                          className="text-xs text-gray-400 hover:text-primary mt-1.5"
+                        >
+                          답글
+                        </button>
+                      )}
+                    </div>
+                    {(user?.id === comment.author_id || isAdmin) && (
+                      <button
+                        onClick={() => handleDeleteComment(comment.id)}
+                        className="text-xs text-gray-400 hover:text-danger shrink-0 ml-3"
+                      >
+                        삭제
+                      </button>
+                    )}
                   </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{comment.content}</p>
+
+                  {/* Reply form */}
+                  {replyTo?.id === comment.id && (
+                    <form onSubmit={handleAddReply} className="ml-6 mt-2 flex gap-2">
+                      <textarea
+                        autoFocus
+                        placeholder={`${comment.author_name}님에게 답글...`}
+                        value={replyContent}
+                        onChange={(e) => setReplyContent(e.target.value)}
+                        className="flex-1 px-3 py-2 border border-gray-200 dark:border-dark-border dark:bg-dark-card rounded-lg text-sm resize-none h-16"
+                      />
+                      <div className="flex flex-col gap-1 self-end">
+                        <button
+                          type="submit"
+                          disabled={commentSubmitting || !replyContent.trim()}
+                          className="px-3 py-1.5 bg-primary text-white text-xs font-medium rounded-lg hover:bg-primary-dark disabled:opacity-50"
+                        >
+                          {commentSubmitting ? "등록 중..." : "등록"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setReplyTo(null)}
+                          className="px-3 py-1.5 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                        >
+                          취소
+                        </button>
+                      </div>
+                    </form>
+                  )}
+
+                  {/* Replies */}
+                  {replies.length > 0 && (
+                    <div className="ml-6 mt-1.5 space-y-1.5">
+                      {replies.map((reply) => (
+                        <div key={reply.id} className="flex justify-between items-start p-3 bg-cream/20 dark:bg-dark-hover/60 rounded-lg border-l-2 border-gray-200 dark:border-dark-border">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-sm font-semibold">{reply.author_name}</span>
+                              <span className="text-[11px] text-gray-400 tabular-nums">{formatDate(reply.created_at)}</span>
+                            </div>
+                            <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{reply.content}</p>
+                          </div>
+                          {(user?.id === reply.author_id || isAdmin) && (
+                            <button
+                              onClick={() => handleDeleteComment(reply.id)}
+                              className="text-xs text-gray-400 hover:text-danger shrink-0 ml-3"
+                            >
+                              삭제
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                {(user?.id === comment.author_id || isAdmin) && (
-                  <button
-                    onClick={() => handleDeleteComment(comment.id)}
-                    className="text-xs text-gray-400 hover:text-danger shrink-0 ml-3"
-                  >
-                    삭제
-                  </button>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 

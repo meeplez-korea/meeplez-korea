@@ -39,6 +39,7 @@ export interface Post {
 export interface Comment {
   id: string;
   post_id: string;
+  parent_id?: string | null;
   author_id: string;
   author_name: string;
   content: string;

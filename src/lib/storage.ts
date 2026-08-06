@@ -194,11 +194,13 @@ export async function getComments(postId: string): Promise<Comment[]> {
   return result;
 }
 
-export async function addComment(postId: string, authorId: string, authorName: string, content: string) {
+export async function addComment(postId: string, authorId: string, authorName: string, content: string, parentId?: string) {
   await ensureSession();
+  const row: Record<string, unknown> = { post_id: postId, author_id: authorId, author_name: authorName, content };
+  if (parentId) row.parent_id = parentId;
   const result = await supabase
     .from("comments")
-    .insert({ post_id: postId, author_id: authorId, author_name: authorName, content })
+    .insert(row)
     .select()
     .single();
   if (!result.error) clearCache(`comments-${postId}`);
