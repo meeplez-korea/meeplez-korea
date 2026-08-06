@@ -90,22 +90,38 @@ function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-80 max-h-96 overflow-y-auto bg-white dark:bg-dark-card rounded-xl shadow-card-hover dark:shadow-card-dark-hover border border-gray-200/50 dark:border-dark-border z-50 animate-slide-up">
-          <div className="p-3 border-b border-gray-100 dark:border-dark-border">
+        <div className="absolute right-0 top-full mt-2 w-80 max-h-[28rem] overflow-y-auto bg-white dark:bg-dark-card rounded-xl shadow-card-hover dark:shadow-card-dark-hover border border-gray-200/50 dark:border-dark-border z-50 animate-slide-up max-lg:fixed max-lg:top-16 max-lg:left-3 max-lg:right-3 max-lg:w-auto">
+          <div className="px-4 py-3 border-b border-gray-100 dark:border-dark-border flex items-center justify-between">
             <h3 className="text-sm font-bold">알림</h3>
+            {notifications.length > 0 && (
+              <span className="text-[11px] text-gray-400">{notifications.length}건</span>
+            )}
           </div>
           {notifications.length === 0 ? (
-            <p className="p-4 text-sm text-gray-400 text-center">알림이 없습니다.</p>
+            <div className="py-10 text-center">
+              <svg className="w-8 h-8 mx-auto mb-2 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              <p className="text-sm text-gray-400">알림이 없습니다</p>
+            </div>
           ) : (
             notifications.map((n) => (
               <Link
                 key={n.id}
                 href={n.link}
                 onClick={() => setOpen(false)}
-                className={`block px-4 py-3 border-b border-gray-50 dark:border-dark-border/50 hover:bg-cream/40 dark:hover:bg-dark-hover transition-colors ${!n.is_read ? "bg-primary/3" : ""}`}
+                className={`block px-4 py-3 border-b border-gray-100/80 dark:border-dark-border/50 hover:bg-cream/40 dark:hover:bg-dark-hover transition-colors ${!n.is_read ? "bg-primary/5" : ""}`}
               >
-                <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">{n.message}</p>
-                <p className="text-[11px] text-gray-400 mt-1 tabular-nums">{new Date(n.created_at).toLocaleDateString("ko-KR")}</p>
+                <div className="flex items-start gap-3">
+                  {!n.is_read && (
+                    <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+                  )}
+                  <div className={n.is_read ? "pl-[18px]" : ""}>
+                    <p className="text-[13px] font-semibold text-gray-800 dark:text-gray-200">{n.title}</p>
+                    <p className="text-[13px] text-gray-500 dark:text-gray-400 line-clamp-2 mt-0.5 leading-relaxed">{n.message}</p>
+                    <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1 tabular-nums">{new Date(n.created_at).toLocaleDateString("ko-KR")}</p>
+                  </div>
+                </div>
               </Link>
             ))
           )}
