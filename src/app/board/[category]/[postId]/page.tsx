@@ -59,32 +59,39 @@ export default function PostDetailPage() {
   }, [postId, user?.id]);
 
   const handleKakaoShare = () => {
-    if (!window.Kakao || !post) return;
-    if (!window.Kakao.isInitialized()) {
-      window.Kakao.init(process.env.NEXT_PUBLIC_KAKAO_JS_KEY);
-    }
-    const description = stripHtml(post.content).slice(0, 100);
-    window.Kakao.Share.sendDefault({
-      objectType: "feed",
-      content: {
-        title: post.title,
-        description,
-        imageUrl: post.thumbnail_url || `${window.location.origin}/meeplez.jpg`,
-        link: {
-          mobileWebUrl: window.location.href,
-          webUrl: window.location.href,
-        },
-      },
-      buttons: [
-        {
-          title: "게시글 보기",
+    if (!post) return;
+    const tryShare = () => {
+      if (!window.Kakao) {
+        alert("카카오 SDK를 불러오는 중입니다. 잠시 후 다시 시도해주세요.");
+        return;
+      }
+      if (!window.Kakao.isInitialized()) {
+        window.Kakao.init(process.env.NEXT_PUBLIC_KAKAO_JS_KEY);
+      }
+      const description = stripHtml(post.content).slice(0, 100);
+      window.Kakao.Share.sendDefault({
+        objectType: "feed",
+        content: {
+          title: post.title,
+          description,
+          imageUrl: post.thumbnail_url || `${window.location.origin}/meeplez.jpg`,
           link: {
             mobileWebUrl: window.location.href,
             webUrl: window.location.href,
           },
         },
-      ],
-    });
+        buttons: [
+          {
+            title: "게시글 보기",
+            link: {
+              mobileWebUrl: window.location.href,
+              webUrl: window.location.href,
+            },
+          },
+        ],
+      });
+    };
+    tryShare();
   };
 
   const handleLike = async () => {

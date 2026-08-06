@@ -336,7 +336,7 @@ export async function toggleLike(postId: string, userId: string): Promise<boolea
     .select("id")
     .eq("post_id", postId)
     .eq("user_id", userId)
-    .single();
+    .maybeSingle();
 
   if (data) {
     await supabase.from("post_likes").delete().eq("id", data.id);
@@ -360,7 +360,7 @@ export async function getLikeStatus(postId: string, userId?: string): Promise<{ 
       .select("id")
       .eq("post_id", postId)
       .eq("user_id", userId)
-      .single();
+      .maybeSingle();
     liked = !!data;
   }
 
