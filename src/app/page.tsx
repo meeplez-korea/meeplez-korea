@@ -28,6 +28,9 @@ export default function Home() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-10">
+      {dataLoading ? (
+        <div className="min-h-[50vh]" />
+      ) : (<>
       {!loading && user && isPending && (
         <div className="p-4 bg-secondary/10 border border-secondary/20 rounded-xl">
           <p className="text-sm font-semibold text-secondary">승인 대기 중입니다</p>
@@ -180,6 +183,7 @@ export default function Home() {
           </a>
         </div>
       </section>
+      </>)}
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { supabase } from "./supabase";
 import { Post, Comment, CategorySlug, Profile, Promotion } from "./types";
+import { getCached, setCache, clearCache } from "./cache";
 
 // DB 쓰기 전 세션 갱신
 async function ensureSession() {
@@ -94,6 +95,10 @@ export async function adminDeleteUser(userId: string) {
 // ── Posts ──
 
 export async function getPosts(category?: CategorySlug): Promise<Post[]> {
+  const cacheKey = `posts-${category || "all"}`;
+  const cached = getCached<Post[]>(cacheKey);
+  if (cached) return cached;
+
   let query = supabase
     .from("posts")
     .select("*")
@@ -104,15 +109,22 @@ export async function getPosts(category?: CategorySlug): Promise<Post[]> {
   }
 
   const { data } = await query;
-  return data || [];
+  const result = data || [];
+  setCache(cacheKey, result);
+  return result;
 }
 
 export async function getPost(id: string): Promise<Post | null> {
+  const cacheKey = `post-${id}`;
+  const cached = getCached<Post>(cacheKey);
+  if (cached) return cached;
+
   const { data } = await supabase
     .from("posts")
     .select("*")
     .eq("id", id)
     .single();
+  if (data) setCache(cacheKey, data);
   return data;
 }
 
@@ -128,11 +140,13 @@ export async function createPost(post: {
   is_private?: boolean;
 }) {
   await ensureSession();
+  clearCache();
   return supabase.from("posts").insert(post).select().single();
 }
 
 export async function updatePost(id: string, updates: Partial<Post>) {
   await ensureSession();
+  clearCache();
   return supabase
     .from("posts")
     .update({ ...updates, updated_at: new Date().toISOString() })
@@ -141,6 +155,7 @@ export async function updatePost(id: string, updates: Partial<Post>) {
 
 export async function deletePost(id: string) {
   await ensureSession();
+  clearCache();
   return supabase.from("posts").delete().eq("id", id);
 }
 
@@ -157,16 +172,23 @@ export async function incrementViewCount(id: string) {
 // ── Comments ──
 
 export async function getComments(postId: string): Promise<Comment[]> {
+  const cacheKey = `comments-${postId}`;
+  const cached = getCached<Comment[]>(cacheKey);
+  if (cached) return cached;
+
   const { data } = await supabase
     .from("comments")
     .select("*")
     .eq("post_id", postId)
     .order("created_at", { ascending: true });
-  return data || [];
+  const result = data || [];
+  setCache(cacheKey, result);
+  return result;
 }
 
 export async function addComment(postId: string, authorId: string, authorName: string, content: string) {
   await ensureSession();
+  clearCache(`comments-${postId}`);
   return supabase
     .from("comments")
     .insert({ post_id: postId, author_id: authorId, author_name: authorName, content })
@@ -176,27 +198,35 @@ export async function addComment(postId: string, authorId: string, authorName: s
 
 export async function deleteComment(commentId: string) {
   await ensureSession();
+  clearCache();
   return supabase.from("comments").delete().eq("id", commentId);
 }
 
 // ── Promotions ──
 
 export async function getPromotions(): Promise<Promotion[]> {
+  const cached = getCached<Promotion[]>("promotions");
+  if (cached) return cached;
+
   const { data } = await supabase
     .from("promotions")
     .select("*")
     .eq("is_active", true)
     .order("sort_order", { ascending: true });
-  return data || [];
+  const result = data || [];
+  setCache("promotions", result);
+  return result;
 }
 
 export async function createPromotion(promotion: { title: string; content: string; image_url?: string }) {
   await ensureSession();
+  clearCache("promotions");
   return supabase.from("promotions").insert(promotion).select().single();
 }
 
 export async function updatePromotion(id: string, updates: Partial<Promotion>) {
   await ensureSession();
+  clearCache("promotions");
   return supabase
     .from("promotions")
     .update({ ...updates, updated_at: new Date().toISOString() })
@@ -205,5 +235,6 @@ export async function updatePromotion(id: string, updates: Partial<Promotion>) {
 
 export async function deletePromotion(id: string) {
   await ensureSession();
+  clearCache("promotions");
   return supabase.from("promotions").delete().eq("id", id);
 }
