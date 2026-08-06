@@ -86,7 +86,8 @@ export default function RichEditor({ value, onChange, placeholder }: RichEditorP
   const handlerAttached = useRef(false);
   const resizeRegistered = useRef(false);
   const lastValueRef = useRef(value);
-  const isInternalChange = useRef(false);
+  const isComposing = useRef(false);
+  const pendingContent = useRef<string | null>(null);
 
   // Quill 리사이즈 모듈 + 커스텀 Image 블롯 등록
   useEffect(() => {
@@ -141,14 +142,10 @@ export default function RichEditor({ value, onChange, placeholder }: RichEditorP
 
   // 외부에서 value가 변경되었을 때만 에디터에 반영 (편집 모드 로드 등)
   useEffect(() => {
-    if (isInternalChange.current) {
-      isInternalChange.current = false;
-      return;
-    }
     if (value !== lastValueRef.current) {
       lastValueRef.current = value;
       const editor = quillRef.current?.getEditor?.();
-      if (editor) {
+      if (editor && value) {
         const selection = editor.getSelection();
         editor.clipboard.dangerouslyPasteHTML(value);
         if (selection) {
@@ -158,9 +155,43 @@ export default function RichEditor({ value, onChange, placeholder }: RichEditorP
     }
   }, [value]);
 
+  // IME 조합 감지 (한글 입력 시 글자 삭제 방지)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const editor = quillRef.current?.getEditor?.();
+      if (!editor) return;
+      const editorEl = editor.root as HTMLElement;
+      if (!editorEl) return;
+
+      const onCompositionStart = () => { isComposing.current = true; };
+      const onCompositionEnd = () => {
+        isComposing.current = false;
+        if (pendingContent.current !== null) {
+          lastValueRef.current = pendingContent.current;
+          onChange(pendingContent.current);
+          pendingContent.current = null;
+        }
+      };
+
+      editorEl.addEventListener("compositionstart", onCompositionStart);
+      editorEl.addEventListener("compositionend", onCompositionEnd);
+      clearInterval(interval);
+
+      return () => {
+        editorEl.removeEventListener("compositionstart", onCompositionStart);
+        editorEl.removeEventListener("compositionend", onCompositionEnd);
+      };
+    }, 200);
+
+    return () => clearInterval(interval);
+  }, [onChange]);
+
   const handleChange = useCallback((content: string) => {
+    if (isComposing.current) {
+      pendingContent.current = content;
+      return;
+    }
     lastValueRef.current = content;
-    isInternalChange.current = true;
     onChange(content);
   }, [onChange]);
 
