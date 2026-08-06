@@ -113,11 +113,7 @@ export default function BoardPage() {
       )}
 
       {/* Posts */}
-      {dataLoading ? (
-        <div className="bg-white dark:bg-dark-card rounded-xl p-12 text-center text-gray-400 border border-gray-100 dark:border-dark-border">
-          불러오는 중...
-        </div>
-      ) : currentPosts.length === 0 ? (
+      {dataLoading ? null : currentPosts.length === 0 ? (
         <div className="bg-white dark:bg-dark-card rounded-xl p-12 text-center text-gray-400 border border-gray-100 dark:border-dark-border">
           게시글이 없습니다.
         </div>
