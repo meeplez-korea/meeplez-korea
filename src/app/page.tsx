@@ -45,7 +45,7 @@ export default function Home() {
           {promotions.map((promo) => (
             <div key={promo.id} className="bg-gradient-to-r from-primary/10 to-accent/10 dark:from-primary/20 dark:to-accent/20 rounded-xl p-5 border border-primary/20 dark:border-primary/30">
               <div className="flex items-start gap-3">
-                <span className="text-lg mt-0.5">📣</span>
+                <span className="text-lg mt-0.5">{promo.icon || "📣"}</span>
                 <div>
                   <h3 className="font-bold text-sm text-primary">{promo.title}</h3>
                   <div className="post-content text-xs text-gray-600 dark:text-gray-300 mt-1" dangerouslySetInnerHTML={{ __html: promo.content }} />

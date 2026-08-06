@@ -18,6 +18,7 @@ export default function AdminPage() {
   // Promotion form
   const [promoTitle, setPromoTitle] = useState("");
   const [promoContent, setPromoContent] = useState("");
+  const [promoIcon, setPromoIcon] = useState("📣");
   const [editingPromo, setEditingPromo] = useState<string | null>(null);
 
   // Member edit
@@ -74,13 +75,14 @@ export default function AdminPage() {
     if (!promoTitle.trim() || !promoContent.trim()) return;
 
     if (editingPromo) {
-      await updatePromotion(editingPromo, { title: promoTitle, content: promoContent });
+      await updatePromotion(editingPromo, { title: promoTitle, content: promoContent, icon: promoIcon });
     } else {
-      await createPromotion({ title: promoTitle, content: promoContent });
+      await createPromotion({ title: promoTitle, content: promoContent, icon: promoIcon });
     }
 
     setPromoTitle("");
     setPromoContent("");
+    setPromoIcon("📣");
     setEditingPromo(null);
     const updated = await getPromotions();
     setPromotions(updated);
@@ -96,6 +98,7 @@ export default function AdminPage() {
     setEditingPromo(promo.id);
     setPromoTitle(promo.title);
     setPromoContent(promo.content);
+    setPromoIcon(promo.icon || "📣");
   };
 
   if (loading) {
@@ -262,6 +265,25 @@ export default function AdminPage() {
       {tab === "promotions" && (
         <div className="space-y-4">
           <form onSubmit={handlePromoSubmit} className="bg-white dark:bg-dark-card rounded-xl p-4 border border-gray-100 dark:border-dark-border space-y-3">
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">아이콘</label>
+              <div className="flex gap-1.5 flex-wrap">
+                {["📣", "🎉", "🔔", "⭐", "🎯", "🎁", "💡", "🏆", "📢", "✨", "🔥", "💬", "📌", "❤️", "👋", "🎮"].map((icon) => (
+                  <button
+                    key={icon}
+                    type="button"
+                    onClick={() => setPromoIcon(icon)}
+                    className={`w-9 h-9 text-lg rounded-lg flex items-center justify-center transition-colors ${
+                      promoIcon === icon
+                        ? "bg-primary/20 border-2 border-primary"
+                        : "bg-gray-100 dark:bg-dark-border hover:bg-gray-200 dark:hover:bg-dark-border/80"
+                    }`}
+                  >
+                    {icon}
+                  </button>
+                ))}
+              </div>
+            </div>
             <input
               type="text"
               value={promoTitle}
@@ -281,7 +303,7 @@ export default function AdminPage() {
               {editingPromo && (
                 <button
                   type="button"
-                  onClick={() => { setEditingPromo(null); setPromoTitle(""); setPromoContent(""); }}
+                  onClick={() => { setEditingPromo(null); setPromoTitle(""); setPromoContent(""); setPromoIcon("📣"); }}
                   className="px-4 py-2 border border-gray-200 dark:border-dark-border text-sm rounded-lg hover:bg-gray-50 dark:hover:bg-dark-border"
                 >
                   취소

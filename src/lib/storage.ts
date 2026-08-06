@@ -218,7 +218,7 @@ export async function getPromotions(): Promise<Promotion[]> {
   return result;
 }
 
-export async function createPromotion(promotion: { title: string; content: string; image_url?: string }) {
+export async function createPromotion(promotion: { title: string; content: string; icon?: string; image_url?: string }) {
   await ensureSession();
   clearCache("promotions");
   return supabase.from("promotions").insert(promotion).select().single();

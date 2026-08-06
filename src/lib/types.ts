@@ -49,6 +49,7 @@ export interface Promotion {
   id: string;
   title: string;
   content: string;
+  icon?: string;
   image_url?: string;
   is_active: boolean;
   sort_order: number;
