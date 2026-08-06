@@ -12,15 +12,18 @@ export default function Home() {
   const [notices, setNotices] = useState<Post[]>([]);
   const [reviews, setReviews] = useState<Post[]>([]);
   const [promotions, setPromotions] = useState<Promotion[]>([]);
+  const [dataLoading, setDataLoading] = useState(true);
 
   useEffect(() => {
-    getPosts("notices").then((data) => {
-      const pinned = data.filter((p) => p.is_pinned);
-      const unpinned = data.filter((p) => !p.is_pinned);
-      setNotices([...pinned, ...unpinned].slice(0, 3));
-    });
-    getPosts("reviews").then((data) => setReviews(data.slice(0, 6)));
-    getPromotions().then(setPromotions);
+    Promise.all([
+      getPosts("notices").then((data) => {
+        const pinned = data.filter((p) => p.is_pinned);
+        const unpinned = data.filter((p) => !p.is_pinned);
+        setNotices([...pinned, ...unpinned].slice(0, 3));
+      }),
+      getPosts("reviews").then((data) => setReviews(data.slice(0, 6))),
+      getPromotions().then(setPromotions),
+    ]).finally(() => setDataLoading(false));
   }, []);
 
   return (
@@ -57,7 +60,9 @@ export default function Home() {
         </div>
         <div className="flex gap-4">
           <div className="flex-[8] space-y-2">
-            {notices.length === 0 ? (
+            {dataLoading ? (
+              <p className="text-sm text-gray-400 py-4 text-center">불러오는 중...</p>
+            ) : notices.length === 0 ? (
               <p className="text-sm text-gray-400 py-4">등록된 공지사항이 없습니다.</p>
             ) : (
               notices.map((post) => (
@@ -97,7 +102,9 @@ export default function Home() {
             전체보기 &rarr;
           </Link>
         </div>
-        {reviews.length === 0 ? (
+        {dataLoading ? (
+          <p className="text-sm text-gray-400 py-4 text-center">불러오는 중...</p>
+        ) : reviews.length === 0 ? (
           <p className="text-sm text-gray-400 py-4">등록된 후기가 없습니다.</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

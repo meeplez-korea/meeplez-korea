@@ -20,9 +20,11 @@ export default function BoardPage() {
   const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
   const [activeTag, setActiveTag] = useState<ReviewTag | "전체">("전체");
   const [page, setPage] = useState(1);
+  const [dataLoading, setDataLoading] = useState(true);
 
   useEffect(() => {
     if (category) {
+      setDataLoading(true);
       getPosts(category.slug).then((data) => {
         // 건의방: 관리자는 전체, 회원은 본인 글만
         if (category.isPrivate && !isAdmin && user) {
@@ -30,7 +32,7 @@ export default function BoardPage() {
         } else {
           setPosts(data);
         }
-      });
+      }).finally(() => setDataLoading(false));
     }
   }, [categorySlug, isAdmin, user]);
 
@@ -111,7 +113,11 @@ export default function BoardPage() {
       )}
 
       {/* Posts */}
-      {currentPosts.length === 0 ? (
+      {dataLoading ? (
+        <div className="bg-white dark:bg-dark-card rounded-xl p-12 text-center text-gray-400 border border-gray-100 dark:border-dark-border">
+          불러오는 중...
+        </div>
+      ) : currentPosts.length === 0 ? (
         <div className="bg-white dark:bg-dark-card rounded-xl p-12 text-center text-gray-400 border border-gray-100 dark:border-dark-border">
           게시글이 없습니다.
         </div>
