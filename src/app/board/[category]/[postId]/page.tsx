@@ -61,11 +61,11 @@ export default function PostDetailPage() {
 
   const handleKakaoShare = () => {
     if (!post) return;
-    const tryShare = () => {
-      if (!window.Kakao) {
-        alert("카카오 SDK를 불러오는 중입니다. 잠시 후 다시 시도해주세요.");
-        return;
-      }
+    if (!window.Kakao) {
+      alert("카카오 SDK를 불러오지 못했습니다.");
+      return;
+    }
+    try {
       if (!window.Kakao.isInitialized()) {
         window.Kakao.init(process.env.NEXT_PUBLIC_KAKAO_JS_KEY);
       }
@@ -91,8 +91,9 @@ export default function PostDetailPage() {
           },
         ],
       });
-    };
-    tryShare();
+    } catch (err: any) {
+      alert("카카오 공유 오류: " + (err.message || err));
+    }
   };
 
   const handleLike = async () => {

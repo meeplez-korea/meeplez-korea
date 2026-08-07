@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CATEGORIES, getCategoryBySlug } from "@/lib/categories";
-import { createPost, getPost, updatePost } from "@/lib/storage";
+import { createPost, getPost, updatePost, notifyAdmins } from "@/lib/storage";
 import { supabase } from "@/lib/supabase";
 import { generateId } from "@/lib/utils";
 import { CategorySlug, ReviewTag } from "@/lib/types";
@@ -124,6 +124,18 @@ function WriteForm() {
         alert("저장에 실패했습니다. 다시 시도해주세요.\n" + (result.error.message || ""));
         setSubmitting(false);
         return;
+      }
+
+      // 새 글 작성 시 관리자에게 알림
+      if (!editId && result?.data) {
+        const catLabel = categoryInfo?.label || category;
+        notifyAdmins(
+          "new_post",
+          "새 게시글",
+          `${profile.nickname}님이 [${catLabel}]에 "${title}" 글을 작성했습니다.`,
+          `/board/${category}/${result.data.id}`,
+          user.id
+        ).catch(() => {});
       }
 
       router.push(`/board/${category}`);
