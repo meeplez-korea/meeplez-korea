@@ -100,9 +100,10 @@ export default function PostDetailPage() {
     if (!user || likeLoading) return;
     setLikeLoading(true);
     setLikeAnimating(true);
-    const nowLiked = await toggleLike(postId, user.id);
-    setLiked(nowLiked);
-    setLikeCount((prev) => prev + (nowLiked ? 1 : -1));
+    await toggleLike(postId, user.id);
+    const status = await getLikeStatus(postId, user.id);
+    setLiked(status.liked);
+    setLikeCount(status.count);
     setTimeout(() => setLikeAnimating(false), 300);
     setLikeLoading(false);
   };

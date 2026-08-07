@@ -344,20 +344,22 @@ export async function notifyAdmins(type: string, title: string, message: string,
 
 export async function toggleLike(postId: string, userId: string): Promise<boolean> {
   await ensureSession();
-  const { data } = await supabase
+  // 삭제 시도
+  const { data: deleted } = await supabase
     .from("post_likes")
-    .select("id")
+    .delete()
     .eq("post_id", postId)
     .eq("user_id", userId)
-    .maybeSingle();
+    .select("id");
 
-  if (data) {
-    await supabase.from("post_likes").delete().eq("id", data.id);
+  if (deleted && deleted.length > 0) {
     return false;
-  } else {
-    await supabase.from("post_likes").insert({ post_id: postId, user_id: userId });
-    return true;
   }
+  // 삭제된 게 없으면 좋아요 추가
+  await supabase
+    .from("post_likes")
+    .insert({ post_id: postId, user_id: userId });
+  return true;
 }
 
 export async function getLikeStatus(postId: string, userId?: string): Promise<{ count: number; liked: boolean }> {
