@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { getPosts, getAllProfiles, updateUserRole, adminUpdateNickname, adminDeleteUser, getPromotions, createPromotion, updatePromotion, deletePromotion } from "@/lib/storage";
 import { Post, Profile, Promotion } from "@/lib/types";
-import { formatDate, sanitizeHtml } from "@/lib/utils";
+import { formatDate, sanitizeHtml, stripHtml } from "@/lib/utils";
 import RichEditor from "@/components/ui/RichEditor";
 
 export default function AdminPage() {
@@ -194,7 +194,7 @@ export default function AdminPage() {
                 <p className="text-xs text-gray-400 mt-1.5 tabular-nums">
                   {post.author_name} · {formatDate(post.created_at)}
                 </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 line-clamp-2 leading-relaxed">{post.content}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 line-clamp-2 leading-relaxed">{stripHtml(post.content)}</p>
               </Link>
             ))
           )}
