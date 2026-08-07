@@ -277,27 +277,7 @@ export default function PostDetailPage() {
         </div>
 
         <div className="px-6 pb-4 flex items-center gap-3 border-t border-gray-100 dark:border-dark-border pt-4">
-          <button
-            onClick={handleLike}
-            disabled={!user || likeLoading}
-            className="flex items-center gap-1.5 group disabled:opacity-40 disabled:cursor-default"
-            title={user ? (liked ? "좋아요 취소" : "좋아요") : "로그인 후 이용 가능"}
-          >
-            <svg
-              className={`w-5 h-5 transition-all duration-200 ${liked ? "text-red-500 fill-red-500" : "text-gray-400 group-hover:text-red-400"} ${likeAnimating ? "scale-125" : "scale-100"}`}
-              viewBox="0 0 24 24"
-              fill={liked ? "currentColor" : "none"}
-              stroke="currentColor"
-              strokeWidth={1.5}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
-            </svg>
-            <span className={`text-sm tabular-nums ${liked ? "text-red-500 font-semibold" : "text-gray-400"}`}>
-              {likeCount > 0 ? likeCount : ""}
-            </span>
-          </button>
-
-          <span className="w-px h-4 bg-gray-200 dark:bg-dark-border" />
+          {/* 하트(좋아요) 버튼 — 숨김 처리, 코드 보존 (storage.ts에 toggleLike/getLikeStatus, post_likes 테이블 존재) */}
 
           <button
             onClick={handleKakaoShare}
