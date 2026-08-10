@@ -76,7 +76,7 @@ function NotificationBell() {
     }
   };
 
-  if (!user) return null;
+  if (!user) return <div className="w-[34px] h-[34px]" />;
 
   return (
     <div className="relative" ref={ref}>
@@ -188,18 +188,18 @@ export default function Header() {
           <ThemeToggle />
           <NotificationBell />
 
-          {!loading && (
-            <div className="ml-1 flex items-center gap-2">
-              {user ? (
-                <>
-                  <Link href="/profile" className="text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-primary">{profile?.nickname}</Link>
-                  <button onClick={() => setShowLogoutConfirm(true)} className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">로그아웃</button>
-                </>
-              ) : (
-                <Link href="/login" className="px-3.5 py-1.5 text-sm font-medium bg-primary text-white rounded-lg hover:bg-primary-dark active:bg-primary-dark">로그인</Link>
-              )}
-            </div>
-          )}
+          <div className="ml-1 flex items-center gap-2">
+            {loading ? (
+              <div className="w-[60px] h-[28px]" />
+            ) : user ? (
+              <>
+                <Link href="/profile" className="text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-primary">{profile?.nickname}</Link>
+                <button onClick={() => setShowLogoutConfirm(true)} className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">로그아웃</button>
+              </>
+            ) : (
+              <Link href="/login" className="px-3.5 py-1.5 text-sm font-medium bg-primary text-white rounded-lg hover:bg-primary-dark active:bg-primary-dark">로그인</Link>
+            )}
+          </div>
         </nav>
 
         {/* Mobile */}
