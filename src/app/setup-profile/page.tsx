@@ -118,13 +118,7 @@ export default function SetupProfilePage() {
           <div className="text-center mb-6">
             <img src="/meeplez.jpg" alt="미플즈" className="w-16 h-16 mx-auto rounded-xl object-cover ring-1 ring-black/5 dark:ring-white/10 mb-4" />
             <h1 className="text-xl font-bold tracking-tight">닉네임 설정</h1>
-            <p className="text-sm text-gray-400 mt-1.5">미플즈에서 사용할 닉네임을 설정해주세요.</p>
-          </div>
-
-          <div className="p-3.5 bg-secondary/8 border border-secondary/12 rounded-xl mb-5">
-            <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
-              오픈채팅 닉네임과 동일하게 설정해주세요.
-            </p>
+            <p className="text-sm text-gray-400 mt-1.5">오픈채팅방에서 사용중인 닉네임(이름)을 동일하게 설정해주세요.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-3">
