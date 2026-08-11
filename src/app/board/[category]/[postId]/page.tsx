@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { getCategoryBySlug } from "@/lib/categories";
-import { getPost, getPosts, incrementViewCount, deletePost, updatePost, getComments, addComment, deleteComment, createNotification, toggleLike, getLikeStatus } from "@/lib/storage";
+import { getPost, getPosts, incrementViewCount, deletePost, updatePost, getComments, addComment, deleteComment, createNotification, toggleLike, getLikeStatus, toggleCommentLike, getCommentLikeStatuses } from "@/lib/storage";
 import { Post, Comment } from "@/lib/types";
 import { formatDate, autoLinkUrls, addLazyLoading, sanitizeHtml, stripHtml } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -38,6 +38,8 @@ export default function PostDetailPage() {
   const [likeLoading, setLikeLoading] = useState(false);
   const [prevPost, setPrevPost] = useState<Post | null>(null);
   const [nextPost, setNextPost] = useState<Post | null>(null);
+  const [commentLikes, setCommentLikes] = useState<Record<string, { count: number; liked: boolean }>>({});
+  const commentLikeRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     let cancelled = false;
@@ -64,6 +66,27 @@ export default function PostDetailPage() {
       setNextPost(idx < ordered.length - 1 ? ordered[idx + 1] : null);
     }).catch(() => {});
   }, [postId, categorySlug]);
+
+  useEffect(() => {
+    if (loading || comments.length === 0) return;
+    const ids = comments.map((c) => c.id);
+    getCommentLikeStatuses(ids, user?.id).then(setCommentLikes).catch(() => {});
+  }, [comments, user?.id, loading]);
+
+  const handleCommentLike = async (commentId: string) => {
+    if (!user || commentLikeRef.current.has(commentId)) return;
+    commentLikeRef.current.add(commentId);
+    try {
+      const newLiked = await toggleCommentLike(commentId, user.id);
+      const prev = commentLikes[commentId] || { count: 0, liked: false };
+      setCommentLikes((s) => ({
+        ...s,
+        [commentId]: { count: prev.count + (newLiked ? 1 : -1), liked: newLiked },
+      }));
+    } finally {
+      commentLikeRef.current.delete(commentId);
+    }
+  };
 
   useEffect(() => {
     if (loading) return;
@@ -402,14 +425,27 @@ export default function PostDetailPage() {
                         <span className="text-[11px] text-gray-400 tabular-nums">{formatDate(comment.created_at)}</span>
                       </div>
                       <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{comment.content}</p>
-                      {isMember && (
-                        <button
-                          onClick={() => { setReplyTo(replyTo?.id === comment.id ? null : comment); setReplyContent(""); }}
-                          className="text-xs text-gray-400 hover:text-primary mt-1.5"
-                        >
-                          답글
-                        </button>
-                      )}
+                      <div className="flex items-center gap-3 mt-1.5">
+                        {isMember && (
+                          <button
+                            onClick={() => { setReplyTo(replyTo?.id === comment.id ? null : comment); setReplyContent(""); }}
+                            className="text-xs text-gray-400 hover:text-primary"
+                          >
+                            답글
+                          </button>
+                        )}
+                        {user && (
+                          <button
+                            onClick={() => handleCommentLike(comment.id)}
+                            className="flex items-center gap-1 text-gray-400 hover:text-red-500 transition-colors"
+                          >
+                            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill={commentLikes[comment.id]?.liked ? "currentColor" : "none"} stroke="currentColor" strokeWidth={commentLikes[comment.id]?.liked ? 0 : 2}>
+                              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" className={commentLikes[comment.id]?.liked ? "text-red-500" : ""} />
+                            </svg>
+                            {(commentLikes[comment.id]?.count || 0) > 0 && <span className="text-[11px]">{commentLikes[comment.id].count}</span>}
+                          </button>
+                        )}
+                      </div>
                     </div>
                     {(user?.id === comment.author_id || isAdmin) && (
                       <button
@@ -461,6 +497,17 @@ export default function PostDetailPage() {
                               <span className="text-[11px] text-gray-400 tabular-nums">{formatDate(reply.created_at)}</span>
                             </div>
                             <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{reply.content}</p>
+                            {user && (
+                              <button
+                                onClick={() => handleCommentLike(reply.id)}
+                                className="flex items-center gap-1 text-gray-400 hover:text-red-500 transition-colors mt-1.5"
+                              >
+                                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill={commentLikes[reply.id]?.liked ? "currentColor" : "none"} stroke="currentColor" strokeWidth={commentLikes[reply.id]?.liked ? 0 : 2}>
+                                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" className={commentLikes[reply.id]?.liked ? "text-red-500" : ""} />
+                                </svg>
+                                {(commentLikes[reply.id]?.count || 0) > 0 && <span className="text-[11px]">{commentLikes[reply.id].count}</span>}
+                              </button>
+                            )}
                           </div>
                           {(user?.id === reply.author_id || isAdmin) && (
                             <button

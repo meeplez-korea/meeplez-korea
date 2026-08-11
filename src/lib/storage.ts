@@ -364,6 +364,56 @@ export async function toggleLike(postId: string, userId: string): Promise<boolea
   return true;
 }
 
+export async function toggleCommentLike(commentId: string, userId: string): Promise<boolean> {
+  await ensureSession();
+  const { data: deleted, error: deleteError } = await supabase
+    .from("comment_likes")
+    .delete()
+    .eq("comment_id", commentId)
+    .eq("user_id", userId)
+    .select("id");
+  if (deleteError) console.error("댓글 좋아요 삭제 실패:", deleteError);
+
+  if (deleted && deleted.length > 0) {
+    return false;
+  }
+  const { error } = await supabase
+    .from("comment_likes")
+    .insert({ comment_id: commentId, user_id: userId });
+  if (error) console.error("댓글 좋아요 추가 실패:", error);
+  return true;
+}
+
+export async function getCommentLikeStatuses(commentIds: string[], userId?: string): Promise<Record<string, { count: number; liked: boolean }>> {
+  if (commentIds.length === 0) return {};
+
+  const { data: counts } = await supabase
+    .from("comment_likes")
+    .select("comment_id")
+    .in("comment_id", commentIds);
+
+  const countMap: Record<string, number> = {};
+  (counts || []).forEach((row: any) => {
+    countMap[row.comment_id] = (countMap[row.comment_id] || 0) + 1;
+  });
+
+  const likedSet = new Set<string>();
+  if (userId) {
+    const { data: liked } = await supabase
+      .from("comment_likes")
+      .select("comment_id")
+      .in("comment_id", commentIds)
+      .eq("user_id", userId);
+    (liked || []).forEach((row: any) => likedSet.add(row.comment_id));
+  }
+
+  const result: Record<string, { count: number; liked: boolean }> = {};
+  commentIds.forEach((id) => {
+    result[id] = { count: countMap[id] || 0, liked: likedSet.has(id) };
+  });
+  return result;
+}
+
 export async function getLikeStatus(postId: string, userId?: string): Promise<{ count: number; liked: boolean }> {
   const { count } = await supabase
     .from("post_likes")
