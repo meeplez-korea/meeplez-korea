@@ -31,6 +31,7 @@ export interface Post {
   is_private: boolean;
   is_pinned: boolean;
   view_count: number;
+  comment_count?: number;
   created_at: string;
   updated_at: string;
   comments?: Comment[];

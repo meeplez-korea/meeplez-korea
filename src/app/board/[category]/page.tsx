@@ -160,7 +160,12 @@ export default function BoardPage() {
                     {post.tag}
                   </span>
                 )}
-                <h3 className="font-semibold text-sm mt-2 line-clamp-2 group-hover:text-primary transition-colors">{post.title}</h3>
+                <h3 className="font-semibold text-sm mt-2 line-clamp-2 group-hover:text-primary transition-colors">
+                  {post.title}
+                  {(post.comment_count ?? 0) > 0 && (
+                    <span className="text-primary text-xs font-semibold ml-1">[{post.comment_count}]</span>
+                  )}
+                </h3>
                 <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-100 dark:border-dark-border text-[11px] text-gray-400">
                   <span className="font-medium">{post.author_name}</span>
                   <span className="tabular-nums">{formatDateShort(post.created_at)}</span>
@@ -194,6 +199,9 @@ export default function BoardPage() {
                     >
                       {post.is_pinned && <span className="text-[11px] text-danger font-bold mr-1">[고정]</span>}
                       {post.title}
+                      {(post.comment_count ?? 0) > 0 && (
+                        <span className="text-primary text-xs font-semibold ml-1.5">[{post.comment_count}]</span>
+                      )}
                     </Link>
                   </td>
                   <td className="py-3.5 px-4 text-xs text-gray-500 dark:text-gray-400 font-medium">{post.author_name}</td>

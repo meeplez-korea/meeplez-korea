@@ -100,7 +100,7 @@ export async function getPosts(category?: CategorySlug): Promise<Post[]> {
 
   let query = supabase
     .from("posts")
-    .select("*")
+    .select("*, comments(count)")
     .order("created_at", { ascending: false });
 
   if (category) {
@@ -108,7 +108,11 @@ export async function getPosts(category?: CategorySlug): Promise<Post[]> {
   }
 
   const { data } = await query;
-  const result = data || [];
+  const result = (data || []).map((p: any) => ({
+    ...p,
+    comment_count: p.comments?.[0]?.count ?? 0,
+    comments: undefined,
+  }));
   setCache(cacheKey, result);
   return result;
 }
