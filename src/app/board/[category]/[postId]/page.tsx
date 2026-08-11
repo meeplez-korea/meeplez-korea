@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { getCategoryBySlug } from "@/lib/categories";
-import { getPost, incrementViewCount, deletePost, updatePost, getComments, addComment, deleteComment, createNotification, toggleLike, getLikeStatus } from "@/lib/storage";
+import { getPost, getPosts, incrementViewCount, deletePost, updatePost, getComments, addComment, deleteComment, createNotification, toggleLike, getLikeStatus } from "@/lib/storage";
 import { Post, Comment } from "@/lib/types";
 import { formatDate, autoLinkUrls, addLazyLoading, sanitizeHtml, stripHtml } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -36,6 +36,8 @@ export default function PostDetailPage() {
   const [liked, setLiked] = useState(false);
   const [likeAnimating, setLikeAnimating] = useState(false);
   const [likeLoading, setLikeLoading] = useState(false);
+  const [prevPost, setPrevPost] = useState<Post | null>(null);
+  const [nextPost, setNextPost] = useState<Post | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -51,6 +53,17 @@ export default function PostDetailPage() {
     ]).finally(() => { if (!cancelled) setDataLoading(false); });
     return () => { cancelled = true; };
   }, [postId]);
+
+  useEffect(() => {
+    getPosts(categorySlug as any).then((posts) => {
+      const nonPinned = posts.filter((p) => !p.is_pinned);
+      const pinned = posts.filter((p) => p.is_pinned);
+      const ordered = [...pinned, ...nonPinned];
+      const idx = ordered.findIndex((p) => p.id === postId);
+      setPrevPost(idx > 0 ? ordered[idx - 1] : null);
+      setNextPost(idx < ordered.length - 1 ? ordered[idx + 1] : null);
+    }).catch(() => {});
+  }, [postId, categorySlug]);
 
   useEffect(() => {
     getLikeStatus(postId, user?.id).then(({ count, liked: l }) => {
@@ -475,7 +488,29 @@ export default function PostDetailPage() {
       </section>
       )}
 
-      <div className="mt-6">
+      {/* Post Navigation */}
+      <div className="mt-6 bg-white dark:bg-dark-card rounded-2xl shadow-card dark:shadow-card-dark overflow-hidden">
+        {nextPost && (
+          <Link
+            href={`/board/${categorySlug}/${nextPost.id}`}
+            className="flex items-center gap-3 px-5 py-3.5 hover:bg-cream/30 dark:hover:bg-dark-hover transition-colors border-b border-gray-100 dark:border-dark-border"
+          >
+            <span className="text-xs text-gray-400 shrink-0 w-14">다음글</span>
+            <span className="text-sm truncate">{nextPost.title}</span>
+          </Link>
+        )}
+        {prevPost && (
+          <Link
+            href={`/board/${categorySlug}/${prevPost.id}`}
+            className="flex items-center gap-3 px-5 py-3.5 hover:bg-cream/30 dark:hover:bg-dark-hover transition-colors"
+          >
+            <span className="text-xs text-gray-400 shrink-0 w-14">이전글</span>
+            <span className="text-sm truncate">{prevPost.title}</span>
+          </Link>
+        )}
+      </div>
+
+      <div className="mt-4">
         <Link
           href={`/board/${categorySlug}`}
           className="px-4 py-2 text-sm font-medium border border-gray-200 dark:border-dark-border rounded-lg hover:bg-gray-50 dark:hover:bg-dark-hover inline-block"
