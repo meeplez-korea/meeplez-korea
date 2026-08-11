@@ -47,7 +47,7 @@ export default function PostDetailPage() {
     Promise.all([
       getPost(postId).then((p) => {
         if (p && !cancelled) {
-          incrementViewCount(postId).catch(() => {});
+          incrementViewCount(postId).catch((e) => console.error("incrementViewCount error:", e));
           setPost({ ...p, view_count: p.view_count + 1 });
         }
       }),

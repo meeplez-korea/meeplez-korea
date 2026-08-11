@@ -162,19 +162,10 @@ export async function deletePost(id: string) {
 }
 
 export async function incrementViewCount(id: string) {
-  const { data } = await supabase
-    .from("posts")
-    .select("view_count")
-    .eq("id", id)
-    .single();
-
-  if (data) {
-    await supabase
-      .from("posts")
-      .update({ view_count: data.view_count + 1 })
-      .eq("id", id);
-    clearCache();
-  }
+  const { error } = await supabase.rpc("increment_view_count", {
+    post_id: id,
+  });
+  if (!error) clearCache();
 }
 
 // ── Comments ──
