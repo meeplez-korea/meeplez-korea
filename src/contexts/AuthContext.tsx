@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 import { Profile } from "@/lib/types";
@@ -28,6 +29,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const pathname = usePathname();
+  const router = useRouter();
+
+  // 닉네임 없는 유저는 setup-profile로 리다이렉트
+  useEffect(() => {
+    if (loading || !user || !profile) return;
+    const skipPaths = ["/setup-profile", "/auth/callback"];
+    if (skipPaths.includes(pathname)) return;
+    if (!profile.nickname || !profile.nickname.trim()) {
+      router.push("/setup-profile");
+    }
+  }, [loading, user, profile, pathname, router]);
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }) => {
