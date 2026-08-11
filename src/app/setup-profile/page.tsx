@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { getProfile } from "@/lib/storage";
 
 export default function SetupProfilePage() {
-  const { user } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
+  const router = useRouter();
   const [nickname, setNickname] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -25,6 +27,14 @@ export default function SetupProfilePage() {
     };
     check();
   }, []);
+
+  // 닉네임이 이미 있으면 홈으로
+  useEffect(() => {
+    if (authLoading) return;
+    if (profile?.nickname?.trim()) {
+      router.push("/");
+    }
+  }, [authLoading, profile, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
