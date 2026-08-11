@@ -163,7 +163,7 @@ export default function BoardPage() {
                 <h3 className="font-semibold text-sm mt-2 line-clamp-2 group-hover:text-primary transition-colors">
                   {post.title}
                   {(post.comment_count ?? 0) > 0 && (
-                    <span className="text-primary text-xs font-semibold ml-1">[{post.comment_count}]</span>
+                    <span className="text-primary/70 text-xs font-medium ml-1.5">+{post.comment_count}</span>
                   )}
                 </h3>
                 <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-100 dark:border-dark-border text-[11px] text-gray-400">
@@ -175,42 +175,40 @@ export default function BoardPage() {
           ))}
         </div>
       ) : (
-        <div className="bg-white dark:bg-dark-card rounded-xl shadow-card dark:shadow-card-dark overflow-hidden">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-100 dark:border-dark-border text-xs text-gray-400 dark:text-gray-500">
-                <th className="py-3 px-4 text-left font-medium w-12 hidden md:table-cell">No.</th>
-                <th className="py-3 px-4 text-left font-medium">제목</th>
-                <th className="py-3 px-4 text-left font-medium w-20">작성자</th>
-                <th className="py-3 px-4 text-left font-medium w-32 hidden md:table-cell">날짜</th>
-                <th className="py-3 px-4 text-center font-medium w-16 hidden md:table-cell">조회</th>
-              </tr>
-            </thead>
-            <tbody>
-              {currentPosts.map((post, i) => (
-                <tr key={post.id} className="border-t border-gray-50 dark:border-dark-border/50 hover:bg-cream/40 dark:hover:bg-dark-hover transition-colors">
-                  <td className="py-3.5 px-4 text-xs text-gray-400 hidden md:table-cell tabular-nums">
-                    {filteredPosts.length - ((page - 1) * perPage + i)}
-                  </td>
-                  <td className="py-3.5 px-4">
-                    <Link
-                      href={`/board/${category.slug}/${post.id}`}
-                      className="text-sm hover:text-primary transition-colors"
-                    >
-                      {post.is_pinned && <span className="text-[11px] text-danger font-bold mr-1">[고정]</span>}
+        <div className="space-y-2">
+          {currentPosts.map((post, i) => (
+            <Link
+              key={post.id}
+              href={`/board/${category.slug}/${post.id}`}
+              className="block bg-white dark:bg-dark-card rounded-xl px-5 py-4 shadow-card dark:shadow-card-dark hover:shadow-card-hover dark:hover:shadow-card-dark-hover hover:-translate-y-[1px] transition-all duration-200 group"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    {post.is_pinned && (
+                      <span className="shrink-0 text-[10px] px-1.5 py-0.5 rounded bg-danger/10 text-danger font-bold tracking-wide">고정</span>
+                    )}
+                    <h3 className="text-[15px] font-medium truncate group-hover:text-primary transition-colors">
                       {post.title}
-                      {(post.comment_count ?? 0) > 0 && (
-                        <span className="text-primary text-xs font-semibold ml-1.5">[{post.comment_count}]</span>
-                      )}
-                    </Link>
-                  </td>
-                  <td className="py-3.5 px-4 text-xs text-gray-500 dark:text-gray-400 font-medium">{post.author_name}</td>
-                  <td className="py-3.5 px-4 text-xs text-gray-400 hidden md:table-cell tabular-nums">{formatDateShort(post.created_at)}</td>
-                  <td className="py-3.5 px-4 text-xs text-gray-400 text-center hidden md:table-cell tabular-nums">{post.view_count}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    </h3>
+                    {(post.comment_count ?? 0) > 0 && (
+                      <span className="shrink-0 text-primary/70 text-xs font-medium tabular-nums">+{post.comment_count}</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2.5 mt-1.5 text-xs text-gray-400 dark:text-gray-500">
+                    <span className="font-medium text-gray-500 dark:text-gray-400">{post.author_name}</span>
+                    <span className="w-px h-2.5 bg-gray-200 dark:bg-dark-border" />
+                    <span className="tabular-nums">{formatDateShort(post.created_at)}</span>
+                    <span className="w-px h-2.5 bg-gray-200 dark:bg-dark-border" />
+                    <span className="tabular-nums">조회 {post.view_count}</span>
+                  </div>
+                </div>
+                <span className="hidden md:block shrink-0 text-xs text-gray-300 dark:text-gray-600 tabular-nums pt-0.5">
+                  {filteredPosts.length - ((page - 1) * perPage + i)}
+                </span>
+              </div>
+            </Link>
+          ))}
         </div>
       )}
 
