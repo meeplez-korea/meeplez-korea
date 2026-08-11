@@ -249,7 +249,22 @@ export default function PostDetailPage() {
   const getReplies = (parentId: string) => comments.filter((c) => c.parent_id === parentId);
 
   if (dataLoading) {
-    return <div className="max-w-4xl mx-auto px-4 py-16" />;
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-8 animate-pulse">
+        <div className="h-4 w-48 bg-gray-200 dark:bg-dark-border rounded mb-6" />
+        <div className="bg-white dark:bg-dark-card rounded-2xl shadow-card dark:shadow-card-dark overflow-hidden">
+          <div className="p-6 pb-5 border-b border-gray-100 dark:border-dark-border">
+            <div className="h-6 w-3/4 bg-gray-200 dark:bg-dark-border rounded mb-3" />
+            <div className="h-4 w-48 bg-gray-100 dark:bg-dark-border/60 rounded" />
+          </div>
+          <div className="p-6 space-y-3">
+            <div className="h-4 w-full bg-gray-100 dark:bg-dark-border/60 rounded" />
+            <div className="h-4 w-full bg-gray-100 dark:bg-dark-border/60 rounded" />
+            <div className="h-4 w-2/3 bg-gray-100 dark:bg-dark-border/60 rounded" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!post || !category) {
