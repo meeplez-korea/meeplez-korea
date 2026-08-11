@@ -39,7 +39,7 @@ function ThemeToggle() {
   );
 }
 
-function NotificationBell() {
+function NotificationBell({ onOpen, forceClose }: { onOpen?: () => void; forceClose?: boolean }) {
   const { user } = useAuth();
   const [unread, setUnread] = useState(0);
   const [open, setOpen] = useState(false);
@@ -63,10 +63,16 @@ function NotificationBell() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
+  useEffect(() => {
+    if (forceClose) setOpen(false);
+  }, [forceClose]);
+
   const handleOpen = async () => {
     if (!user) return;
-    setOpen(!open);
-    if (!open) {
+    const willOpen = !open;
+    setOpen(willOpen);
+    if (willOpen) {
+      onOpen?.();
       const data = await getNotifications(user.id);
       setNotifications(data);
       if (unread > 0) {
@@ -186,7 +192,7 @@ export default function Header() {
           <div className="w-px h-5 bg-gray-200 dark:bg-dark-border mx-1.5" />
 
           <ThemeToggle />
-          <NotificationBell />
+          <NotificationBell onOpen={() => setMenuOpen(false)} forceClose={menuOpen} />
 
           <div className="ml-1 flex items-center gap-2">
             {loading ? (
@@ -204,7 +210,7 @@ export default function Header() {
 
         {/* Mobile */}
         <div className="lg:hidden flex items-center gap-0.5">
-          <NotificationBell />
+          <NotificationBell onOpen={() => setMenuOpen(false)} forceClose={menuOpen} />
           <ThemeToggle />
           <button className="p-2 rounded-lg hover:bg-cream-dark dark:hover:bg-dark-hover" onClick={() => setMenuOpen(!menuOpen)} aria-label={menuOpen ? "메뉴 닫기" : "메뉴 열기"}>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
