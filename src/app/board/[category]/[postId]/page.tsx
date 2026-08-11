@@ -76,13 +76,16 @@ export default function PostDetailPage() {
   const handleCommentLike = async (commentId: string) => {
     if (!user || commentLikeRef.current.has(commentId)) return;
     commentLikeRef.current.add(commentId);
+    const prev = commentLikes[commentId] || { count: 0, liked: false };
+    const newLiked = !prev.liked;
+    setCommentLikes((s) => ({
+      ...s,
+      [commentId]: { count: prev.count + (newLiked ? 1 : -1), liked: newLiked },
+    }));
     try {
-      const newLiked = await toggleCommentLike(commentId, user.id);
-      const prev = commentLikes[commentId] || { count: 0, liked: false };
-      setCommentLikes((s) => ({
-        ...s,
-        [commentId]: { count: prev.count + (newLiked ? 1 : -1), liked: newLiked },
-      }));
+      await toggleCommentLike(commentId, user.id);
+    } catch {
+      setCommentLikes((s) => ({ ...s, [commentId]: prev }));
     } finally {
       commentLikeRef.current.delete(commentId);
     }
@@ -137,16 +140,18 @@ export default function PostDetailPage() {
   const handleLike = async () => {
     if (!user || likeRef.current) return;
     likeRef.current = true;
-    setLikeLoading(true);
+    const prevLiked = liked;
+    const prevCount = likeCount;
+    setLiked(!prevLiked);
+    setLikeCount(prevCount + (prevLiked ? -1 : 1));
     setLikeAnimating(true);
+    setTimeout(() => setLikeAnimating(false), 300);
     try {
       await toggleLike(postId, user.id);
-      const status = await getLikeStatus(postId, user.id);
-      setLiked(status.liked);
-      setLikeCount(status.count);
+    } catch {
+      setLiked(prevLiked);
+      setLikeCount(prevCount);
     } finally {
-      setTimeout(() => setLikeAnimating(false), 300);
-      setLikeLoading(false);
       likeRef.current = false;
     }
   };
