@@ -490,22 +490,22 @@ export default function PostDetailPage() {
 
       {/* Post Navigation */}
       <div className="mt-6 bg-white dark:bg-dark-card rounded-2xl shadow-card dark:shadow-card-dark overflow-hidden">
-        {nextPost && (
-          <Link
-            href={`/board/${categorySlug}/${nextPost.id}`}
-            className="flex items-center gap-3 px-5 py-3.5 hover:bg-cream/30 dark:hover:bg-dark-hover transition-colors border-b border-gray-100 dark:border-dark-border"
-          >
-            <span className="text-xs text-gray-400 shrink-0 w-14">다음글</span>
-            <span className="text-sm truncate">{nextPost.title}</span>
-          </Link>
-        )}
         {prevPost && (
           <Link
             href={`/board/${categorySlug}/${prevPost.id}`}
+            className="flex items-center gap-3 px-5 py-3.5 hover:bg-cream/30 dark:hover:bg-dark-hover transition-colors border-b border-gray-100 dark:border-dark-border"
+          >
+            <span className="text-xs text-gray-400 shrink-0 w-14">다음글</span>
+            <span className="text-sm truncate">{prevPost.title}</span>
+          </Link>
+        )}
+        {nextPost && (
+          <Link
+            href={`/board/${categorySlug}/${nextPost.id}`}
             className="flex items-center gap-3 px-5 py-3.5 hover:bg-cream/30 dark:hover:bg-dark-hover transition-colors"
           >
             <span className="text-xs text-gray-400 shrink-0 w-14">이전글</span>
-            <span className="text-sm truncate">{prevPost.title}</span>
+            <span className="text-sm truncate">{nextPost.title}</span>
           </Link>
         )}
       </div>
