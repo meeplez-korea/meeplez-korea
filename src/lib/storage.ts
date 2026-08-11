@@ -345,20 +345,22 @@ export async function notifyAdmins(type: string, title: string, message: string,
 export async function toggleLike(postId: string, userId: string): Promise<boolean> {
   await ensureSession();
   // 삭제 시도
-  const { data: deleted } = await supabase
+  const { data: deleted, error: deleteError } = await supabase
     .from("post_likes")
     .delete()
     .eq("post_id", postId)
     .eq("user_id", userId)
     .select("id");
+  if (deleteError) console.error("좋아요 삭제 실패:", deleteError);
 
   if (deleted && deleted.length > 0) {
     return false;
   }
   // 삭제된 게 없으면 좋아요 추가
-  await supabase
+  const { error } = await supabase
     .from("post_likes")
     .insert({ post_id: postId, user_id: userId });
+  if (error) console.error("좋아요 추가 실패:", error);
   return true;
 }
 

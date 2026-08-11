@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { getCategoryBySlug } from "@/lib/categories";
@@ -21,7 +21,7 @@ export default function PostDetailPage() {
   const categorySlug = params.category as string;
   const postId = params.postId as string;
   const category = getCategoryBySlug(categorySlug);
-  const { user, profile, isAdmin, isMember } = useAuth();
+  const { user, profile, isAdmin, isMember, loading } = useAuth();
 
   const [post, setPost] = useState<Post | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -66,11 +66,12 @@ export default function PostDetailPage() {
   }, [postId, categorySlug]);
 
   useEffect(() => {
+    if (loading) return;
     getLikeStatus(postId, user?.id).then(({ count, liked: l }) => {
       setLikeCount(count);
       setLiked(l);
     }).catch(() => {});
-  }, [postId, user?.id]);
+  }, [postId, user?.id, loading]);
 
   const handleKakaoShare = () => {
     if (!post) return;
@@ -109,16 +110,22 @@ export default function PostDetailPage() {
     }
   };
 
+  const likeRef = useRef(false);
   const handleLike = async () => {
-    if (!user || likeLoading) return;
+    if (!user || likeRef.current) return;
+    likeRef.current = true;
     setLikeLoading(true);
     setLikeAnimating(true);
-    await toggleLike(postId, user.id);
-    const status = await getLikeStatus(postId, user.id);
-    setLiked(status.liked);
-    setLikeCount(status.count);
-    setTimeout(() => setLikeAnimating(false), 300);
-    setLikeLoading(false);
+    try {
+      await toggleLike(postId, user.id);
+      const status = await getLikeStatus(postId, user.id);
+      setLiked(status.liked);
+      setLikeCount(status.count);
+    } finally {
+      setTimeout(() => setLikeAnimating(false), 300);
+      setLikeLoading(false);
+      likeRef.current = false;
+    }
   };
 
   const handleDelete = async () => {
@@ -290,12 +297,22 @@ export default function PostDetailPage() {
         </div>
 
         <div className="px-6 pb-4 flex items-center gap-3 border-t border-gray-100 dark:border-dark-border pt-4">
-          {/* 하트(좋아요) 버튼 — 숨김 처리, 코드 보존 (storage.ts에 toggleLike/getLikeStatus, post_likes 테이블 존재) */}
+          {user && (
+            <button
+              onClick={handleLike}
+              disabled={likeLoading}
+              className="flex items-center gap-1.5 text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50"
+            >
+              <svg className={`w-5 h-5 transition-transform ${likeAnimating ? "scale-125" : ""}`} viewBox="0 0 24 24" fill={liked ? "currentColor" : "none"} stroke="currentColor" strokeWidth={liked ? 0 : 2}>
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" className={liked ? "text-red-500" : ""} />
+              </svg>
+              {likeCount > 0 && <span className="text-sm">{likeCount}</span>}
+            </button>
+          )}
 
           <button
             onClick={handleKakaoShare}
             className="flex items-center gap-1.5 text-gray-400 hover:text-[#391B1B] dark:hover:text-yellow-400 transition-colors"
-            title="카카오톡 공유"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 3C6.48 3 2 6.58 2 10.9c0 2.78 1.8 5.22 4.52 6.62-.2.74-.72 2.68-.83 3.1-.13.52.19.51.4.37.17-.11 2.63-1.8 3.7-2.53.7.1 1.42.14 2.21.14 5.52 0 10-3.58 10-7.9S17.52 3 12 3z" />
