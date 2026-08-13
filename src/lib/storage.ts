@@ -338,6 +338,7 @@ export async function notifyAdmins(type: string, title: string, message: string,
 // ── Drafts ──
 
 export async function getDrafts(userId: string): Promise<Draft[]> {
+  await ensureSession();
   const { data } = await supabase
     .from("post_drafts")
     .select("*")
