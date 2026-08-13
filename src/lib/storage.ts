@@ -1,5 +1,5 @@
 import { supabase } from "./supabase";
-import { Post, Comment, CategorySlug, Profile, Promotion, Notification } from "./types";
+import { Post, Comment, CategorySlug, Profile, Promotion, Notification, Draft } from "./types";
 import { getCached, setCache, clearCache } from "./cache";
 
 // DB 쓰기 전 세션 갱신
@@ -333,6 +333,45 @@ export async function notifyAdmins(type: string, title: string, message: string,
   await supabase
     .from("notifications")
     .insert(targets.map((a) => ({ user_id: a.id, type, title, message, link })));
+}
+
+// ── Drafts ──
+
+export async function getDrafts(userId: string): Promise<Draft[]> {
+  const { data } = await supabase
+    .from("post_drafts")
+    .select("*")
+    .eq("user_id", userId)
+    .order("updated_at", { ascending: false });
+  return data || [];
+}
+
+export async function saveDraft(draft: {
+  user_id: string;
+  title: string;
+  content: string;
+  category: CategorySlug;
+  tag?: string;
+}, draftId?: string) {
+  await ensureSession();
+  if (draftId) {
+    return supabase
+      .from("post_drafts")
+      .update({ ...draft, updated_at: new Date().toISOString() })
+      .eq("id", draftId)
+      .select()
+      .single();
+  }
+  return supabase
+    .from("post_drafts")
+    .insert(draft)
+    .select()
+    .single();
+}
+
+export async function deleteDraft(draftId: string) {
+  await ensureSession();
+  return supabase.from("post_drafts").delete().eq("id", draftId);
 }
 
 // ── Likes ──

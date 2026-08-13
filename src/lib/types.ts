@@ -70,6 +70,17 @@ export interface Notification {
   created_at: string;
 }
 
+export interface Draft {
+  id: string;
+  user_id: string;
+  title: string;
+  content: string;
+  category: CategorySlug;
+  tag?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface CategoryInfo {
   slug: CategorySlug;
   label: string;
