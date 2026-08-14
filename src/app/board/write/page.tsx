@@ -393,8 +393,9 @@ function WriteForm() {
                     >
                       <button
                         type="button"
+                        data-no-press
                         onClick={() => handleLoadDraft(draft)}
-                        className="w-full text-left active:!transform-none"
+                        className="w-full text-left"
                       >
                         <p className={`text-sm truncate ${
                           currentDraftId === draft.id ? "font-semibold text-primary" : "font-medium"
@@ -412,9 +413,10 @@ function WriteForm() {
                       </button>
                       <button
                         type="button"
+                        data-no-press
                         onClick={() => handleDeleteDraft(draft.id)}
                         disabled={deletingDraftId === draft.id}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 rounded-md text-gray-300 hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity hover:bg-danger/5 active:!transform-none"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 rounded-md text-gray-300 hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity hover:bg-danger/5"
                         title="삭제"
                       >
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

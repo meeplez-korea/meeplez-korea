@@ -66,13 +66,14 @@ a, button {
 }
 
 /* Active press effect for buttons */
-button:active:not(:disabled):not([class*="active\:!transform-none"]),
+button:active:not(:disabled):not([data-no-press]),
 a:active {
   transform: scale(0.98);
 }
 
 /* Disable active scale inside slide-over panels */
-.slide-over-panel button:active {
+.slide-over-panel button:active,
+.slide-over-panel button:active:not(:disabled) {
   transform: none !important;
 }
 
