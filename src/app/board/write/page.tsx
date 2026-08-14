@@ -41,6 +41,8 @@ function WriteForm() {
   const [currentDraftId, setCurrentDraftId] = useState<string | null>(null);
   const [showDraftList, setShowDraftList] = useState(false);
   const [savingDraft, setSavingDraft] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const titleRef = useRef<HTMLInputElement>(null);
 
   const categoryInfo = getCategoryBySlug(category);
 
@@ -158,8 +160,13 @@ function WriteForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !content.trim() || !user || !profile) {
-      alert("모든 필수 항목을 입력해주세요.");
+    if (!title.trim()) {
+      setValidationError("제목을 입력해주세요");
+      titleRef.current?.focus();
+      return;
+    }
+    if (!content.trim() || !user || !profile) {
+      setValidationError("내용을 입력해주세요");
       return;
     }
     if (submitting) return;
@@ -479,19 +486,33 @@ function WriteForm() {
         {/* Title */}
         <div>
           <input
+            ref={titleRef}
             type="text"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full px-4 py-3 bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-xl text-base font-medium placeholder:text-gray-300 dark:placeholder:text-gray-600"
+            onChange={(e) => {
+              setTitle(e.target.value);
+              if (validationError) setValidationError(null);
+            }}
+            className={`w-full px-4 py-3 bg-white dark:bg-dark-card border rounded-xl text-base font-medium placeholder:text-gray-300 dark:placeholder:text-gray-600 ${
+              validationError && !title.trim()
+                ? "border-danger/50 shadow-[0_0_0_3px_rgba(196,92,92,0.08)]"
+                : "border-gray-200 dark:border-dark-border"
+            }`}
             placeholder="제목을 입력하세요"
           />
+          {validationError && (
+            <p className="mt-1.5 text-xs text-danger animate-fade-in">{validationError}</p>
+          )}
         </div>
 
         {/* Content */}
         <div>
           <RichEditor
             value={content}
-            onChange={setContent}
+            onChange={(val) => {
+              setContent(val);
+              if (validationError) setValidationError(null);
+            }}
             placeholder="내용을 입력하세요. 툴바에서 이미지 삽입, 글꼴 꾸미기가 가능합니다."
           />
         </div>
