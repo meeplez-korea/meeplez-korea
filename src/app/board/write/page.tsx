@@ -255,16 +255,80 @@ function WriteForm() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold tracking-tight">{editId ? "글 수정" : "글쓰기"}</h1>
-        {autoSaveStatus && (
-          <span className="text-xs text-gray-400">{autoSaveStatus}</span>
-        )}
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="p-1.5 -ml-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-hover"
+            aria-label="뒤로가기"
+          >
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12.5 15L7.5 10L12.5 5" />
+            </svg>
+          </button>
+          <h1 className="text-xl font-semibold tracking-tight">{editId ? "글 수정" : "글쓰기"}</h1>
+        </div>
+        <div className="flex items-center gap-2">
+          {/* Auto-save indicator */}
+          {autoSaveStatus && (
+            <span className="flex items-center gap-1.5 text-xs text-gray-400 animate-fade-in">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary/60" />
+              {autoSaveStatus}
+            </span>
+          )}
+          {/* Draft controls (new post only) */}
+          {!editId && (
+            <>
+              <button
+                type="button"
+                onClick={handleSaveDraft}
+                disabled={savingDraft}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary rounded-lg hover:bg-primary/5 disabled:opacity-40"
+                title="임시저장"
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+                  <polyline points="17 21 17 13 7 13 7 21" />
+                  <polyline points="7 3 7 8 15 8" />
+                </svg>
+                {savingDraft ? "저장 중" : "저장"}
+              </button>
+              <div className="w-px h-4 bg-gray-200 dark:bg-dark-border" />
+              <button
+                type="button"
+                onClick={() => setShowDraftList(!showDraftList)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                  showDraftList
+                    ? "text-primary bg-primary/10"
+                    : "text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary hover:bg-primary/5"
+                }`}
+                title="임시저장 불러오기"
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 002-2v-4M17 8l-5-5-5 5M12 3v12" />
+                </svg>
+                불러오기
+                {drafts.length > 0 && (
+                  <span className="ml-0.5 px-1.5 py-0.5 text-[10px] leading-none font-semibold bg-primary/15 text-primary rounded-full">
+                    {drafts.length}
+                  </span>
+                )}
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
+      {/* Draft restored banner */}
       {draftRestored && (
-        <div className="flex items-center justify-between p-3.5 mb-5 bg-blue-50 dark:bg-blue-900/20 rounded-xl text-sm text-blue-600 dark:text-blue-400">
-          <span>이전에 작성 중이던 글이 복원되었습니다.</span>
+        <div className="flex items-center gap-3 px-4 py-3 mb-6 bg-primary/5 dark:bg-primary/10 border border-primary/15 rounded-xl">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary shrink-0">
+            <polyline points="1 4 1 10 7 10" />
+            <path d="M3.51 15a9 9 0 105.64-11.36L1 10" />
+          </svg>
+          <span className="text-sm text-gray-600 dark:text-gray-300">이전에 작성 중이던 글이 복원되었습니다</span>
           <button
             type="button"
             onClick={() => {
@@ -275,74 +339,156 @@ function WriteForm() {
               setTag("보드게임");
               setDraftRestored(false);
             }}
-            className="text-xs underline hover:no-underline ml-3 shrink-0"
+            className="ml-auto text-xs font-medium text-primary hover:text-primary-dark shrink-0"
           >
             새로 작성
           </button>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Category */}
-        <div>
-          <label className="block text-sm font-medium mb-1.5">게시판 *</label>
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value as CategorySlug)}
-            className="w-full px-3.5 py-2.5 border border-gray-200 dark:border-dark-border dark:bg-dark-card rounded-xl text-sm"
-          >
-            {CATEGORIES.filter((cat) => cat.slug !== "notices" || isAdmin).map((cat) => (
-              <option key={cat.slug} value={cat.slug}>
-                {cat.icon} {cat.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Tag */}
-        {categoryInfo?.hasTags && (
-          <div>
-            <label className="block text-sm font-medium mb-1.5">말머리 *</label>
-            <div className="flex gap-2">
-              {(["보드게임", "외부활동"] as ReviewTag[]).map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => setTag(t)}
-                  className={`px-3.5 py-1.5 text-sm font-medium rounded-lg transition-colors ${
-                    tag === t
-                      ? "bg-primary text-white shadow-sm"
-                      : "bg-white dark:bg-dark-card text-gray-500 dark:text-gray-400 shadow-card dark:shadow-card-dark hover:text-gray-700 dark:hover:text-gray-300"
-                  }`}
-                >
-                  {t}
-                </button>
-              ))}
+      {/* Draft slide-over panel */}
+      {showDraftList && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/20 dark:bg-black/40 z-40 animate-fade-in"
+            onClick={() => setShowDraftList(false)}
+          />
+          <div className="fixed top-0 right-0 bottom-0 w-full max-w-sm bg-white dark:bg-dark-card z-50 shadow-2xl flex flex-col animate-slide-in-right">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-dark-border">
+              <h2 className="text-sm font-semibold">임시저장 목록</h2>
+              <button
+                type="button"
+                onClick={() => setShowDraftList(false)}
+                className="p-1 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-hover"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              {drafts.length > 0 ? (
+                <div className="py-2">
+                  {drafts.map((draft) => (
+                    <div
+                      key={draft.id}
+                      className={`group relative px-5 py-3.5 transition-colors ${
+                        currentDraftId === draft.id
+                          ? "bg-primary/5 dark:bg-primary/10"
+                          : "hover:bg-gray-50 dark:hover:bg-dark-hover"
+                      }`}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => handleLoadDraft(draft)}
+                        className="w-full text-left"
+                      >
+                        <p className={`text-sm truncate ${
+                          currentDraftId === draft.id ? "font-semibold text-primary" : "font-medium"
+                        }`}>
+                          {draft.title || "(제목 없음)"}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-1">
+                          {new Date(draft.updated_at).toLocaleDateString("ko-KR", {
+                            month: "long",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </p>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteDraft(draft.id)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 rounded-md text-gray-300 hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity hover:bg-danger/5"
+                        title="삭제"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="3 6 5 6 21 6" />
+                          <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mb-3 opacity-40">
+                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                  </svg>
+                  <p className="text-sm">임시저장된 글이 없습니다</p>
+                </div>
+              )}
             </div>
           </div>
-        )}
+        </>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Category & Tag row */}
+        <div className="flex gap-3">
+          <div className="flex-1">
+            <label className="block text-xs font-medium text-gray-400 dark:text-gray-500 mb-1.5 uppercase tracking-wider">게시판</label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value as CategorySlug)}
+              className="w-full px-3.5 py-2.5 bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-xl text-sm"
+            >
+              {CATEGORIES.filter((cat) => cat.slug !== "notices" || isAdmin).map((cat) => (
+                <option key={cat.slug} value={cat.slug}>
+                  {cat.icon} {cat.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          {categoryInfo?.hasTags && (
+            <div className="shrink-0">
+              <label className="block text-xs font-medium text-gray-400 dark:text-gray-500 mb-1.5 uppercase tracking-wider">말머리</label>
+              <div className="flex gap-1.5 h-[42px]">
+                {(["보드게임", "외부활동"] as ReviewTag[]).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setTag(t)}
+                    className={`px-3.5 text-sm font-medium rounded-xl transition-colors ${
+                      tag === t
+                        ? "bg-primary text-white shadow-sm"
+                        : "bg-white dark:bg-dark-card text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-dark-border hover:border-primary/30 hover:text-gray-700 dark:hover:text-gray-300"
+                    }`}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
 
         {categoryInfo?.isPrivate && (
-          <div className="p-3.5 bg-cream/50 dark:bg-dark-hover rounded-xl text-sm text-gray-500 dark:text-gray-400">
-            이 게시판의 글은 운영진만 확인할 수 있습니다.
+          <div className="flex items-center gap-2 px-3.5 py-2.5 bg-cream/50 dark:bg-dark-hover rounded-xl text-sm text-gray-500 dark:text-gray-400">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 opacity-60">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0110 0v4" />
+            </svg>
+            이 게시판의 글은 운영진만 확인할 수 있습니다
           </div>
         )}
 
         {/* Title */}
         <div>
-          <label className="block text-sm font-medium mb-1.5">제목 *</label>
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full px-3.5 py-2.5 border border-gray-200 dark:border-dark-border dark:bg-dark-card rounded-xl text-sm"
+            className="w-full px-4 py-3 bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-xl text-base font-medium placeholder:text-gray-300 dark:placeholder:text-gray-600"
             placeholder="제목을 입력하세요"
           />
         </div>
 
         {/* Content */}
         <div>
-          <label className="block text-sm font-medium mb-1.5">내용 *</label>
           <RichEditor
             value={content}
             onChange={setContent}
@@ -350,94 +496,16 @@ function WriteForm() {
           />
         </div>
 
-        {false && (
-          <div></div>
-        )}
-
         {/* Submit */}
-        <div className="flex gap-2 pt-2">
+        <div className="flex items-center justify-end pt-3 border-t border-gray-100 dark:border-dark-border">
           <button
             type="submit"
             disabled={submitting}
-            className="px-6 py-2.5 bg-primary text-white rounded-xl hover:bg-primary-dark text-sm font-medium disabled:opacity-50"
+            className="px-8 py-2.5 bg-primary text-white rounded-xl hover:bg-primary-dark text-sm font-semibold disabled:opacity-50 shadow-sm hover:shadow-md"
           >
             {submitting ? "업로드 중..." : editId ? "수정 완료" : "작성 완료"}
           </button>
-          {!editId && (
-            <>
-              <button
-                type="button"
-                onClick={handleSaveDraft}
-                disabled={savingDraft}
-                className="px-6 py-2.5 border border-primary text-primary rounded-xl hover:bg-primary/5 text-sm font-medium disabled:opacity-50"
-              >
-                {savingDraft ? "저장 중..." : "임시저장"}
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowDraftList(!showDraftList)}
-                className="px-6 py-2.5 border border-gray-200 dark:border-dark-border rounded-xl hover:bg-gray-50 dark:hover:bg-dark-hover text-sm font-medium"
-              >
-                불러오기 {drafts.length > 0 && `(${drafts.length})`}
-              </button>
-            </>
-          )}
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="px-6 py-2.5 border border-gray-200 dark:border-dark-border rounded-xl hover:bg-gray-50 dark:hover:bg-dark-hover text-sm font-medium"
-          >
-            취소
-          </button>
         </div>
-
-        {/* Draft List */}
-        {showDraftList && drafts.length > 0 && (
-          <div className="border border-gray-200 dark:border-dark-border rounded-xl overflow-hidden">
-            <div className="px-4 py-2.5 bg-gray-50 dark:bg-dark-hover text-sm font-medium">
-              임시저장 목록
-            </div>
-            {drafts.map((draft) => (
-              <div
-                key={draft.id}
-                className={`flex items-center justify-between px-4 py-3 border-t border-gray-100 dark:border-dark-border hover:bg-gray-50 dark:hover:bg-dark-hover ${
-                  currentDraftId === draft.id ? "bg-blue-50/50 dark:bg-blue-900/10" : ""
-                }`}
-              >
-                <button
-                  type="button"
-                  onClick={() => handleLoadDraft(draft)}
-                  className="flex-1 text-left min-w-0"
-                >
-                  <p className="text-sm font-medium truncate">
-                    {draft.title || "(제목 없음)"}
-                  </p>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    {new Date(draft.updated_at).toLocaleDateString("ko-KR", {
-                      month: "long",
-                      day: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </p>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDeleteDraft(draft.id)}
-                  className="text-xs text-gray-400 hover:text-red-500 ml-3 shrink-0"
-                >
-                  삭제
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {showDraftList && drafts.length === 0 && (
-          <div className="p-4 text-center text-sm text-gray-400 border border-gray-200 dark:border-dark-border rounded-xl">
-            임시저장된 글이 없습니다.
-          </div>
-        )}
       </form>
     </div>
   );
