@@ -41,6 +41,7 @@ function WriteForm() {
   const [currentDraftId, setCurrentDraftId] = useState<string | null>(null);
   const [showDraftList, setShowDraftList] = useState(false);
   const [savingDraft, setSavingDraft] = useState(false);
+  const [deletingDraftId, setDeletingDraftId] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
   const titleRef = useRef<HTMLInputElement>(null);
 
@@ -145,9 +146,11 @@ function WriteForm() {
   };
 
   const handleDeleteDraft = async (draftId: string) => {
+    setDeletingDraftId(draftId);
     await deleteDraft(draftId);
     if (user) setDrafts(await getDrafts(user.id));
     if (currentDraftId === draftId) setCurrentDraftId(null);
+    setDeletingDraftId(null);
   };
 
   if (!isMember) {
@@ -360,7 +363,7 @@ function WriteForm() {
             className="fixed inset-0 bg-black/20 dark:bg-black/40 z-40 animate-fade-in"
             onClick={() => setShowDraftList(false)}
           />
-          <div className="fixed top-0 right-0 bottom-0 w-full max-w-sm bg-white dark:bg-dark-card z-50 shadow-2xl flex flex-col animate-slide-in-right">
+          <div className="slide-over-panel fixed top-0 right-0 bottom-0 w-full max-w-sm bg-white dark:bg-dark-card z-50 shadow-2xl flex flex-col animate-slide-in-right">
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-dark-border">
               <h2 className="text-sm font-semibold">임시저장 목록</h2>
               <button
@@ -380,16 +383,18 @@ function WriteForm() {
                   {drafts.map((draft) => (
                     <div
                       key={draft.id}
-                      className={`group relative px-5 py-3.5 transition-colors ${
-                        currentDraftId === draft.id
-                          ? "bg-primary/5 dark:bg-primary/10"
-                          : "hover:bg-gray-50 dark:hover:bg-dark-hover"
+                      className={`group relative px-5 py-3.5 overflow-hidden transition-all ${
+                        deletingDraftId === draft.id
+                          ? "opacity-40 pointer-events-none"
+                          : currentDraftId === draft.id
+                            ? "bg-primary/5 dark:bg-primary/10"
+                            : "hover:bg-gray-50 dark:hover:bg-dark-hover"
                       }`}
                     >
                       <button
                         type="button"
                         onClick={() => handleLoadDraft(draft)}
-                        className="w-full text-left"
+                        className="w-full text-left active:!transform-none"
                       >
                         <p className={`text-sm truncate ${
                           currentDraftId === draft.id ? "font-semibold text-primary" : "font-medium"
@@ -408,7 +413,8 @@ function WriteForm() {
                       <button
                         type="button"
                         onClick={() => handleDeleteDraft(draft.id)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 rounded-md text-gray-300 hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity hover:bg-danger/5"
+                        disabled={deletingDraftId === draft.id}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 rounded-md text-gray-300 hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity hover:bg-danger/5 active:!transform-none"
                         title="삭제"
                       >
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

@@ -66,9 +66,14 @@ a, button {
 }
 
 /* Active press effect for buttons */
-button:active:not(:disabled),
+button:active:not(:disabled):not([class*="active\:!transform-none"]),
 a:active {
   transform: scale(0.98);
+}
+
+/* Disable active scale inside slide-over panels */
+.slide-over-panel button:active {
+  transform: none !important;
 }
 
 /* Focus ring */
