@@ -170,7 +170,7 @@ export default function BoardPage() {
                   </span>
                 )}
                 {isNew(post) && (
-                  <span className="text-[10px] font-bold text-white bg-primary rounded px-1.5 py-0.5 leading-none">NEW</span>
+                  <span className="text-[10px] font-bold text-white bg-primary rounded-full px-1.5 py-0.5 leading-none">NEW</span>
                 )}
                 </div>
                 <h3 className="font-semibold text-sm mt-2 line-clamp-2 group-hover:text-primary transition-colors">
@@ -211,11 +211,11 @@ export default function BoardPage() {
                       className="text-sm hover:text-primary transition-colors"
                     >
                       {post.is_pinned && <span className="text-[11px] text-danger font-bold mr-1">[고정]</span>}
-                      {isNew(post) && <span className="inline-flex items-center text-[10px] font-bold text-white bg-primary rounded px-1.5 py-0.5 mr-1.5 leading-none">N</span>}
                       {post.title}
                       {(post.comment_count ?? 0) > 0 && (
                         <span className="text-primary text-xs font-semibold ml-1.5">[{post.comment_count}]</span>
                       )}
+                      {isNew(post) && <span className="inline-flex items-center text-[10px] font-bold text-white bg-primary rounded-full px-1.5 py-0.5 ml-1.5 leading-none">NEW</span>}
                     </Link>
                   </td>
                   <td className="py-3.5 px-4 text-xs text-gray-500 dark:text-gray-400 font-medium">{post.author_name}</td>
