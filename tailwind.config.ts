@@ -11,9 +11,9 @@ const config: Config = {
     extend: {
       colors: {
         primary: {
-          DEFAULT: "#6BA68E",
-          light: "#8CC4AC",
-          dark: "#4E8A72",
+          DEFAULT: "rgb(var(--primary))",
+          light: "rgb(var(--primary-light))",
+          dark: "rgb(var(--primary-dark))",
         },
         secondary: "#D4956C",
         accent: "#B08EC0",

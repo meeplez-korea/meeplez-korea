@@ -3,14 +3,16 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { getPosts, getAllProfiles, updateUserRole, adminUpdateNickname, adminDeleteUser, getPromotions, createPromotion, updatePromotion, deletePromotion } from "@/lib/storage";
+import { getPosts, getAllProfiles, updateUserRole, adminUpdateNickname, adminDeleteUser, getPromotions, createPromotion, updatePromotion, deletePromotion, getSetting, setSetting } from "@/lib/storage";
+import { applyPrimaryColor } from "@/components/PrimaryColorProvider";
 import { Post, Profile, Promotion } from "@/lib/types";
 import { formatDate, sanitizeHtml, stripHtml } from "@/lib/utils";
 import RichEditor from "@/components/ui/RichEditor";
 
 export default function AdminPage() {
   const { isAdmin, loading } = useAuth();
-  const [tab, setTab] = useState<"suggestions" | "members" | "promotions">("suggestions");
+  const [tab, setTab] = useState<"suggestions" | "members" | "promotions" | "design">("suggestions");
+  const [primaryColor, setPrimaryColor] = useState("#6BA68E");
   const [suggestions, setSuggestions] = useState<Post[]>([]);
   const [members, setMembers] = useState<Profile[]>([]);
   const [promotions, setPromotions] = useState<Promotion[]>([]);
@@ -35,14 +37,27 @@ export default function AdminPage() {
   }, [isAdmin]);
 
   const loadData = async () => {
-    const [s, m, p] = await Promise.all([
+    const [s, m, p, color] = await Promise.all([
       getPosts("suggestions"),
       getAllProfiles(),
       getPromotions(),
+      getSetting("primary_color"),
     ]);
     setSuggestions(s);
     setMembers(m);
     setPromotions(p);
+    if (color) setPrimaryColor(color);
+  };
+
+  const handleColorChange = async (color: string) => {
+    setPrimaryColor(color);
+    applyPrimaryColor(color);
+    try {
+      await setSetting("primary_color", color);
+      showToast("색상이 변경되었습니다.");
+    } catch {
+      showToast("저장에 실패했습니다.", "error");
+    }
   };
 
   const handleRoleChange = async (userId: string, role: string) => {
@@ -140,10 +155,21 @@ export default function AdminPage() {
     );
   }
 
+  const COLOR_PRESETS = [
+    { label: "세이지 그린", color: "#6BA68E" },
+    { label: "포레스트", color: "#5B8A72" },
+    { label: "티얼", color: "#5B9BA6" },
+    { label: "블루", color: "#6B8EB8" },
+    { label: "라벤더", color: "#8E7AB8" },
+    { label: "로즈", color: "#B87A8E" },
+    { label: "웜", color: "#B89070" },
+  ];
+
   const tabs = [
     { key: "suggestions", label: "건의방", count: suggestions.length },
     { key: "members", label: "회원 관리", count: members.length },
     { key: "promotions", label: "홍보칸", count: promotions.length },
+    { key: "design", label: "디자인", count: null },
   ] as const;
 
   return (
@@ -171,7 +197,7 @@ export default function AdminPage() {
                 : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-cream/50 dark:hover:bg-dark-hover"
             }`}
           >
-            {t.label} ({t.count})
+            {t.label}{t.count !== null ? ` (${t.count})` : ""}
           </button>
         ))}
       </div>
@@ -290,6 +316,38 @@ export default function AdminPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+      {/* Design Tab */}
+      {tab === "design" && (
+        <div className="bg-white dark:bg-dark-card rounded-xl p-6 shadow-card dark:shadow-card-dark space-y-6">
+          <div>
+            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-3">프리셋</p>
+            <div className="flex gap-2.5 flex-wrap">
+              {COLOR_PRESETS.map((preset) => (
+                <button
+                  key={preset.color}
+                  onClick={() => handleColorChange(preset.color)}
+                  title={preset.label}
+                  className={`w-9 h-9 rounded-xl transition-all hover:scale-105 ${primaryColor === preset.color ? "ring-2 ring-offset-2 ring-gray-400 scale-110" : ""}`}
+                  style={{ backgroundColor: preset.color }}
+                />
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">직접 선택</p>
+            <div className="flex items-center gap-3">
+              <input
+                type="color"
+                value={primaryColor}
+                onChange={(e) => handleColorChange(e.target.value)}
+                className="w-10 h-10 rounded-lg cursor-pointer border border-gray-200 dark:border-dark-border bg-transparent"
+              />
+              <span className="text-sm font-mono text-gray-400">{primaryColor}</span>
+              <div className="w-6 h-6 rounded-md border border-gray-200 dark:border-dark-border" style={{ backgroundColor: primaryColor }} />
+            </div>
+          </div>
         </div>
       )}
     </div>

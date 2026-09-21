@@ -7,6 +7,9 @@
 :root {
   --background: #F7F4EE;
   --foreground: #2D2D2D;
+  --primary: 107, 166, 142;
+  --primary-dark: 78, 138, 114;
+  --primary-light: 140, 196, 172;
 }
 
 html {
@@ -83,15 +86,15 @@ a:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
-  outline: 2px solid #6BA68E;
+  outline: 2px solid rgb(var(--primary));
   outline-offset: 2px;
 }
 
 input:focus,
 textarea:focus,
 select:focus {
-  border-color: #6BA68E;
-  box-shadow: 0 0 0 3px rgba(107, 166, 142, 0.1);
+  border-color: rgb(var(--primary));
+  box-shadow: 0 0 0 3px rgb(var(--primary) / 0.1);
 }
 
 @layer utilities {
@@ -191,7 +194,7 @@ select:focus {
 }
 
 .rich-editor .tiptap img.ProseMirror-selectednode {
-  outline: 2px solid #6BA68E;
+  outline: 2px solid rgb(var(--primary));
   outline-offset: 2px;
   border-radius: 10px;
 }
@@ -208,7 +211,7 @@ select:focus {
   bottom: -4px;
   width: 12px;
   height: 12px;
-  background: #6BA68E;
+  background: rgb(var(--primary));
   border: 2px solid white;
   border-radius: 3px;
   cursor: se-resize;
@@ -236,7 +239,7 @@ select:focus {
 .post-content ul { list-style: disc; padding-left: 1.5em; }
 .post-content ol { list-style: decimal; padding-left: 1.5em; }
 .post-content a { color: #5A90B8; text-decoration: underline; cursor: pointer; text-underline-offset: 2px; }
-.post-content a:hover { color: #6BA68E; }
+.post-content a:hover { color: rgb(var(--primary)); }
 .post-content p { margin: 0.2em 0; min-height: 1.2em; line-height: 1.7; }
 .post-content p br { display: block; content: ""; margin: 0.3em 0; }
 .post-content .ql-indent-1 { padding-left: 2em; }
