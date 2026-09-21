@@ -93,7 +93,7 @@ export default function Home() {
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-sm group-hover:text-primary transition-colors flex items-center gap-1.5 flex-wrap">
                       {post.is_pinned && <span className="text-[11px] text-danger font-bold">[고정]</span>}
-                      {isNew(post) && <span className="text-[10px] font-bold text-white bg-primary rounded px-1.5 py-0.5 leading-none">NEW</span>}
+                      {isNew(post) && <span className="text-[10px] font-bold text-white bg-danger rounded px-1.5 py-0.5 leading-none">NEW</span>}
                       {post.title}
                       {(post.comment_count ?? 0) > 0 && (
                         <span className="text-primary text-xs font-semibold">[{post.comment_count}]</span>
@@ -164,7 +164,7 @@ export default function Home() {
                       </span>
                     )}
                     {isNew(post) && (
-                      <span className="text-[10px] font-bold text-white bg-primary rounded px-1.5 py-0.5 leading-none">NEW</span>
+                      <span className="text-[10px] font-bold text-white bg-danger rounded px-1.5 py-0.5 leading-none">NEW</span>
                     )}
                   </div>
                   <h3 className="font-semibold text-sm mt-2 line-clamp-2 group-hover:text-primary transition-colors">
