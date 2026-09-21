@@ -4,12 +4,11 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { getCategoryBySlug } from "@/lib/categories";
-import { getPosts } from "@/lib/storage";
+import { getPosts, getReadPostIds, NEW_FEATURE_BASELINE } from "@/lib/storage";
 import { Post, ReviewTag } from "@/lib/types";
 import { formatDateShort } from "@/lib/utils";
 import { POSTS_PER_PAGE, CARDS_PER_PAGE } from "@/lib/constants";
 import { useAuth } from "@/contexts/AuthContext";
-import { initReadBaseline, getReadPostIds } from "@/lib/readPosts";
 
 export default function BoardPage() {
   const params = useParams();
@@ -23,18 +22,19 @@ export default function BoardPage() {
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [dataLoading, setDataLoading] = useState(true);
-  const [readBaseline, setReadBaseline] = useState<string | null>(null);
   const [readPostIds, setReadPostIds] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    setReadBaseline(initReadBaseline());
-    setReadPostIds(getReadPostIds());
-  }, []);
-
   const isNew = (post: Post) =>
-    !!user && !!readBaseline &&
-    new Date(post.created_at) > new Date(readBaseline) &&
+    !!user &&
+    new Date(post.created_at) > new Date(NEW_FEATURE_BASELINE) &&
     !readPostIds.has(post.id);
+
+  useEffect(() => {
+    if (!user || posts.length === 0) return;
+    const newPosts = posts.filter(p => new Date(p.created_at) > new Date(NEW_FEATURE_BASELINE));
+    if (newPosts.length === 0) return;
+    getReadPostIds(user.id, newPosts.map(p => p.id)).then(setReadPostIds).catch(() => {});
+  }, [posts, user]);
 
   useEffect(() => {
     if (category) {

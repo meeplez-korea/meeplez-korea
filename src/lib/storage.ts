@@ -449,6 +449,26 @@ export async function getCommentLikeStatuses(commentIds: string[], userId?: stri
   return result;
 }
 
+// ── Post Reads ──
+
+export const NEW_FEATURE_BASELINE = "2026-09-20T00:00:00.000Z";
+
+export async function getReadPostIds(userId: string, postIds: string[]): Promise<Set<string>> {
+  if (postIds.length === 0) return new Set();
+  const { data } = await supabase
+    .from("post_reads")
+    .select("post_id")
+    .eq("user_id", userId)
+    .in("post_id", postIds);
+  return new Set((data || []).map((r: any) => r.post_id));
+}
+
+export async function markPostRead(postId: string, userId: string): Promise<void> {
+  await supabase
+    .from("post_reads")
+    .upsert({ post_id: postId, user_id: userId }, { onConflict: "post_id,user_id" });
+}
+
 export async function getLikeStatus(postId: string, userId?: string): Promise<{ count: number; liked: boolean }> {
   const { count } = await supabase
     .from("post_likes")

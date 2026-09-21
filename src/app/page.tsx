@@ -2,11 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { getPosts, getPromotions } from "@/lib/storage";
+import { getPosts, getPromotions, getReadPostIds, NEW_FEATURE_BASELINE } from "@/lib/storage";
 import { Post, Promotion } from "@/lib/types";
 import { formatDateShort, truncate, stripHtml, sanitizeHtml } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
-import { initReadBaseline, getReadPostIds } from "@/lib/readPosts";
 
 export default function Home() {
   const { user, profile, isPending, loading } = useAuth();
@@ -14,18 +13,19 @@ export default function Home() {
   const [reviews, setReviews] = useState<Post[]>([]);
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
-  const [readBaseline, setReadBaseline] = useState<string | null>(null);
   const [readPostIds, setReadPostIds] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    setReadBaseline(initReadBaseline());
-    setReadPostIds(getReadPostIds());
-  }, []);
-
   const isNew = (post: Post) =>
-    !!user && !!readBaseline &&
-    new Date(post.created_at) > new Date(readBaseline) &&
+    !!user &&
+    new Date(post.created_at) > new Date(NEW_FEATURE_BASELINE) &&
     !readPostIds.has(post.id);
+
+  useEffect(() => {
+    if (!user || (notices.length === 0 && reviews.length === 0)) return;
+    const allPosts = [...notices, ...reviews].filter(p => new Date(p.created_at) > new Date(NEW_FEATURE_BASELINE));
+    if (allPosts.length === 0) return;
+    getReadPostIds(user.id, allPosts.map(p => p.id)).then(setReadPostIds).catch(() => {});
+  }, [notices, reviews, user]);
 
   useEffect(() => {
     Promise.all([
