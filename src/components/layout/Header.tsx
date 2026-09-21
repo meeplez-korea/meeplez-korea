@@ -6,7 +6,7 @@ import { CATEGORIES } from "@/lib/categories";
 import { SITE_NAME } from "@/lib/constants";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
-import { signOut, getUnreadCount, getNotifications, markNotificationsRead } from "@/lib/storage";
+import { signOut, getUnreadCount, getNotifications, markNotificationsRead, deleteNotification, deleteAllNotifications } from "@/lib/storage";
 import { Notification } from "@/lib/types";
 
 function ThemeToggle() {
@@ -82,6 +82,19 @@ function NotificationBell({ onOpen, forceClose }: { onOpen?: () => void; forceCl
     }
   };
 
+  const handleDelete = async (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    await deleteNotification(id).catch(() => {});
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  };
+
+  const handleDeleteAll = async () => {
+    if (!user) return;
+    await deleteAllNotifications(user.id).catch(() => {});
+    setNotifications([]);
+  };
+
   if (!user) return <div className="w-[34px] h-[34px]" />;
 
   return (
@@ -100,7 +113,7 @@ function NotificationBell({ onOpen, forceClose }: { onOpen?: () => void; forceCl
           <div className="px-4 py-3 border-b border-gray-100 dark:border-dark-border flex items-center justify-between">
             <h3 className="text-sm font-bold">알림</h3>
             {notifications.length > 0 && (
-              <span className="text-[11px] text-gray-400">{notifications.length}건</span>
+              <button onClick={handleDeleteAll} className="text-[11px] text-gray-400 hover:text-danger transition-colors">전체 삭제</button>
             )}
           </div>
           {notifications.length === 0 ? (
@@ -112,23 +125,32 @@ function NotificationBell({ onOpen, forceClose }: { onOpen?: () => void; forceCl
             </div>
           ) : (
             notifications.map((n) => (
-              <Link
-                key={n.id}
-                href={n.link}
-                onClick={() => setOpen(false)}
-                className={`block px-4 py-3 border-b border-gray-100/80 dark:border-dark-border/50 hover:bg-cream/40 dark:hover:bg-dark-hover transition-colors ${!n.is_read ? "bg-primary/5" : ""}`}
-              >
-                <div className="flex items-start gap-3">
-                  {!n.is_read && (
-                    <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
-                  )}
-                  <div className={n.is_read ? "pl-[18px]" : ""}>
-                    <p className="text-[13px] font-semibold text-gray-800 dark:text-gray-200">{n.title}</p>
-                    <p className="text-[13px] text-gray-500 dark:text-gray-400 line-clamp-2 mt-0.5 leading-relaxed">{n.message}</p>
-                    <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1 tabular-nums">{new Date(n.created_at).toLocaleDateString("ko-KR")}</p>
+              <div key={n.id} className={`relative group border-b border-gray-100/80 dark:border-dark-border/50 ${!n.is_read ? "bg-primary/5" : ""}`}>
+                <Link
+                  href={n.link}
+                  onClick={() => setOpen(false)}
+                  className="block px-4 py-3 hover:bg-cream/40 dark:hover:bg-dark-hover transition-colors"
+                >
+                  <div className="flex items-start gap-3 pr-5">
+                    {!n.is_read && (
+                      <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+                    )}
+                    <div className={n.is_read ? "pl-[18px]" : ""}>
+                      <p className="text-[13px] font-semibold text-gray-800 dark:text-gray-200">{n.title}</p>
+                      <p className="text-[13px] text-gray-500 dark:text-gray-400 line-clamp-2 mt-0.5 leading-relaxed">{n.message}</p>
+                      <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1 tabular-nums">{new Date(n.created_at).toLocaleDateString("ko-KR")}</p>
+                    </div>
                   </div>
-                </div>
-              </Link>
+                </Link>
+                <button
+                  onClick={(e) => handleDelete(e, n.id)}
+                  className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity text-gray-300 dark:text-gray-600 hover:text-danger dark:hover:text-danger"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
             ))
           )}
         </div>

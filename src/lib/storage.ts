@@ -316,6 +316,14 @@ export async function markNotificationsRead(userId: string) {
     .eq("is_read", false);
 }
 
+export async function deleteNotification(notificationId: string): Promise<void> {
+  await supabase.from("notifications").delete().eq("id", notificationId);
+}
+
+export async function deleteAllNotifications(userId: string): Promise<void> {
+  await supabase.from("notifications").delete().eq("user_id", userId);
+}
+
 export async function createNotification(userId: string, type: string, title: string, message: string, link: string) {
   return supabase
     .from("notifications")
