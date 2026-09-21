@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { CATEGORIES } from "@/lib/categories";
 import { SITE_NAME } from "@/lib/constants";
@@ -36,6 +36,75 @@ function ThemeToggle() {
         </svg>
       )}
     </button>
+  );
+}
+
+function SwipeableNotification({ n, onDelete, onLinkClick }: {
+  n: Notification;
+  onDelete: (id: string) => void;
+  onLinkClick: () => void;
+}) {
+  const [translateX, setTranslateX] = useState(0);
+  const startX = useRef(0);
+  const dragging = useRef(false);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    startX.current = e.touches[0].clientX;
+    dragging.current = true;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!dragging.current) return;
+    const diff = e.touches[0].clientX - startX.current;
+    if (diff < 0) setTranslateX(Math.max(diff, -90));
+  };
+
+  const handleTouchEnd = () => {
+    dragging.current = false;
+    if (translateX < -60) {
+      onDelete(n.id);
+    } else {
+      setTranslateX(0);
+    }
+  };
+
+  return (
+    <div className={`relative overflow-hidden border-b border-gray-100/80 dark:border-dark-border/50 ${!n.is_read ? "bg-primary/5" : ""}`}>
+      {/* 삭제 배경 */}
+      <div className="absolute inset-y-0 right-0 w-20 bg-danger flex items-center justify-center">
+        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+      </div>
+      {/* 알림 내용 */}
+      <div
+        style={{ transform: `translateX(${translateX}px)`, transition: dragging.current ? "none" : "transform 0.2s ease" }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        className="relative group bg-white dark:bg-dark-card hover:bg-cream/40 dark:hover:bg-dark-hover transition-colors"
+      >
+        <Link href={n.link} onClick={onLinkClick} className="block px-4 py-3">
+          <div className="flex items-start gap-3 pr-5">
+            {!n.is_read && <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary shrink-0" />}
+            <div className={n.is_read ? "pl-[18px]" : ""}>
+              <p className="text-[13px] font-semibold text-gray-800 dark:text-gray-200">{n.title}</p>
+              <p className="text-[13px] text-gray-500 dark:text-gray-400 line-clamp-2 mt-0.5 leading-relaxed">{n.message}</p>
+              <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1 tabular-nums">{new Date(n.created_at).toLocaleDateString("ko-KR")}</p>
+            </div>
+          </div>
+        </Link>
+        {/* 데스크톱 X 버튼 */}
+        <button
+          onClick={(e) => { e.preventDefault(); onDelete(n.id); }}
+          className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity text-gray-300 dark:text-gray-600 hover:text-danger dark:hover:text-danger"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -82,13 +151,6 @@ function NotificationBell({ onOpen, forceClose }: { onOpen?: () => void; forceCl
     }
   };
 
-  const handleDelete = async (e: React.MouseEvent, id: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    await deleteNotification(id).catch(() => {});
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
-  };
-
   const handleDeleteAll = async () => {
     if (!user) return;
     await deleteAllNotifications(user.id).catch(() => {});
@@ -125,32 +187,15 @@ function NotificationBell({ onOpen, forceClose }: { onOpen?: () => void; forceCl
             </div>
           ) : (
             notifications.map((n) => (
-              <div key={n.id} className={`relative group border-b border-gray-100/80 dark:border-dark-border/50 ${!n.is_read ? "bg-primary/5" : ""}`}>
-                <Link
-                  href={n.link}
-                  onClick={() => setOpen(false)}
-                  className="block px-4 py-3 hover:bg-cream/40 dark:hover:bg-dark-hover transition-colors"
-                >
-                  <div className="flex items-start gap-3 pr-5">
-                    {!n.is_read && (
-                      <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
-                    )}
-                    <div className={n.is_read ? "pl-[18px]" : ""}>
-                      <p className="text-[13px] font-semibold text-gray-800 dark:text-gray-200">{n.title}</p>
-                      <p className="text-[13px] text-gray-500 dark:text-gray-400 line-clamp-2 mt-0.5 leading-relaxed">{n.message}</p>
-                      <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1 tabular-nums">{new Date(n.created_at).toLocaleDateString("ko-KR")}</p>
-                    </div>
-                  </div>
-                </Link>
-                <button
-                  onClick={(e) => handleDelete(e, n.id)}
-                  className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity text-gray-300 dark:text-gray-600 hover:text-danger dark:hover:text-danger"
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
+              <SwipeableNotification
+                key={n.id}
+                n={n}
+                onDelete={(id) => {
+                  deleteNotification(id).catch(() => {});
+                  setNotifications((prev) => prev.filter((x) => x.id !== id));
+                }}
+                onLinkClick={() => setOpen(false)}
+              />
             ))
           )}
         </div>
