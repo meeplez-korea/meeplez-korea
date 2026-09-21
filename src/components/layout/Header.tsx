@@ -85,7 +85,7 @@ function SwipeableNotification({ n, onDelete, onLinkClick }: {
         className="relative bg-white dark:bg-dark-card hover:bg-cream/40 dark:hover:bg-dark-hover transition-colors"
       >
         <Link href={n.link} onClick={onLinkClick} className="block px-4 py-3">
-          <div className="flex items-start gap-3 pr-5">
+          <div className="flex items-start gap-3 pr-10">
             {!n.is_read && <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary shrink-0" />}
             <div className={n.is_read ? "pl-[18px]" : ""}>
               <p className="text-[13px] font-semibold text-gray-800 dark:text-gray-200">{n.title}</p>
@@ -94,6 +94,14 @@ function SwipeableNotification({ n, onDelete, onLinkClick }: {
             </div>
           </div>
         </Link>
+        <button
+          onClick={(e) => { e.preventDefault(); onDelete(n.id); }}
+          className="absolute top-1/2 -translate-y-1/2 right-2 p-2 text-gray-300 dark:text-gray-600 hover:text-danger dark:hover:text-danger transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
       </div>
     </div>
   );
