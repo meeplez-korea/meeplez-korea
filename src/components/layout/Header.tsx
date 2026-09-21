@@ -39,10 +39,11 @@ function ThemeToggle() {
   );
 }
 
-function SwipeableNotification({ n, onDelete, onLinkClick }: {
+function SwipeableNotification({ n, onDelete, onLinkClick, editMode }: {
   n: Notification;
   onDelete: (id: string) => void;
   onLinkClick: () => void;
+  editMode: boolean;
 }) {
   const [translateX, setTranslateX] = useState(0);
   const startX = useRef(0);
@@ -85,7 +86,7 @@ function SwipeableNotification({ n, onDelete, onLinkClick }: {
         className="relative bg-white dark:bg-dark-card hover:bg-cream/40 dark:hover:bg-dark-hover transition-colors"
       >
         <Link href={n.link} onClick={onLinkClick} className="block px-4 py-3">
-          <div className="flex items-start gap-3 pr-10">
+          <div className={`flex items-start gap-3 ${editMode ? "pr-10" : ""}`}>
             {!n.is_read && <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary shrink-0" />}
             <div className={n.is_read ? "pl-[18px]" : ""}>
               <p className="text-[13px] font-semibold text-gray-800 dark:text-gray-200">{n.title}</p>
@@ -94,14 +95,16 @@ function SwipeableNotification({ n, onDelete, onLinkClick }: {
             </div>
           </div>
         </Link>
-        <button
-          onClick={(e) => { e.preventDefault(); onDelete(n.id); }}
-          className="absolute top-1/2 -translate-y-1/2 right-2 p-2 text-gray-300 dark:text-gray-600 hover:text-danger dark:hover:text-danger transition-colors"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
+        {editMode && (
+          <button
+            onClick={(e) => { e.preventDefault(); onDelete(n.id); }}
+            className="absolute top-1/2 -translate-y-1/2 right-2 p-2 text-danger transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
       </div>
     </div>
   );
@@ -112,6 +115,7 @@ function NotificationBell({ onOpen, forceClose }: { onOpen?: () => void; forceCl
   const [unread, setUnread] = useState(0);
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [editMode, setEditMode] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -141,6 +145,7 @@ function NotificationBell({ onOpen, forceClose }: { onOpen?: () => void; forceCl
     setOpen(willOpen);
     if (willOpen) {
       onOpen?.();
+      setEditMode(false);
       const data = await getNotifications(user.id);
       setNotifications(data);
       if (unread > 0) {
@@ -174,7 +179,14 @@ function NotificationBell({ onOpen, forceClose }: { onOpen?: () => void; forceCl
           <div className="px-4 py-3 border-b border-gray-100 dark:border-dark-border flex items-center justify-between">
             <h3 className="text-sm font-bold">알림</h3>
             {notifications.length > 0 && (
-              <button onClick={handleDeleteAll} className="text-[11px] text-gray-400 hover:text-danger transition-colors">전체 삭제</button>
+              <div className="flex items-center gap-3">
+                {editMode && (
+                  <button onClick={handleDeleteAll} className="text-[11px] text-danger font-medium">전체 삭제</button>
+                )}
+                <button onClick={() => setEditMode((v) => !v)} className="text-[11px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 font-medium">
+                  {editMode ? "완료" : "편집"}
+                </button>
+              </div>
             )}
           </div>
           {notifications.length === 0 ? (
@@ -189,6 +201,7 @@ function NotificationBell({ onOpen, forceClose }: { onOpen?: () => void; forceCl
               <SwipeableNotification
                 key={n.id}
                 n={n}
+                editMode={editMode}
                 onDelete={(id) => {
                   deleteNotification(id).catch(() => {});
                   setNotifications((prev) => prev.filter((x) => x.id !== id));
