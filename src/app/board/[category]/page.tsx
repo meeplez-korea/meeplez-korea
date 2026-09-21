@@ -138,11 +138,8 @@ export default function BoardPage() {
             <Link
               key={post.id}
               href={`/board/${category.slug}/${post.id}`}
-              className="relative bg-white dark:bg-dark-card rounded-xl overflow-hidden shadow-card dark:shadow-card-dark hover:shadow-card-hover dark:hover:shadow-card-dark-hover hover:-translate-y-1 transition-all duration-300 group"
+              className="bg-white dark:bg-dark-card rounded-xl overflow-hidden shadow-card dark:shadow-card-dark hover:shadow-card-hover dark:hover:shadow-card-dark-hover hover:-translate-y-1 transition-all duration-300 group"
             >
-              {isNew(post) && (
-                <span className="absolute top-2 left-2 z-10 text-[10px] font-bold text-white bg-primary rounded px-1.5 py-0.5 leading-none">NEW</span>
-              )}
               {post.thumbnail_url ? (
                 <div className="aspect-video bg-gray-100 dark:bg-dark-border overflow-hidden">
                   <img
@@ -158,6 +155,7 @@ export default function BoardPage() {
                 </div>
               )}
               <div className="p-4">
+                <div className="flex items-center gap-1.5 flex-wrap">
                 {post.tag && (
                   <span
                     className={`text-[11px] px-2 py-0.5 rounded-md font-medium ${
@@ -171,6 +169,10 @@ export default function BoardPage() {
                     {post.tag}
                   </span>
                 )}
+                {isNew(post) && (
+                  <span className="text-[10px] font-bold text-white bg-primary rounded px-1.5 py-0.5 leading-none">NEW</span>
+                )}
+                </div>
                 <h3 className="font-semibold text-sm mt-2 line-clamp-2 group-hover:text-primary transition-colors">
                   {post.title}
                   {(post.comment_count ?? 0) > 0 && (
