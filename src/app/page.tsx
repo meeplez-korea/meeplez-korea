@@ -6,6 +6,7 @@ import { getPosts, getPromotions } from "@/lib/storage";
 import { Post, Promotion } from "@/lib/types";
 import { formatDateShort, truncate, stripHtml, sanitizeHtml } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
+import { getReadPostIds } from "@/lib/readPosts";
 
 export default function Home() {
   const { user, profile, isPending, loading } = useAuth();
@@ -13,6 +14,13 @@ export default function Home() {
   const [reviews, setReviews] = useState<Post[]>([]);
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
+  const [readPostIds, setReadPostIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    setReadPostIds(getReadPostIds());
+  }, []);
+
+  const isNew = (post: Post) => !readPostIds.has(post.id);
 
   useEffect(() => {
     Promise.all([
@@ -83,9 +91,13 @@ export default function Home() {
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-sm group-hover:text-primary transition-colors flex items-center gap-1.5">
+                    <h3 className="font-semibold text-sm group-hover:text-primary transition-colors flex items-center gap-1.5 flex-wrap">
                       {post.is_pinned && <span className="text-[11px] text-danger font-bold">[고정]</span>}
+                      {isNew(post) && <span className="text-[10px] font-bold text-white bg-primary rounded px-1.5 py-0.5 leading-none">NEW</span>}
                       {post.title}
+                      {(post.comment_count ?? 0) > 0 && (
+                        <span className="text-primary text-xs font-semibold">[{post.comment_count}]</span>
+                      )}
                     </h3>
                     <p className="text-xs text-gray-400 mt-1.5 line-clamp-1">
                       {truncate(stripHtml(post.content), 80)}
@@ -137,21 +149,29 @@ export default function Home() {
                   </div>
                 )}
                 <div className="p-4">
-                  {post.tag && (
-                    <span
-                      className={`text-[11px] px-2 py-0.5 rounded-md font-medium ${
-                        post.tag === "보드게임"
-                          ? "bg-tag-board/10 text-tag-board"
-                          : post.tag === "외부활동"
-                          ? "bg-tag-outdoor/10 text-tag-outdoor"
-                          : "bg-tag-all/10 text-tag-all"
-                      }`}
-                    >
-                      {post.tag}
-                    </span>
-                  )}
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {post.tag && (
+                      <span
+                        className={`text-[11px] px-2 py-0.5 rounded-md font-medium ${
+                          post.tag === "보드게임"
+                            ? "bg-tag-board/10 text-tag-board"
+                            : post.tag === "외부활동"
+                            ? "bg-tag-outdoor/10 text-tag-outdoor"
+                            : "bg-tag-all/10 text-tag-all"
+                        }`}
+                      >
+                        {post.tag}
+                      </span>
+                    )}
+                    {isNew(post) && (
+                      <span className="text-[10px] font-bold text-white bg-primary rounded px-1.5 py-0.5 leading-none">NEW</span>
+                    )}
+                  </div>
                   <h3 className="font-semibold text-sm mt-2 line-clamp-2 group-hover:text-primary transition-colors">
                     {post.title}
+                    {(post.comment_count ?? 0) > 0 && (
+                      <span className="text-primary text-xs font-semibold ml-1">[{post.comment_count}]</span>
+                    )}
                   </h3>
                   <p className="text-xs text-gray-400 mt-1.5 line-clamp-2 leading-relaxed">
                     {truncate(stripHtml(post.content), 60)}
