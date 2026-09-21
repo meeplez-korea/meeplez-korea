@@ -6,7 +6,7 @@ import { getPosts, getPromotions } from "@/lib/storage";
 import { Post, Promotion } from "@/lib/types";
 import { formatDateShort, truncate, stripHtml, sanitizeHtml } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
-import { getReadPostIds } from "@/lib/readPosts";
+import { initReadBaseline, getReadPostIds } from "@/lib/readPosts";
 
 export default function Home() {
   const { user, profile, isPending, loading } = useAuth();
@@ -14,13 +14,18 @@ export default function Home() {
   const [reviews, setReviews] = useState<Post[]>([]);
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
+  const [readBaseline, setReadBaseline] = useState<string | null>(null);
   const [readPostIds, setReadPostIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
+    setReadBaseline(initReadBaseline());
     setReadPostIds(getReadPostIds());
   }, []);
 
-  const isNew = (post: Post) => !readPostIds.has(post.id);
+  const isNew = (post: Post) =>
+    !!user && !!readBaseline &&
+    new Date(post.created_at) > new Date(readBaseline) &&
+    !readPostIds.has(post.id);
 
   useEffect(() => {
     Promise.all([

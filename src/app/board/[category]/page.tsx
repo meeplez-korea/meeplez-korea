@@ -9,7 +9,7 @@ import { Post, ReviewTag } from "@/lib/types";
 import { formatDateShort } from "@/lib/utils";
 import { POSTS_PER_PAGE, CARDS_PER_PAGE } from "@/lib/constants";
 import { useAuth } from "@/contexts/AuthContext";
-import { getReadPostIds } from "@/lib/readPosts";
+import { initReadBaseline, getReadPostIds } from "@/lib/readPosts";
 
 export default function BoardPage() {
   const params = useParams();
@@ -23,13 +23,18 @@ export default function BoardPage() {
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [dataLoading, setDataLoading] = useState(true);
+  const [readBaseline, setReadBaseline] = useState<string | null>(null);
   const [readPostIds, setReadPostIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
+    setReadBaseline(initReadBaseline());
     setReadPostIds(getReadPostIds());
   }, []);
 
-  const isNew = (post: Post) => !readPostIds.has(post.id);
+  const isNew = (post: Post) =>
+    !!user && !!readBaseline &&
+    new Date(post.created_at) > new Date(readBaseline) &&
+    !readPostIds.has(post.id);
 
   useEffect(() => {
     if (category) {
