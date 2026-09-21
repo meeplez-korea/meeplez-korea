@@ -294,8 +294,7 @@ export async function getNotifications(userId: string): Promise<Notification[]> 
     .from("notifications")
     .select("*")
     .eq("user_id", userId)
-    .order("created_at", { ascending: false })
-    .limit(20);
+    .order("created_at", { ascending: false });
   return data || [];
 }
 
