@@ -82,7 +82,7 @@ function SwipeableNotification({ n, onDelete, onLinkClick }: {
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        className="relative group bg-white dark:bg-dark-card hover:bg-cream/40 dark:hover:bg-dark-hover transition-colors"
+        className="relative bg-white dark:bg-dark-card hover:bg-cream/40 dark:hover:bg-dark-hover transition-colors"
       >
         <Link href={n.link} onClick={onLinkClick} className="block px-4 py-3">
           <div className="flex items-start gap-3 pr-5">
@@ -94,15 +94,6 @@ function SwipeableNotification({ n, onDelete, onLinkClick }: {
             </div>
           </div>
         </Link>
-        {/* 데스크톱 X 버튼 */}
-        <button
-          onClick={(e) => { e.preventDefault(); onDelete(n.id); }}
-          className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity text-gray-300 dark:text-gray-600 hover:text-danger dark:hover:text-danger"
-        >
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
       </div>
     </div>
   );
