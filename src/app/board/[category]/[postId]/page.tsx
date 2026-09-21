@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { getCategoryBySlug } from "@/lib/categories";
 import { getPost, getPosts, incrementViewCount, deletePost, updatePost, getComments, addComment, deleteComment, createNotification, toggleLike, getLikeStatus, toggleCommentLike, getCommentLikeStatuses } from "@/lib/storage";
+import { markPostRead } from "@/lib/readPosts";
 import { Post, Comment } from "@/lib/types";
 import { formatDate, autoLinkUrls, addLazyLoading, sanitizeHtml, stripHtml } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -40,6 +41,10 @@ export default function PostDetailPage() {
   const [nextPost, setNextPost] = useState<Post | null>(null);
   const [commentLikes, setCommentLikes] = useState<Record<string, { count: number; liked: boolean }>>({});
   const commentLikeRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    markPostRead(postId);
+  }, [postId]);
 
   useEffect(() => {
     let cancelled = false;

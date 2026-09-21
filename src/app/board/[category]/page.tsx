@@ -9,6 +9,7 @@ import { Post, ReviewTag } from "@/lib/types";
 import { formatDateShort } from "@/lib/utils";
 import { POSTS_PER_PAGE, CARDS_PER_PAGE } from "@/lib/constants";
 import { useAuth } from "@/contexts/AuthContext";
+import { getReadPostIds } from "@/lib/readPosts";
 
 export default function BoardPage() {
   const params = useParams();
@@ -22,6 +23,13 @@ export default function BoardPage() {
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [dataLoading, setDataLoading] = useState(true);
+  const [readPostIds, setReadPostIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    setReadPostIds(getReadPostIds());
+  }, []);
+
+  const isNew = (post: Post) => !readPostIds.has(post.id);
 
   useEffect(() => {
     if (category) {
@@ -130,8 +138,11 @@ export default function BoardPage() {
             <Link
               key={post.id}
               href={`/board/${category.slug}/${post.id}`}
-              className="bg-white dark:bg-dark-card rounded-xl overflow-hidden shadow-card dark:shadow-card-dark hover:shadow-card-hover dark:hover:shadow-card-dark-hover hover:-translate-y-1 transition-all duration-300 group"
+              className="relative bg-white dark:bg-dark-card rounded-xl overflow-hidden shadow-card dark:shadow-card-dark hover:shadow-card-hover dark:hover:shadow-card-dark-hover hover:-translate-y-1 transition-all duration-300 group"
             >
+              {isNew(post) && (
+                <span className="absolute top-2 left-2 z-10 text-[10px] font-bold text-white bg-primary rounded px-1.5 py-0.5 leading-none">NEW</span>
+              )}
               {post.thumbnail_url ? (
                 <div className="aspect-video bg-gray-100 dark:bg-dark-border overflow-hidden">
                   <img
@@ -198,6 +209,7 @@ export default function BoardPage() {
                       className="text-sm hover:text-primary transition-colors"
                     >
                       {post.is_pinned && <span className="text-[11px] text-danger font-bold mr-1">[고정]</span>}
+                      {isNew(post) && <span className="inline-flex items-center text-[10px] font-bold text-white bg-primary rounded px-1.5 py-0.5 mr-1.5 leading-none">N</span>}
                       {post.title}
                       {(post.comment_count ?? 0) > 0 && (
                         <span className="text-primary text-xs font-semibold ml-1.5">[{post.comment_count}]</span>
