@@ -14,17 +14,22 @@ export default function Home() {
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [readPostIds, setReadPostIds] = useState<Set<string>>(new Set());
+  const [readLoaded, setReadLoaded] = useState(false);
 
   const isNew = (post: Post) =>
+    readLoaded &&
     !!user &&
     new Date(post.created_at) > new Date(NEW_FEATURE_BASELINE) &&
     !readPostIds.has(post.id);
 
   useEffect(() => {
-    if (!user || (notices.length === 0 && reviews.length === 0)) return;
+    if (!user || (notices.length === 0 && reviews.length === 0)) { setReadLoaded(true); return; }
     const allPosts = [...notices, ...reviews].filter(p => new Date(p.created_at) > new Date(NEW_FEATURE_BASELINE));
-    if (allPosts.length === 0) return;
-    getReadPostIds(user.id, allPosts.map(p => p.id)).then(setReadPostIds).catch(() => {});
+    if (allPosts.length === 0) { setReadLoaded(true); return; }
+    getReadPostIds(user.id, allPosts.map(p => p.id))
+      .then(setReadPostIds)
+      .catch(() => {})
+      .finally(() => setReadLoaded(true));
   }, [notices, reviews, user]);
 
   useEffect(() => {
