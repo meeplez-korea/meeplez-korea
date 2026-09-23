@@ -151,19 +151,19 @@ export default function BoardPage() {
             <Link
               key={post.id}
               href={`/board/${category.slug}/${post.id}`}
-              className="bg-white dark:bg-dark-card rounded-xl overflow-hidden shadow-card dark:shadow-card-dark hover:shadow-card-hover dark:hover:shadow-card-dark-hover hover:-translate-y-1 transition-all duration-300 group"
+              className="bg-white dark:bg-dark-card rounded-xl overflow-hidden shadow-card dark:shadow-card-dark hover:shadow-card-hover dark:hover:shadow-card-dark-hover transition-all duration-200 group"
             >
               {post.thumbnail_url ? (
                 <div className="aspect-video bg-gray-100 dark:bg-dark-border overflow-hidden">
                   <img
                     src={post.thumbnail_url}
                     alt=""
-                    className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500 ease-out"
+                    className="w-full h-full object-cover"
                     loading="lazy"
                   />
                 </div>
               ) : (
-                <div className="aspect-video bg-gradient-to-br from-primary/5 to-secondary/5 flex items-center justify-center">
+                <div className="aspect-video bg-gray-100 dark:bg-dark-border flex items-center justify-center">
                   <span className="text-4xl opacity-15">📸</span>
                 </div>
               )}
