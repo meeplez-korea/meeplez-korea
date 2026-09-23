@@ -315,12 +315,23 @@ export async function markNotificationsRead(userId: string) {
     .eq("is_read", false);
 }
 
-export async function deleteNotification(notificationId: string): Promise<void> {
-  await supabase.from("notifications").delete().eq("id", notificationId);
+export async function deleteNotification(notificationId: string, userId: string): Promise<void> {
+  await ensureSession();
+  const { error } = await supabase
+    .from("notifications")
+    .delete()
+    .eq("id", notificationId)
+    .eq("user_id", userId);
+  if (error) throw error;
 }
 
 export async function deleteAllNotifications(userId: string): Promise<void> {
-  await supabase.from("notifications").delete().eq("user_id", userId);
+  await ensureSession();
+  const { error } = await supabase
+    .from("notifications")
+    .delete()
+    .eq("user_id", userId);
+  if (error) throw error;
 }
 
 export async function createNotification(userId: string, type: string, title: string, message: string, link: string) {

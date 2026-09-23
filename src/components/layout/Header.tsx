@@ -164,7 +164,7 @@ function NotificationBell({ onOpen, forceClose }: { onOpen?: () => void; forceCl
                 n={n}
                 editMode={editMode}
                 onDelete={(id) => {
-                  deleteNotification(id).catch(() => {});
+                  deleteNotification(id, user.id).catch(() => {});
                   setNotifications((prev) => prev.filter((x) => x.id !== id));
                 }}
                 onLinkClick={() => setOpen(false)}
