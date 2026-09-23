@@ -14,7 +14,7 @@ export default function BoardPage() {
   const params = useParams();
   const categorySlug = params.category as string;
   const category = getCategoryBySlug(categorySlug);
-  const { user, isMember, isAdmin } = useAuth();
+  const { user, isMember, isAdmin, loading } = useAuth();
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
@@ -32,14 +32,17 @@ export default function BoardPage() {
     !readPostIds.has(post.id);
 
   useEffect(() => {
-    if (!user || posts.length === 0) { setReadLoaded(true); return; }
+    if (loading) return;
+    if (!user) { setReadLoaded(true); return; }
+    if (dataLoading) return;
     const newPosts = posts.filter(p => new Date(p.created_at) > new Date(NEW_FEATURE_BASELINE));
     if (newPosts.length === 0) { setReadLoaded(true); return; }
+    setReadLoaded(false);
     getReadPostIds(user.id, newPosts.map(p => p.id))
       .then(setReadPostIds)
       .catch(() => {})
       .finally(() => setReadLoaded(true));
-  }, [posts, user]);
+  }, [posts, user, dataLoading, loading]);
 
   useEffect(() => {
     if (category) {

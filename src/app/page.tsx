@@ -23,14 +23,17 @@ export default function Home() {
     !readPostIds.has(post.id);
 
   useEffect(() => {
-    if (!user || (notices.length === 0 && reviews.length === 0)) { setReadLoaded(true); return; }
+    if (loading) return;
+    if (!user) { setReadLoaded(true); return; }
+    if (dataLoading) return;
     const allPosts = [...notices, ...reviews].filter(p => new Date(p.created_at) > new Date(NEW_FEATURE_BASELINE));
     if (allPosts.length === 0) { setReadLoaded(true); return; }
+    setReadLoaded(false);
     getReadPostIds(user.id, allPosts.map(p => p.id))
       .then(setReadPostIds)
       .catch(() => {})
       .finally(() => setReadLoaded(true));
-  }, [notices, reviews, user]);
+  }, [notices, reviews, user, dataLoading, loading]);
 
   useEffect(() => {
     Promise.all([
