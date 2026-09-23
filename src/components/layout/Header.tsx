@@ -60,6 +60,7 @@ function NotificationItem({ n, onDelete, onLinkClick, editMode }: {
       {editMode && (
         <button
           onClick={(e) => { e.preventDefault(); onDelete(n.id); }}
+          data-no-press
           className="absolute top-1/2 -translate-y-1/2 right-2 p-2 text-danger"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
