@@ -316,22 +316,20 @@ export async function markNotificationsRead(userId: string) {
 }
 
 export async function deleteNotification(notificationId: string, userId: string): Promise<void> {
-  await ensureSession();
   const { error } = await supabase
     .from("notifications")
     .delete()
     .eq("id", notificationId)
     .eq("user_id", userId);
-  if (error) throw error;
+  if (error) console.error("deleteNotification error:", error);
 }
 
 export async function deleteAllNotifications(userId: string): Promise<void> {
-  await ensureSession();
   const { error } = await supabase
     .from("notifications")
     .delete()
     .eq("user_id", userId);
-  if (error) throw error;
+  if (error) console.error("deleteAllNotifications error:", error);
 }
 
 export async function createNotification(userId: string, type: string, title: string, message: string, link: string) {
