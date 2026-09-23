@@ -493,7 +493,7 @@ export async function getReadPostIds(userId: string, postIds: string[]): Promise
 export async function markPostRead(postId: string, userId: string): Promise<void> {
   await supabase
     .from("post_reads")
-    .insert({ post_id: postId, user_id: userId });
+    .upsert({ post_id: postId, user_id: userId }, { ignoreDuplicates: true });
 }
 
 export async function getLikeStatus(postId: string, userId?: string): Promise<{ count: number; liked: boolean }> {
