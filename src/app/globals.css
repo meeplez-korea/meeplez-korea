@@ -5,7 +5,7 @@
 @tailwind utilities;
 
 :root {
-  --background: #F7F4EE;
+  --background: #F5F5F5;
   --foreground: #2D2D2D;
   --primary: 107, 166, 142;
   --primary-dark: 78, 138, 114;
@@ -13,7 +13,7 @@
 }
 
 html {
-  background: #F7F4EE;
+  background: #F5F5F5;
   scroll-behavior: smooth;
 }
 
@@ -119,25 +119,18 @@ select:focus {
   }
 
   .animate-fade-in {
-    animation: fade-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
   .animate-fade-in-slow {
-    animation: fade-in 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
   .animate-slide-up {
-    animation: slide-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
   .animate-slide-up-delay {
-    animation: slide-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
-    opacity: 0;
   }
 
   .animate-slide-up-delay-2 {
-    animation: slide-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
-    opacity: 0;
   }
 
   .animate-slide-in-right {

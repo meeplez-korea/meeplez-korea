@@ -61,7 +61,7 @@ export default function Home() {
       {/* Promotions */}
       {promotions.length > 0 && (
         <section className="animate-fade-in">
-          <div className="bg-cream/60 dark:bg-dark-card rounded-xl px-5 py-4 space-y-3">
+          <div className="bg-white dark:bg-dark-card rounded-xl px-5 py-4 space-y-3 shadow-card dark:shadow-card-dark">
             {promotions.map((promo, i) => (
               <div key={promo.id}>
                 <div className="flex items-start gap-2.5">
@@ -97,7 +97,7 @@ export default function Home() {
               <Link
                 key={post.id}
                 href={`/board/notices/${post.id}`}
-                className="block bg-white dark:bg-dark-card rounded-xl px-5 py-4 shadow-card dark:shadow-card-dark hover:shadow-card-hover dark:hover:shadow-card-dark-hover hover:-translate-y-px transition-all duration-200 group"
+                className="block bg-white dark:bg-dark-card rounded-xl px-5 py-4 shadow-card dark:shadow-card-dark hover:shadow-card-hover dark:hover:shadow-card-dark-hover transition-all duration-200 group"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
@@ -142,20 +142,20 @@ export default function Home() {
               <Link
                 key={post.id}
                 href={`/board/reviews/${post.id}`}
-                className="bg-white dark:bg-dark-card rounded-xl overflow-hidden shadow-card dark:shadow-card-dark hover:shadow-card-hover dark:hover:shadow-card-dark-hover hover:-translate-y-1 transition-all duration-300 group"
+                className="bg-white dark:bg-dark-card rounded-xl overflow-hidden shadow-card dark:shadow-card-dark hover:shadow-card-hover dark:hover:shadow-card-dark-hover transition-all duration-200 group"
               >
                 {post.thumbnail_url ? (
                   <div className="aspect-[16/10] bg-gray-100 dark:bg-dark-border overflow-hidden">
                     <img
                       src={post.thumbnail_url}
                       alt=""
-                      className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500 ease-out"
+                      className="w-full h-full object-cover"
                       loading="lazy"
                     />
                   </div>
                 ) : (
-                  <div className="aspect-[16/10] bg-gradient-to-br from-primary/5 via-cream dark:via-dark-border to-secondary/5 flex items-center justify-center">
-                    <span className="text-3xl opacity-15">📸</span>
+                  <div className="aspect-[16/10] bg-gray-100 dark:bg-dark-border flex items-center justify-center">
+                    <span className="text-3xl opacity-20">📸</span>
                   </div>
                 )}
                 <div className="p-4">
