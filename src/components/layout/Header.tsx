@@ -209,8 +209,8 @@ export default function Header() {
     <header
       className={`sticky top-0 z-50 transition-all duration-300 ${
         scrolled
-          ? "bg-[#F5F5F5]/85 dark:bg-[#161618]/85 backdrop-blur-xl shadow-[0_1px_0_rgba(0,0,0,0.04)] dark:shadow-[0_1px_0_rgba(255,255,255,0.04)]"
-          : "bg-[#F5F5F5] dark:bg-[#161618]"
+          ? "bg-[#F7F4EE]/85 dark:bg-[#161618]/85 backdrop-blur-xl shadow-[0_1px_0_rgba(0,0,0,0.04)] dark:shadow-[0_1px_0_rgba(255,255,255,0.04)]"
+          : "bg-[#F7F4EE] dark:bg-[#161618]"
       }`}
     >
       <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
@@ -269,7 +269,7 @@ export default function Header() {
       <div className={`lg:hidden fixed inset-0 top-14 bg-black/20 dark:bg-black/40 z-40 transition-opacity duration-300 ${menuOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`} onClick={() => setMenuOpen(false)} />
 
       {/* Mobile menu */}
-      <nav className={`lg:hidden fixed top-14 left-0 right-0 z-50 bg-[#F5F5F5] dark:bg-dark-card border-b border-gray-200/50 dark:border-dark-border shadow-card-hover dark:shadow-card-dark-hover transition-all duration-300 ease-out-expo ${menuOpen ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0 pointer-events-none"}`}>
+      <nav className={`lg:hidden fixed top-14 left-0 right-0 z-50 bg-[#F7F4EE] dark:bg-dark-card border-b border-gray-200/50 dark:border-dark-border shadow-card-hover dark:shadow-card-dark-hover transition-all duration-300 ease-out-expo ${menuOpen ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0 pointer-events-none"}`}>
         <div className="max-w-6xl mx-auto px-4 py-2">
           {CATEGORIES.map((cat) => (
             <Link key={cat.slug} href={`/board/${cat.slug}`} className="flex items-center gap-2.5 px-3 py-3 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-300 hover:bg-cream-dark dark:hover:bg-dark-hover" onClick={() => setMenuOpen(false)}>

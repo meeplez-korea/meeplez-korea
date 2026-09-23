@@ -18,8 +18,8 @@ const config: Config = {
         secondary: "#D4956C",
         accent: "#B08EC0",
         cream: {
-          DEFAULT: "#EFEFEF",
-          dark: "#E5E5E5",
+          DEFAULT: "#F5F0E8",
+          dark: "#EDE6DA",
         },
         danger: "#C45C5C",
         "tag-board": "#5A90B8",
