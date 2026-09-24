@@ -112,8 +112,8 @@ export default function Home() {
                         <span className="text-primary text-xs font-semibold">[{post.comment_count}]</span>
                       )}
                     </h3>
-                    <p className="text-xs text-gray-400 mt-1.5 line-clamp-1">
-                      {truncate(stripHtml(post.content), 80)}
+                    <p className="text-xs text-gray-400 mt-1.5 line-clamp-2">
+                      {truncate(stripHtml(post.content), 120)}
                     </p>
                   </div>
                   <span className="text-[11px] text-gray-300 dark:text-gray-600 whitespace-nowrap shrink-0 font-medium tabular-nums">
@@ -196,13 +196,6 @@ export default function Home() {
                 </div>
               </Link>
             ))}
-          </div>
-        )}
-        {reviews.length > 0 && (
-          <div className="flex justify-end mt-4">
-            <Link href="/board/reviews" className="text-sm text-gray-400 hover:text-primary font-medium">
-              전체보기 &rarr;
-            </Link>
           </div>
         )}
       </section>
