@@ -42,7 +42,7 @@ export default function Home() {
         const unpinned = data.filter((p) => !p.is_pinned);
         setNotices([...pinned, ...unpinned].slice(0, 3));
       }),
-      getPosts("reviews").then((data) => setReviews(data.slice(0, 6))),
+      getPosts("reviews").then((data) => setReviews(data.slice(0, 16))),
       getPromotions().then(setPromotions),
     ]).finally(() => setDataLoading(false));
   }, []);
