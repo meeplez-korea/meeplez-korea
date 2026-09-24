@@ -86,7 +86,7 @@ export default function Home() {
         <div className="mb-5">
           <h2 className="text-lg font-bold tracking-tight flex items-center gap-2.5">
             <span className="w-1 h-5 bg-danger rounded-full inline-block" />
-            공지사항
+            <Link href="/board/notices" className="hover:text-primary transition-colors">공지사항</Link>
           </h2>
         </div>
         <div className="space-y-2">
@@ -124,7 +124,7 @@ export default function Home() {
         <div className="mb-5">
           <h2 className="text-lg font-bold tracking-tight flex items-center gap-2.5">
             <span className="w-1 h-5 bg-primary rounded-full inline-block" />
-            모임 후기
+            <Link href="/board/reviews" className="hover:text-primary transition-colors">모임 후기</Link>
           </h2>
         </div>
         {reviews.length === 0 ? (
