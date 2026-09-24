@@ -83,14 +83,11 @@ export default function Home() {
 
       {/* Notices */}
       <section className="animate-slide-up">
-        <div className="flex items-center justify-between mb-5">
+        <div className="mb-5">
           <h2 className="text-lg font-bold tracking-tight flex items-center gap-2.5">
             <span className="w-1 h-5 bg-danger rounded-full inline-block" />
             공지사항
           </h2>
-          <Link href="/board/notices" className="text-sm text-gray-400 hover:text-primary font-medium">
-            전체보기 &rarr;
-          </Link>
         </div>
         <div className="space-y-2">
           {notices.length === 0 ? (
@@ -124,14 +121,11 @@ export default function Home() {
 
       {/* Reviews */}
       <section className="animate-slide-up-delay">
-        <div className="flex items-center justify-between mb-5">
+        <div className="mb-5">
           <h2 className="text-lg font-bold tracking-tight flex items-center gap-2.5">
             <span className="w-1 h-5 bg-primary rounded-full inline-block" />
             모임 후기
           </h2>
-          <Link href="/board/reviews" className="text-sm text-gray-400 hover:text-primary font-medium">
-            전체보기 &rarr;
-          </Link>
         </div>
         {reviews.length === 0 ? (
           <p className="text-sm text-gray-400 py-6 text-center">등록된 후기가 없습니다.</p>
@@ -192,6 +186,13 @@ export default function Home() {
                 </div>
               </Link>
             ))}
+          </div>
+        )}
+        {reviews.length > 0 && (
+          <div className="flex justify-end mt-4">
+            <Link href="/board/reviews" className="text-sm text-gray-400 hover:text-primary font-medium">
+              전체보기 &rarr;
+            </Link>
           </div>
         )}
       </section>
