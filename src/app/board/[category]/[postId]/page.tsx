@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { getCategoryBySlug } from "@/lib/categories";
-import { getPost, getPosts, incrementViewCount, deletePost, updatePost, getComments, addComment, deleteComment, createNotification, toggleLike, getLikeStatus, toggleCommentLike, getCommentLikeStatuses, markPostRead } from "@/lib/storage";
+import { getPost, getPosts, incrementViewCount, deletePost, updatePost, getComments, addComment, deleteComment, notifyAll, toggleLike, getLikeStatus, toggleCommentLike, getCommentLikeStatuses, markPostRead } from "@/lib/storage";
 import { Post, Comment } from "@/lib/types";
 import { formatDate, autoLinkUrls, addLazyLoading, sanitizeHtml, stripHtml } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -187,14 +187,14 @@ export default function PostDetailPage() {
         alert("댓글 등록에 실패했습니다. 다시 시도해주세요.");
       } else {
         setCommentContent("");
-        // 글 작성자에게 알림 (본인 댓글 제외)
-        if (post && post.author_id !== user.id) {
-          createNotification(
-            post.author_id,
+        // 전체 유저에게 알림 (본인 제외)
+        if (post) {
+          notifyAll(
             "comment",
             "새 댓글",
             `${profile.nickname}님이 "${post.title}"에 댓글을 남겼습니다.`,
-            `/board/${categorySlug}/${postId}`
+            `/board/${categorySlug}/${postId}`,
+            user.id
           ).catch(() => {});
         }
         const updated = await getComments(postId);
@@ -217,15 +217,13 @@ export default function PostDetailPage() {
       } else {
         setReplyContent("");
         setReplyTo(null);
-        if (replyTo.author_id !== user.id) {
-          createNotification(
-            replyTo.author_id,
-            "reply",
-            "새 답글",
-            `${profile.nickname}님이 회원님의 댓글에 답글을 남겼습니다.`,
-            `/board/${categorySlug}/${postId}`
-          ).catch(() => {});
-        }
+        notifyAll(
+          "reply",
+          "새 답글",
+          `${profile.nickname}님이 "${post?.title}"에 답글을 남겼습니다.`,
+          `/board/${categorySlug}/${postId}`,
+          user.id
+        ).catch(() => {});
         const updated = await getComments(postId);
         setComments(updated);
       }

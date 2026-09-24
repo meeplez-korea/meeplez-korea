@@ -3,7 +3,7 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CATEGORIES, getCategoryBySlug } from "@/lib/categories";
-import { createPost, getPost, updatePost, notifyAdmins, getDrafts, saveDraft, deleteDraft } from "@/lib/storage";
+import { createPost, getPost, updatePost, notifyAll, getDrafts, saveDraft, deleteDraft } from "@/lib/storage";
 import { supabase } from "@/lib/supabase";
 import { generateId } from "@/lib/utils";
 import { CategorySlug, ReviewTag, Draft } from "@/lib/types";
@@ -242,10 +242,10 @@ function WriteForm() {
         return;
       }
 
-      // 새 글 작성 시 관리자에게 알림
+      // 새 글 작성 시 전체 유저에게 알림
       if (!editId && result?.data) {
         const catLabel = categoryInfo?.label || category;
-        notifyAdmins(
+        notifyAll(
           "new_post",
           "새 게시글",
           `${profile.nickname}님이 [${catLabel}]에 "${title}" 글을 작성했습니다.`,

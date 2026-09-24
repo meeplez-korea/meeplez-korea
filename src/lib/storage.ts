@@ -351,6 +351,18 @@ export async function notifyAdmins(type: string, title: string, message: string,
     .insert(targets.map((a) => ({ user_id: a.id, type, title, message, link })));
 }
 
+export async function notifyAll(type: string, title: string, message: string, link: string, excludeUserId?: string) {
+  const { data: users } = await supabase
+    .from("profiles")
+    .select("id");
+  if (!users) return;
+  const targets = excludeUserId ? users.filter((u) => u.id !== excludeUserId) : users;
+  if (targets.length === 0) return;
+  await supabase
+    .from("notifications")
+    .insert(targets.map((u) => ({ user_id: u.id, type, title, message, link })));
+}
+
 // ── Drafts ──
 
 export async function getDrafts(userId: string): Promise<Draft[]> {
