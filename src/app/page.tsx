@@ -198,6 +198,13 @@ export default function Home() {
             ))}
           </div>
         )}
+        {reviews.length > 0 && (
+          <div className="flex justify-end mt-4">
+            <Link href="/board/reviews" className="text-sm text-gray-400 hover:text-primary font-medium">
+              전체보기 &rarr;
+            </Link>
+          </div>
+        )}
       </section>
 
       </>)}
