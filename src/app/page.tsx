@@ -110,7 +110,7 @@ export default function Home() {
                     <span className="text-primary text-xs font-semibold">[{post.comment_count}]</span>
                   )}
                 </h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 line-clamp-4 leading-relaxed whitespace-pre-line">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 line-clamp-2 leading-relaxed whitespace-pre-line">
                   {stripHtml(post.content.replace(/<\/p>/gi, "\n").replace(/<br\s*\/?>/gi, "\n")).trim()}
                 </p>
                 <span className="text-[11px] text-gray-300 dark:text-gray-600 mt-2 block tabular-nums">
@@ -182,8 +182,8 @@ export default function Home() {
                       <span className="text-primary text-xs font-semibold ml-1">[{post.comment_count}]</span>
                     )}
                   </h3>
-                  <p className="text-xs text-gray-400 mt-1.5 line-clamp-2 leading-relaxed">
-                    {truncate(stripHtml(post.content), 60)}
+                  <p className="text-xs text-gray-400 mt-1.5 line-clamp-4 leading-relaxed whitespace-pre-line">
+                    {stripHtml(post.content.replace(/<\/p>/gi, "\n").replace(/<br\s*\/?>/gi, "\n")).trim()}
                   </p>
                   <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-100 dark:border-dark-border text-[11px] text-gray-400 dark:text-gray-500">
                     <span className="font-medium">{post.author_name}</span>
