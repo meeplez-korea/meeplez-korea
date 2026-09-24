@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { getPosts, getAllProfiles, updateUserRole, adminUpdateNickname, adminDeleteUser, getPromotions, createPromotion, updatePromotion, deletePromotion, getSetting, setSetting, notifyAll } from "@/lib/storage";
-import { supabase } from "@/lib/supabase";
+import { getPosts, getAllProfiles, updateUserRole, adminUpdateNickname, adminDeleteUser, getPromotions, createPromotion, updatePromotion, deletePromotion, getSetting, setSetting } from "@/lib/storage";
 import { applyPrimaryColor } from "@/components/PrimaryColorProvider";
 import { Post, Profile, Promotion } from "@/lib/types";
 import { formatDate, sanitizeHtml, stripHtml } from "@/lib/utils";
@@ -12,9 +11,7 @@ import RichEditor from "@/components/ui/RichEditor";
 
 export default function AdminPage() {
   const { isAdmin, loading } = useAuth();
-  const [tab, setTab] = useState<"suggestions" | "members" | "promotions" | "design" | "test">("suggestions");
-  const [testResult, setTestResult] = useState<string | null>(null);
-  const [testLoading, setTestLoading] = useState(false);
+  const [tab, setTab] = useState<"suggestions" | "members" | "promotions" | "design">("suggestions");
   const [primaryColor, setPrimaryColor] = useState("#6BA68E");
   const [suggestions, setSuggestions] = useState<Post[]>([]);
   const [members, setMembers] = useState<Profile[]>([]);
@@ -168,26 +165,11 @@ export default function AdminPage() {
     { label: "웜", color: "#B89070" },
   ];
 
-  const handleTestNotification = async () => {
-    setTestLoading(true);
-    setTestResult(null);
-    try {
-      const { data: users } = await supabase.from("profiles").select("id");
-      const count = users?.length ?? 0;
-      await notifyAll("test", "테스트 알림", "관리자가 알림 발송 테스트를 했습니다.", "/");
-      setTestResult(`✓ ${count}명에게 알림 발송 성공`);
-    } catch {
-      setTestResult("✗ 발송 실패");
-    }
-    setTestLoading(false);
-  };
-
   const tabs = [
     { key: "suggestions", label: "건의방", count: suggestions.length },
     { key: "members", label: "회원 관리", count: members.length },
     { key: "promotions", label: "홍보칸", count: promotions.length },
     { key: "design", label: "디자인", count: null },
-    { key: "test", label: "테스트", count: null },
   ] as const;
 
   return (
@@ -337,27 +319,6 @@ export default function AdminPage() {
         </div>
       )}
       {/* Design Tab */}
-      {tab === "test" && (
-        <div className="bg-white dark:bg-dark-card rounded-xl p-6 shadow-card dark:shadow-card-dark space-y-4">
-          <div>
-            <p className="text-sm font-medium mb-1">알림 발송 테스트</p>
-            <p className="text-xs text-gray-400 mb-4">전체 유저에게 테스트 알림을 발송합니다. 실제 알림으로 쌓이니 확인 후 지워주세요.</p>
-            <button
-              onClick={handleTestNotification}
-              disabled={testLoading}
-              className="px-4 py-2 bg-primary text-white text-sm rounded-lg disabled:opacity-50"
-            >
-              {testLoading ? "발송 중..." : "전체 발송 테스트"}
-            </button>
-            {testResult && (
-              <p className={`mt-3 text-sm font-medium ${testResult.startsWith("✓") ? "text-green-600" : "text-red-500"}`}>
-                {testResult}
-              </p>
-            )}
-          </div>
-        </div>
-      )}
-
       {tab === "design" && (
         <div className="bg-white dark:bg-dark-card rounded-xl p-6 shadow-card dark:shadow-card-dark space-y-6">
           <div>
