@@ -338,18 +338,6 @@ export async function createNotification(userId: string, type: string, title: st
     .insert({ user_id: userId, type, title, message, link });
 }
 
-export async function notifyAdmins(type: string, title: string, message: string, link: string, excludeUserId?: string) {
-  const { data: admins } = await supabase
-    .from("profiles")
-    .select("id")
-    .eq("role", "admin");
-  if (!admins) return;
-  const targets = excludeUserId ? admins.filter((a) => a.id !== excludeUserId) : admins;
-  if (targets.length === 0) return;
-  await supabase
-    .from("notifications")
-    .insert(targets.map((a) => ({ user_id: a.id, type, title, message, link })));
-}
 
 export async function notifyAll(type: string, title: string, message: string, link: string, excludeUserId?: string) {
   const { data: users } = await supabase
