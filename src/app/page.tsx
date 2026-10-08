@@ -108,7 +108,7 @@ export default function Home() {
                   )}
                 </h3>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 line-clamp-2 leading-relaxed whitespace-pre-line">
-                  {stripHtml(post.content.replace(/<\/p>/gi, "\n").replace(/<br\s*\/?>/gi, "\n")).trim()}
+                  {stripHtml(post.content.replace(/<\/p>/gi, "\n").replace(/<br\s*\/?>/gi, "\n")).replace(/\n{2,}/g, "\n").trim()}
                 </p>
                 <span className="text-[11px] text-gray-300 dark:text-gray-600 mt-2 block tabular-nums">
                   {formatDateShort(post.created_at)}
