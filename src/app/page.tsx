@@ -48,7 +48,35 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-10 space-y-12">
+    <div className="max-w-6xl mx-auto px-4 space-y-12">
+
+      {/* Hero Banner */}
+      <section className="relative overflow-hidden rounded-2xl bg-primary px-8 py-12 md:py-16 text-white">
+        {/* decorative circles */}
+        <div className="pointer-events-none absolute -top-10 -right-10 w-52 h-52 rounded-full bg-white/10" />
+        <div className="pointer-events-none absolute -bottom-14 -left-8 w-72 h-72 rounded-full bg-white/5" />
+        <div className="relative z-10 max-w-lg">
+          <p className="text-sm font-medium text-white/70 mb-2 tracking-wide uppercase">미플즈 커뮤니티</p>
+          <h1 className="text-3xl md:text-4xl font-bold leading-tight tracking-tight mb-4">
+            함께 즐기는<br />보드게임 모임
+          </h1>
+          <p className="text-sm text-white/75 leading-relaxed mb-6">
+            새로운 사람들과 만나고, 모임 후기를 나눠보세요.
+          </p>
+          <div className="flex gap-3 flex-wrap">
+            <Link href="/board/reviews" className="px-5 py-2.5 bg-white text-primary font-semibold text-sm rounded-xl hover:bg-white/90 transition-colors">
+              모임 후기 보기
+            </Link>
+            {!user && (
+              <Link href="/login" className="px-5 py-2.5 bg-white/15 text-white font-semibold text-sm rounded-xl hover:bg-white/25 transition-colors border border-white/20">
+                로그인
+              </Link>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <div className="pt-2 space-y-12">
       {dataLoading ? (
         <div className="min-h-[50vh]" />
       ) : (<>
@@ -198,6 +226,7 @@ export default function Home() {
       </section>
 
       </>)}
+      </div>
     </div>
   );
 }
