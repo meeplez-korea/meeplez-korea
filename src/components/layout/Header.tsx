@@ -222,8 +222,8 @@ export default function Header() {
         {/* Desktop nav */}
         <nav className="hidden lg:flex items-center gap-0.5">
           {CATEGORIES.map((cat) => (
-            <Link key={cat.slug} href={`/board/${cat.slug}`} className="px-3 py-1.5 text-[13px] font-medium rounded-lg text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-cream-dark dark:hover:bg-dark-hover">
-              <span className="mr-1">{cat.icon}</span>{cat.label}
+            <Link key={cat.slug} href={`/board/${cat.slug}`} className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium rounded-lg text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-cream-dark dark:hover:bg-dark-hover">
+              <cat.icon className="w-3.5 h-3.5 shrink-0" />{cat.label}
             </Link>
           ))}
           {isAdmin && (
@@ -273,7 +273,7 @@ export default function Header() {
         <div className="max-w-6xl mx-auto px-4 py-2">
           {CATEGORIES.map((cat) => (
             <Link key={cat.slug} href={`/board/${cat.slug}`} className="flex items-center gap-2.5 px-3 py-3 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-300 hover:bg-cream-dark dark:hover:bg-dark-hover" onClick={() => setMenuOpen(false)}>
-              <span className="text-base">{cat.icon}</span>{cat.label}
+              <cat.icon className="w-4 h-4 shrink-0" />{cat.label}
             </Link>
           ))}
           {isAdmin && (

@@ -94,8 +94,8 @@ export default function ProfilePage() {
                       <p className="text-xs text-gray-400 mt-1 line-clamp-1">{truncate(stripHtml(post.content), 80)}</p>
                     </div>
                     {cat && (
-                      <span className="text-[11px] px-1.5 py-0.5 rounded-md bg-gray-100 dark:bg-dark-hover text-gray-500 dark:text-gray-400 font-medium shrink-0 mt-0.5">
-                        {cat.icon} {cat.label}
+                      <span className="inline-flex items-center gap-1 text-[11px] px-1.5 py-0.5 rounded-md bg-gray-100 dark:bg-dark-hover text-gray-500 dark:text-gray-400 font-medium shrink-0 mt-0.5">
+                        <cat.icon className="w-3 h-3" /> {cat.label}
                       </span>
                     )}
                   </div>

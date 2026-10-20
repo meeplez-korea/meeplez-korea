@@ -453,7 +453,7 @@ function WriteForm() {
             >
               {CATEGORIES.filter((cat) => cat.slug !== "notices" || isAdmin).map((cat) => (
                 <option key={cat.slug} value={cat.slug}>
-                  {cat.icon} {cat.label}
+                  {cat.label}
                 </option>
               ))}
             </select>

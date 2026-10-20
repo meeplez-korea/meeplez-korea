@@ -104,7 +104,7 @@ export default function BoardPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <span>{category.icon}</span>
+            <category.icon className="w-5 h-5 shrink-0" />
             {category.label}
           </h1>
           {category.description && (

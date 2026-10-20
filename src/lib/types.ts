@@ -1,3 +1,5 @@
+import type React from "react";
+
 export type CategorySlug =
   | "notices"
   | "introductions"
@@ -84,7 +86,7 @@ export interface Draft {
 export interface CategoryInfo {
   slug: CategorySlug;
   label: string;
-  icon: string;
+  icon: React.ComponentType<{ className?: string }>;
   description: string;
   color: string;
   hasTags?: boolean;
