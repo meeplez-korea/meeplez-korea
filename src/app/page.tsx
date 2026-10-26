@@ -52,6 +52,11 @@ export default function Home() {
       {dataLoading ? (
         <div className="min-h-[50vh]" />
       ) : (<>
+      {/* Logo Banner */}
+      <section className="animate-fade-in flex justify-center">
+        <img src="/meeplez.jpg" alt="미플즈" className="w-full max-w-md rounded-2xl object-cover shadow-card dark:shadow-card-dark" />
+      </section>
+
       {!loading && user && isPending && (
         <div className="p-4 bg-secondary/8 border border-secondary/15 rounded-xl animate-fade-in">
           <p className="text-sm font-semibold text-secondary">승인 대기 중입니다</p>
