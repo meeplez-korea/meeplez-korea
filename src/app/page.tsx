@@ -51,7 +51,9 @@ export default function Home() {
     <div className="max-w-6xl mx-auto px-4 py-10 space-y-12">
       {/* Logo Banner */}
       <section className="animate-fade-in">
-        <img src="/meeplez.jpg" alt="미플즈" className="w-full rounded-2xl object-cover shadow-card dark:shadow-card-dark" />
+        <div className="w-full aspect-[3/1] rounded-2xl overflow-hidden shadow-card dark:shadow-card-dark">
+          <img src="/meeplez.jpg" alt="미플즈" className="w-full h-full object-cover" />
+        </div>
       </section>
 
       {dataLoading ? (
