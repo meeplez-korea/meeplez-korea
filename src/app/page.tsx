@@ -53,8 +53,8 @@ export default function Home() {
         <div className="min-h-[50vh]" />
       ) : (<>
       {/* Logo Banner */}
-      <section className="animate-fade-in flex justify-center">
-        <img src="/meeplez.jpg" alt="미플즈" className="w-full max-w-md rounded-2xl object-cover shadow-card dark:shadow-card-dark" />
+      <section className="animate-fade-in -mx-4 -mt-10">
+        <img src="/meeplez.jpg" alt="미플즈" className="w-full object-cover" />
       </section>
 
       {!loading && user && isPending && (
