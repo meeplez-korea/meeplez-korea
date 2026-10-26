@@ -48,16 +48,15 @@ export default function Home() {
   }, []);
 
   return (
-    <div>
-      {/* Logo Banner */}
-      <div className="animate-fade-in">
-        <img src="/meeplez.jpg" alt="미플즈" className="w-full object-cover" />
-      </div>
-
     <div className="max-w-6xl mx-auto px-4 py-10 space-y-12">
       {dataLoading ? (
         <div className="min-h-[50vh]" />
       ) : (<>
+      {/* Logo Banner */}
+      <section className="animate-fade-in">
+        <img src="/meeplez.jpg" alt="미플즈" className="w-full rounded-2xl object-cover shadow-card dark:shadow-card-dark" />
+      </section>
+
       {!loading && user && isPending && (
         <div className="p-4 bg-secondary/8 border border-secondary/15 rounded-xl animate-fade-in">
           <p className="text-sm font-semibold text-secondary">승인 대기 중입니다</p>
@@ -204,7 +203,6 @@ export default function Home() {
       </section>
 
       </>)}
-    </div>
     </div>
   );
 }
