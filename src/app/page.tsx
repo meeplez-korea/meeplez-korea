@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { getPosts, getPromotions, getReadPostIds, NEW_FEATURE_BASELINE } from "@/lib/storage";
 import { Post, Promotion } from "@/lib/types";
-import { formatDateShort, stripHtml, sanitizeHtml } from "@/lib/utils";
+import { formatDateShort, truncate, stripHtml, sanitizeHtml } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
-import { getDummyPosts, DUMMY_PROMOTIONS } from "@/lib/dummyData";
 
 export default function Home() {
   const { user, profile, isPending, loading } = useAuth();
@@ -13,17 +13,38 @@ export default function Home() {
   const [reviews, setReviews] = useState<Post[]>([]);
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
+  const [readPostIds, setReadPostIds] = useState<Set<string>>(new Set());
+  const [readLoaded, setReadLoaded] = useState(false);
 
-  const isNew = (_post: Post) => false;
+  const isNew = (post: Post) =>
+    readLoaded &&
+    !!user &&
+    new Date(post.created_at) > new Date(NEW_FEATURE_BASELINE) &&
+    !readPostIds.has(post.id);
 
   useEffect(() => {
-    const noticeData = getDummyPosts("notices");
-    const pinned = noticeData.filter((p) => p.is_pinned);
-    const unpinned = noticeData.filter((p) => !p.is_pinned);
-    setNotices([...pinned, ...unpinned].slice(0, 3));
-    setReviews(getDummyPosts("reviews").slice(0, 6));
-    setPromotions(DUMMY_PROMOTIONS);
-    setDataLoading(false);
+    if (loading) return;
+    if (!user) { setReadLoaded(true); return; }
+    if (dataLoading) return;
+    const allPosts = [...notices, ...reviews].filter(p => new Date(p.created_at) > new Date(NEW_FEATURE_BASELINE));
+    if (allPosts.length === 0) { setReadLoaded(true); return; }
+    setReadLoaded(false);
+    getReadPostIds(user.id, allPosts.map(p => p.id))
+      .then(setReadPostIds)
+      .catch(() => {})
+      .finally(() => setReadLoaded(true));
+  }, [notices, reviews, user, dataLoading, loading]);
+
+  useEffect(() => {
+    Promise.all([
+      getPosts("notices").then((data) => {
+        const pinned = data.filter((p) => p.is_pinned);
+        const unpinned = data.filter((p) => !p.is_pinned);
+        setNotices([...pinned, ...unpinned].slice(0, 3));
+      }),
+      getPosts("reviews").then((data) => setReviews(data.slice(0, 6))),
+      getPromotions().then(setPromotions),
+    ]).finally(() => setDataLoading(false));
   }, []);
 
   return (
@@ -38,9 +59,9 @@ export default function Home() {
       ) : (<>
       {!loading && user && isPending && (
         <div className="p-4 bg-secondary/8 border border-secondary/15 rounded-xl animate-fade-in">
-          <p className="text-sm font-semibold text-secondary">Pending approval</p>
+          <p className="text-sm font-semibold text-secondary">승인 대기 중입니다</p>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-            Please contact an admin to request approval. You can post after being approved.
+            오픈채팅방에서 관리자에게 승인을 요청해주세요. 승인 후 게시판 이용이 가능합니다.
           </p>
         </div>
       )}
@@ -70,12 +91,12 @@ export default function Home() {
         <div className="mb-5">
           <h2 className="text-lg font-bold tracking-tight flex items-center gap-2.5">
             <span className="w-1 h-5 bg-danger rounded-full inline-block" />
-            <Link href="/board/notices" className="hover:text-primary transition-colors">Announcements</Link>
+            <Link href="/board/notices" className="hover:text-primary transition-colors">공지사항</Link>
           </h2>
         </div>
         <div className="space-y-2">
           {notices.length === 0 ? (
-            <p className="text-sm text-gray-400 py-6 text-center">No announcements yet.</p>
+            <p className="text-sm text-gray-400 py-6 text-center">등록된 공지사항이 없습니다.</p>
           ) : (
             notices.map((post) => (
               <Link
@@ -84,7 +105,7 @@ export default function Home() {
                 className="block bg-white dark:bg-dark-card rounded-xl px-5 py-4 shadow-card dark:shadow-card-dark hover:shadow-card-hover dark:hover:shadow-card-dark-hover transition-all duration-200 group"
               >
                 <h3 className="font-semibold text-sm group-hover:text-primary transition-colors flex items-center gap-1.5 flex-wrap">
-                  {post.is_pinned && <span className="text-[11px] text-danger font-bold">[Pinned]</span>}
+                  {post.is_pinned && <span className="text-[11px] text-danger font-bold">[고정]</span>}
                   {isNew(post) && <span className="text-[10px] font-bold text-white bg-red-400 rounded px-1.5 py-0.5 leading-none">NEW</span>}
                   {post.title}
                   {(post.comment_count ?? 0) > 0 && (
@@ -108,11 +129,11 @@ export default function Home() {
         <div className="mb-5">
           <h2 className="text-lg font-bold tracking-tight flex items-center gap-2.5">
             <span className="w-1 h-5 bg-primary rounded-full inline-block" />
-            <Link href="/board/reviews" className="hover:text-primary transition-colors">Session Stories</Link>
+            <Link href="/board/reviews" className="hover:text-primary transition-colors">모임 후기</Link>
           </h2>
         </div>
         {reviews.length === 0 ? (
-          <p className="text-sm text-gray-400 py-6 text-center">No session stories yet.</p>
+          <p className="text-sm text-gray-400 py-6 text-center">등록된 후기가 없습니다.</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {reviews.map((post) => (
@@ -140,9 +161,9 @@ export default function Home() {
                     {post.tag && (
                       <span
                         className={`text-[11px] px-2 py-0.5 rounded-md font-medium ${
-                          post.tag === "Board Games"
+                          post.tag === "보드게임"
                             ? "bg-tag-board/10 text-tag-board"
-                            : post.tag === "Other Activities"
+                            : post.tag === "외부활동"
                             ? "bg-tag-outdoor/10 text-tag-outdoor"
                             : "bg-tag-all/10 text-tag-all"
                         }`}
@@ -175,7 +196,7 @@ export default function Home() {
         {reviews.length > 0 && (
           <div className="flex justify-end mt-4">
             <Link href="/board/reviews" className="text-sm text-gray-400 hover:text-primary font-medium">
-              View all &rarr;
+              전체보기 &rarr;
             </Link>
           </div>
         )}
